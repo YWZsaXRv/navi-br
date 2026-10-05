@@ -240,14 +240,14 @@ class UIStateManager:
         queue_layout.setContentsMargins(0, 0, 5, 0)
 
         # Queue label
-        queue_label = QLabel("Download Queue")
+        queue_label = QLabel("Fila de Download")
         queue_label.setStyleSheet(f"color: {self.main_window.accent_color};")
         queue_layout.addWidget(queue_label)
 
         # Queue list
         self.queue_list_widget = QListWidget()
         self.queue_list_widget.setToolTip(
-            "Current download queue. Select an item to move it."
+            "Fila de download atual. Selecione um item para movê-lo."
         )
         queue_layout.addWidget(self.queue_list_widget)
 
@@ -258,28 +258,28 @@ class UIStateManager:
         """Setup queue control buttons"""
         queue_button_layout = QHBoxLayout()
 
-        self.queue_move_up_button = QPushButton("Move Up")
+        self.queue_move_up_button = QPushButton("Mover para Cima")
         self.queue_move_up_button.clicked.connect(
             self.main_window.job_queue.move_item_up
         )
         queue_button_layout.addWidget(self.queue_move_up_button)
 
-        self.queue_move_down_button = QPushButton("Move Down")
+        self.queue_move_down_button = QPushButton("Mover para Baixo")
         self.queue_move_down_button.clicked.connect(
             self.main_window.job_queue.move_item_down
         )
         queue_button_layout.addWidget(self.queue_move_down_button)
 
-        self.queue_remove_button = QPushButton("Remove")
+        self.queue_remove_button = QPushButton("Remover")
         self.queue_remove_button.clicked.connect(self.main_window.job_queue.remove_item)
         queue_button_layout.addWidget(self.queue_remove_button)
 
-        self.pause_button = QPushButton("Pause")
+        self.pause_button = QPushButton("Pausar")
         self.pause_button.clicked.connect(self.main_window.task_manager.toggle_pause)
         self.pause_button.setVisible(False)
         queue_button_layout.addWidget(self.pause_button)
 
-        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button = QPushButton("Cancelar")
         self.cancel_button.clicked.connect(
             self.main_window.task_manager.cancel_current_job
         )
@@ -386,14 +386,14 @@ class UIStateManager:
         if not is_processing and not has_jobs:
             if self.queue_widget:
                 self.queue_widget.setVisible(False)
-            self.main_window.drop_text_label.setText("Drag and Drop Zip here")
+            self.main_window.drop_text_label.setText("Arraste e Solte ZIP aqui")
             self._show_main_gif()
         else:
             if self.queue_widget:
                 self.queue_widget.setVisible(True)
             if not is_processing:
                 self.main_window.drop_text_label.setText(
-                    "Queue idle. Ready for next job."
+                    "Fila ociosa. Pronto para o próximo."
                 )
 
     def _show_main_gif(self):
@@ -462,7 +462,7 @@ class UIStateManager:
         # Make sure we have GIFs to use
         if not available_gifs:
             logger.error("No download GIFs available!")
-            self.main_window.drop_text_label.setText("Downloading...")
+            self.main_window.drop_text_label.setText("Baixando...")
             return
 
         # Select and load a random GIF
@@ -475,4 +475,4 @@ class UIStateManager:
             self.current_movie.start()
         else:
             logger.error(f"Failed to load GIF: {self.random_gif_path}")
-            self.main_window.drop_text_label.setText("Downloading...")
+            self.main_window.drop_text_label.setText("Baixando...")

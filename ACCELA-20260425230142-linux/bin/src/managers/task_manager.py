@@ -384,7 +384,7 @@ class TaskManager(QObject):
                 self.job_finished()
             return
 
-        self.main_window.drop_text_label.setText("Finalizing installation...")
+        self.main_window.drop_text_label.setText("Finalizando instalação...")
         logger.info("Starting post-download I/O processing in background thread...")
 
         size_on_disk = 0
@@ -1600,15 +1600,15 @@ class TaskManager(QObject):
         try:
             self.download_task.toggle_pause(self.is_download_paused)
             if self.is_download_paused:
-                self.main_window.ui_state.pause_button.setText("Resume")
+                self.main_window.ui_state.pause_button.setText("Retomar")
                 self.main_window.drop_text_label.setText(
-                    f"Paused: {os.path.basename(self.current_job)}"
+                    f"Pausado: {os.path.basename(self.current_job)}"
                 )
                 self._stop_speed_monitor()
             else:
-                self.main_window.ui_state.pause_button.setText("Pause")
+                self.main_window.ui_state.pause_button.setText("Pausar")
                 self.main_window.drop_text_label.setText(
-                    f"Downloading: {os.path.basename(self.current_job)}"
+                    f"Baixando: {os.path.basename(self.current_job)}"
                 )
                 self._start_speed_monitor()
         except Exception as e:
