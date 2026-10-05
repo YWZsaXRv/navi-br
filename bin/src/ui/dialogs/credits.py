@@ -20,7 +20,6 @@ class CreditsDialog(QDialog):
         self.setWindowTitle("Créditos")
         self.setMinimumWidth(400)
         self.setMinimumHeight(250)
-        self.resize(400, 342)  # Set exact size as requested
         self.settings = get_settings()
         self.main_layout = QVBoxLayout(self)
         self.accent_color = self.settings.value("accent_color", "#C06C84")
@@ -43,6 +42,10 @@ class CreditsDialog(QDialog):
         close_button = QPushButton("Fechar")
         close_button.clicked.connect(self.reject)
         self.main_layout.addWidget(close_button)
+
+        # ajusta a altura ao conteudo, pra lista de agradecimentos nunca ser
+        # cortada. a largura continua presa no minimo de 400px.
+        self.adjustSize()
 
     def _create_credits_content(self):
         """Create the credits content"""
