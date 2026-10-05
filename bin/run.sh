@@ -7,40 +7,37 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-set +eu
-IS_APPIMAGE=$APPIMAGE
-
-# Check if notify-send exists globally
-command -v notify-send &> /dev/null
-NOTIFY_SEND_AVAILABLE=$?
 set -eu
 
+IS_APPIMAGE=${APPIMAGE:-}
+
+# Check if notify-send exists globally
+if command -v notify-send &> /dev/null; then
+    NOTIFY_SEND_AVAILABLE=0
+else
+    NOTIFY_SEND_AVAILABLE=1
+fi
+
 # Logging functions
+notify() {
+    if [ "$NOTIFY_SEND_AVAILABLE" -eq 0 ]; then
+        notify-send -t 5000 -u "$1" "$2" "$3" 2>/dev/null || true
+    fi
+}
+
 log_info() {
     echo -e "${GREEN}[INFO]${NC} $1"
-    set +eu
-    if [ "$NOTIFY_SEND_AVAILABLE" -eq 0 ]; then
-        notify-send -t 5000 "INFO" "$1" 2>/dev/null
-    fi
-    set -eu
+    notify normal INFO "$1"
 }
 
 log_warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
-    set +eu
-    if [ "$NOTIFY_SEND_AVAILABLE" -eq 0 ]; then
-        notify-send -t 5000 -u normal "WARNING" "$1" 2>/dev/null
-    fi
-    set -eu
+    notify normal WARNING "$1"
 }
 
 log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
-    set +eu
-    if [ "$NOTIFY_SEND_AVAILABLE" -eq 0 ]; then
-        notify-send -t 5000 -u critical "ERROR" "$1" 2>/dev/null
-    fi
-    set -eu
+    notify critical ERROR "$1"
 }
 
 # Parse command line arguments
@@ -56,13 +53,12 @@ for arg in "$@"; do
 done
 
 setup_venv() {
-    # Create virtual environment
-    python3 -m venv .venv
+    if [ ! -d ".venv" ]; then
+        python3 -m venv .venv
+    fi
 
-    # Activate virtual environment
     source .venv/bin/activate
 
-    # Install requirements
     if [ -f "requirements.txt" ]; then
         pip install -r requirements.txt
     else
@@ -82,23 +78,16 @@ if [ -n "$IS_APPIMAGE" ]; then
         exit 1
     fi
 else
-    # Normal source execution
     if [ "$SETUP_VENV" = true ]; then
         log_info "Setting up virtual environment and installing dependencies"
         setup_venv
+    elif [ -f ".venv/bin/activate" ]; then
+        source .venv/bin/activate
     else
-        # Check if virtual environment already exists and activate it if it does
-        if [ -d ".venv" ] && [ -f ".venv/bin/activate" ]; then
-            source .venv/bin/activate
-        else
-            log_warn "No virtual environment found, creating"
-            setup_venv
-        fi
+        log_warn "No virtual environment found, creating"
+        setup_venv
     fi
 
-    # Run the main script with preserved environment
-    # This ensures DISPLAY, WAYLAND_DISPLAY, PATH, etc. are preserved
-    # which is needed for Qt GUI and Wine
-    # Pass all remaining command-line arguments through to the Python script
+    # Preserves DISPLAY, WAYLAND_DISPLAY, PATH, etc. needed for Qt GUI and Wine
     exec python src/main.py "${PYTHON_ARGS[@]}"
 fi

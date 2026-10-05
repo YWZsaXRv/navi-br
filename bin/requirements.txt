@@ -1,12 +1,7 @@
-pyqt6-sip
 PyQt6
 psutil
-beautifulsoup4
 steam[client] @ git+https://github.com/solsticegamestudios/steam
 requests>=2.25.0
-configobj>=5.0.0
-pathlib2>=2.3.0; python_version < "3.4"
-pyinstaller
 cryptography
 pillow
 numpy
@@ -16,5 +11,4 @@ gevent
 vdf
 urwid>=2.1.0
 windows-curses>=2.0.0; sys_platform == 'win32'
-just_playback
 pyopengl
