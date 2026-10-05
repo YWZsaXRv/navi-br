@@ -598,28 +598,6 @@ class SettingsDialog(QDialog):
         tools_group.setLayout(tools_layout)
         layout.addWidget(tools_group)
 
-        # Windows Registry Group
-        if sys.platform == "win32":
-            reg_group = QGroupBox("Registro do Windows")
-            reg_layout = QVBoxLayout()
-
-            SettingsDialog._add_tool_button(
-                reg_layout,
-                "Registrar Entradas no Registro",
-                "Registrar protocolo accela:// e entradas de menu de contexto .zip.",
-                SettingsDialog.register_registry_entries,
-            )
-
-            SettingsDialog._add_tool_button(
-                reg_layout,
-                "Remover Entradas do Registro",
-                "Remover protocolo accela:// e entradas de menu de contexto .zip.",
-                SettingsDialog.remove_registry_entries,
-            )
-
-            reg_group.setLayout(reg_layout)
-            layout.addWidget(reg_group)
-
         layout.addStretch()
         self.tab_widget.addTab(tab, "Ferramentas")
 
@@ -1204,51 +1182,4 @@ class SettingsDialog(QDialog):
                 # noinspection PyUnresolvedReferences
                 self.main_window.ui_state.update_gifs()
 
-    @staticmethod
-    def register_registry_entries() -> None:
-        SettingsDialog._manage_registry("ACCELA.reg", "Registered successfully")
 
-    @staticmethod
-    def remove_registry_entries() -> None:
-        SettingsDialog._manage_registry("ACCELA_uninstall.reg", "Removed successfully")
-
-    @staticmethod
-    def _manage_registry(filename: str, success_msg: str) -> None:
-        if sys.platform != "win32":
-            return
-
-        # Locate registry file
-        base = (
-            os.path.join(getattr(sys, "_MEIPASS"), "deps")
-            if getattr(sys, "frozen", False)
-            else os.path.join(os.path.dirname(__file__), "..", "..", "deps")
-        )
-        reg_path = os.path.join(base, filename)
-
-        if not os.path.exists(reg_path):
-            QMessageBox.critical(None, "Error", f"Missing {filename}")
-            return
-
-        try:
-            # Process template
-            with open(reg_path, "r", encoding="utf-8-sig") as f:
-                content = f.read().replace(
-                    "[INSTALL_PATH]", sys.executable.replace("\\", "\\\\")
-                )
-
-            # Write temp file
-            import tempfile
-
-            with tempfile.NamedTemporaryFile(
-                mode="w", suffix=".reg", delete=False
-            ) as tmp:
-                tmp.write(content)
-                tmp_name = tmp.name
-
-            # Import
-            subprocess.run(["regedit", "/s", str(tmp_name)], check=True, shell=True)
-            os.unlink(tmp_name)
-            QMessageBox.information(None, "Success", success_msg)
-
-        except (IOError, OSError, subprocess.SubprocessError) as e:
-            QMessageBox.critical(None, "Error", f"Registry error: {e}")

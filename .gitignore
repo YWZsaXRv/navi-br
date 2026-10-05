@@ -21,7 +21,20 @@ Thumbs.db
 # Logs
 *.log
 
+# Env
+.env
+
+# Test / coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
 # Build
 dist/
 build/
 *.egg-info/
+
+# Runtime
+gifs/colorized/
+gifs/custom/
+gifs/temp/
