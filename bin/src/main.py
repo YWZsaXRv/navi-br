@@ -175,17 +175,8 @@ def main():
     settings = get_settings()
     accent_color = settings.value("accent_color", "#C06C84")
     bg_color = settings.value("background_color", "#000000")
-    ui_mode = settings.value("ui_mode", "default")
 
-    font_file = None
-    font_to_use = QFont()
-
-    if ui_mode == "sonic":
-        accent_color = "#ffcc00"
-        bg_color = "#002c83"
-        font_file = settings.value("font-file", "sonic/sonic-1-hud-font.otf")
-    else:
-        font_to_use = create_font_from_settings(settings)
+    font_to_use = create_font_from_settings(settings)
 
     # 3. GreenLuma Check
     try:
@@ -195,7 +186,7 @@ def main():
 
     # 4. Apply Appearance
     font_ok, font_info = update_appearance(
-        app, accent_color, bg_color, font=font_to_use, font_file=font_file
+        app, accent_color, bg_color, font=font_to_use
     )
     if font_ok:
         logger.info(f"Loaded custom font: '{str(font_info)}'")

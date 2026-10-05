@@ -41,10 +41,3 @@ class Paths:
     def absolute(cls, path: str) -> Path:
         """Return the absolute, expanded path as a Path object."""
         return Path(path).expanduser().resolve()
-
-    @classmethod
-    def sound_path(cls, filename: str, ui_mode: str) -> Path:
-        """For use with audio_manager."""
-        if ui_mode == "sonic":
-            return Paths.resource(f"sonic/sounds/{filename}")
-        return Paths.resource(f"sounds/{filename}")

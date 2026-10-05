@@ -321,16 +321,7 @@ class UIStateManager:
         # Update application appearance
         from main import update_appearance
 
-        # UI mode (e.g., 'sonic') may override colors and font file
-        ui_mode = self.settings.value("ui_mode", "default")
-
         font_file = None
-        if ui_mode == "sonic":
-            # Sonic mode: use specific palette (blue background, yellow accent)
-            self.main_window.accent_color = "#ffcc00"
-            self.main_window.background_color = "#002c83"
-            font_file = self.settings.value("font-file", "sonic/sonic-1-hud-font.otf")
-
         font_ok, font_info = update_appearance(
             cast(QApplication, QApplication.instance()),
             self.main_window.accent_color,
@@ -338,12 +329,6 @@ class UIStateManager:
             self.main_window.font,
             font_file=font_file,
         )
-
-        if ui_mode == "sonic" and font_ok:
-            # Sync main window font family to loaded Sonic font
-            sonic_font = QFont(font_info)
-            sonic_font.setPointSize(font_size)
-            self.main_window.font = sonic_font
 
         # Apply styles to various UI elements
         self._apply_background_color()
