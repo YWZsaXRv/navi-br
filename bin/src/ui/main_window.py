@@ -156,8 +156,6 @@ class MainWindow(QMainWindow):
         self.bottom_widget = None
         self.bottom_layout = None
         self.log_output = None
-        self.crt_overlay_fsw = None
-        self.crt_overlay_fgl = None
 
         self._setup_window_properties()
         self._initialize_managers()

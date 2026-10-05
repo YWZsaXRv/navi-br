@@ -116,47 +116,6 @@ class _CRTOverlayGL(QOpenGLWidget):
         self._timer.timeout.connect(self.update)
         self._timer.start(33 if self.enabled else 0)
 
-    def set_accent_color(self, color: str) -> None:
-        self._accent_color = QColor(color)
-        self.update()
-
-    def set_enabled(self, enabled: bool) -> None:
-        self.enabled = enabled
-        if enabled:
-            self._timer.start(33)
-        else:
-            self._timer.stop()
-        self.update()
-
-    def set_preset(self, name: str) -> None:
-        """Change visual style.
-        'preset_a': soft, sine‑wave scanlines.
-        'preset_b': harder scanlines, shadow mask.
-        """
-        name = name.lower()
-        if name == "preset_a":
-            self._preset = 0
-        elif name == "preset_b":
-            self._preset = 1
-        else:
-            return
-        self.update()
-
-    def set_direction(self, direction: str) -> None:
-        """Set scan direction.
-        Allowed: 'top_to_bottom', 'bottom_to_top', 'left_to_right', 'right_to_left'
-        """
-        self._horizontal = direction in ("left_to_right", "right_to_left")
-        if direction in ("top_to_bottom", "left_to_right"):
-            self._direction = 1.0
-        else:
-            self._direction = 0.0
-        self.update()
-
-    def set_singleband(self, singleband: bool) -> None:
-        self._singleband = singleband
-        self.update()
-
     def initializeGL(self) -> None:
         if not _SHADERS_LOADED:
             logger.error("Cannot initialize GL overlay: shaders not loaded.")
@@ -261,31 +220,6 @@ class _CRTOverlaySW(QWidget):
         self._timer.timeout.connect(self._tick)
         self._timer.start(50 if self.enabled else 0)
 
-    def set_accent_color(self, color: str) -> None:
-        self._accent_color = QColor(color)
-        self.update()
-
-    def set_enabled(self, enabled: bool) -> None:
-        self.enabled = enabled
-        if enabled:
-            self._timer.start(50)
-        else:
-            self._timer.stop()
-        self.update()
-
-    def set_preset(self, name: str) -> None:
-        """Presets only affect the GL path, QP fallback uses a simple moving bar.  We respect the direction change though."""
-        name = name.lower()
-        if name == "lottes" or name == "b":
-            self._direction = 1.0      # top -> bottom
-        else:
-            self._direction = 0.0      # bottom -> top
-        self.update()
-
-    def set_singleband(self, singleband: bool):
-        # singleband already
-        return
-
     def _tick(self) -> None:
         if not self.enabled:
             return
@@ -317,12 +251,7 @@ def CRTOverlay(parent: QWidget | None, settings: QSettings) -> QWidget:
     - OpenGL and PyOpenGL present == GPU shader path        (_CRTOverlayGL)
     - Otherwise                   == QPainter software path (_CRTOverlaySW)
 
-    Both implement the same API:
-        .set_accent_color(str)
-        .set_enabled(bool)
-        .set_preset(str)
-        .set_singleband(bool)
-        .setGeometry(x, y, w, h)
+    Configuração vem do QSettings na init. Sem API de ajuste em runtime.
     """
     force_sw = settings.value("crt_overlay_fsw", False, type=bool)
     force_gl = settings.value("crt_overlay_fgl", False, type=bool)
@@ -334,24 +263,3 @@ def CRTOverlay(parent: QWidget | None, settings: QSettings) -> QWidget:
     if _GL_AVAILABLE and not _SHADERS_LOADED:
         logger.warning("OpenGL available but shaders missing – falling back to software overlay.")
     return _CRTOverlaySW(parent, settings)
-
-
-def restart_crt_overlay(
-    parent: QWidget,
-    old_overlay: Optional[QWidget],
-    settings: QSettings,
-) -> QWidget:
-    """
-    Safely replace an existing CRT overlay with a new one.
-    Handles deletion, etc. and then returns the new overlay.
-    """
-    if old_overlay is not None:
-        old_overlay.hide()
-        old_overlay.deleteLater()
-
-    new_overlay = CRTOverlay(parent, settings)
-    new_overlay.setGeometry(0, 0, parent.width(), parent.height())
-    new_overlay.raise_()  # ensure it sits above other children
-    new_overlay.show()
-
-    return new_overlay

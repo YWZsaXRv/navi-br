@@ -30,7 +30,6 @@ from PyQt6.QtWidgets import (
 )
 
 from core import morrenus_api
-from ui.crt_overlay import CRTOverlay, restart_crt_overlay
 from ui.dialogs.custom_gifs import CustomGifsDialog
 from ui.dialogs.dialog_helpers import create_standard_buttons
 from utils.helpers import (
