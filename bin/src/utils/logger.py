@@ -148,7 +148,6 @@ def setup_logging() -> logging.Logger:
 
 def open_log_directory() -> bool:
     """Open the log directory in the system file manager."""
-    global _log_dir
 
     try:
         system = platform.system().lower()
@@ -200,7 +199,6 @@ def get_log_path() -> Path:
 
 def cleanup_old_logs() -> None:
     """Clean up old log files on startup."""
-    global MAX_PREVIOUS_LOGS
 
     base_path = get_base_path()
     log_dir = base_path / "logs"

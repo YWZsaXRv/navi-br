@@ -1,5 +1,4 @@
-from PyQt6.QtWidgets import QDialogButtonBox, QPushButton
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QDialogButtonBox
 
 
 def create_standard_buttons(on_accept, on_reject):

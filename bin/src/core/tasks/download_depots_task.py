@@ -12,7 +12,6 @@ from PyQt6.QtCore import QObject, pyqtSignal
 
 # Local imports
 from utils.helpers import resource_path, ensure_dotnet_availability, get_dotnet_path
-from utils.settings import get_settings
 
 # Third-party imports
 try:

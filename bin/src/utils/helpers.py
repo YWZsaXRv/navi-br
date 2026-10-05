@@ -13,13 +13,11 @@ from typing import Optional, Tuple
 from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtWidgets import (
     QCheckBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
+    QHBoxLayout,
     QPushButton,
     QVBoxLayout,
     QWidget,
-    QComboBox,
 )
 
 from utils.paths import Paths
@@ -681,82 +679,6 @@ def create_checkbox_setting(
 ) -> CheckboxSetting:
     """Helper function to create a checkbox setting."""
     return CheckboxSetting(text, setting_key, default_value, parent_widget, tooltip)
-
-def create_combo_setting(
-    name: str,
-    setting_key: str,
-    items: list[tuple[str, str]],
-    default_value: str,
-    parent_widget: Optional[QWidget] = None,
-    tooltip: Optional[str] = None,
-) -> Tuple[QHBoxLayout, QComboBox]:
-    """
-    Helper function to create a combo box setting.
-
-    Args:
-        name: Label text
-        setting_key: QSettings key
-        items: List of (display_text, value) tuples
-        default_value: Default value (must match one of the item values)
-        parent_widget: Widget that has a 'settings' attribute (e.g., SettingsDialog)
-        tooltip: Optional tooltip text
-
-    Returns:
-        Tuple of (layout, combo_box)
-    """
-    layout = QHBoxLayout()
-    label = QLabel(f"{name}:")
-    label.setToolTip(tooltip if tooltip else "")
-    layout.addWidget(label)
-
-    combo = QComboBox()
-    for display_text, value in items:
-        combo.addItem(display_text, value)
-    if tooltip:
-        combo.setToolTip(tooltip)
-
-    # Load current value from settings
-    if parent_widget and hasattr(parent_widget, "settings"):
-        current = parent_widget.settings.value(setting_key, default_value, type=str)
-        idx = combo.findData(current)
-        if idx >= 0:
-            combo.setCurrentIndex(idx)
-
-    layout.addWidget(combo)
-    layout.addStretch()
-    return layout, combo
-
-def create_text_setting(
-    name: str,
-    setting_key: str,
-    default_value: str,
-    parent_widget: Optional[QWidget] = None,
-    placeholder: Optional[str] = None,
-    tooltip: Optional[str] = None,
-) -> Tuple[QHBoxLayout, QLineEdit]:
-    """Helper function to create a text input setting."""
-    layout = QHBoxLayout()
-
-    label = QLabel(f"{name}:")
-    layout.addWidget(label)
-
-    line_edit = QLineEdit()
-    if placeholder:
-        line_edit.setPlaceholderText(placeholder)
-
-    if parent_widget and hasattr(parent_widget, "settings"):
-        current_value = parent_widget.settings.value(
-            setting_key, default_value, type=str
-        )
-        line_edit.setText(current_value)
-
-    if tooltip:
-        line_edit.setToolTip(tooltip)
-
-    layout.addWidget(line_edit)
-
-    return layout, line_edit
-
 
 def create_color_setting(
     name: str,

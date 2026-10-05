@@ -40,11 +40,9 @@ from utils.helpers import (
     get_slscheevo_path,
     get_slscheevo_save_path,
     get_venv_python,
-    create_combo_setting,
 )
 from utils.paths import Paths
 from utils.settings import get_settings
-from utils.yaml_config_manager import is_slssteam_mode_enabled
 
 logger = logging.getLogger(__name__)
 

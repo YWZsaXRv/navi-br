@@ -14,7 +14,6 @@ from PyQt6.QtWidgets import (
     QFrame,
 )
 
-from ui.crt_overlay import CRTOverlay
 from utils.helpers import get_base_path
 from utils.paths import Paths
 

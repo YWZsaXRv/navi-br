@@ -5,7 +5,6 @@ import shutil
 import sys
 import tempfile
 import threading
-import subprocess
 from pathlib import Path
 from typing import Any, Dict, Optional, Set, List
 
@@ -30,9 +29,6 @@ from utils.helpers import get_base_path
 from utils.steam_manifest import get_game_directory, write_acf_file
 from utils.wrapper_metadata import persist_selected_dlcs
 from utils.yaml_config_manager import (
-    get_user_config_path,
-    add_additional_app,
-    add_dlc_data,
     is_slssteam_mode_enabled,
     is_slssteam_config_management_enabled,
 )
