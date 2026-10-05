@@ -200,13 +200,6 @@ class UIStateManager:
         main_gif_path = get_base_path() / "gifs/colorized/main.gif"
         default_gif_path = Paths.resource("gif/main.gif")
 
-        ui_mode = self.settings.value("ui_mode", "default")
-        sonic_main_applied = False
-        if ui_mode == "sonic":
-            sonic_gif = Paths.resource("sonic/gifs/main.gif")
-            default_gif_path = sonic_gif
-            sonic_main_applied = True
-
         if hasattr(self.main_movie, "main_movie"):
             if self.main_movie:
                 self.main_movie.stop()
@@ -216,7 +209,7 @@ class UIStateManager:
         self.main_window.drop_zone_gif.setMovie(self.main_movie)
         self.current_movie = self.main_movie
 
-        if main_gif_path.exists() and not sonic_main_applied:
+        if main_gif_path.exists():
             self.main_movie.stop()
             self.main_movie = QMovie(str(main_gif_path))
             self.main_window.drop_zone_gif.setMovie(self.main_movie)
@@ -296,9 +289,8 @@ class UIStateManager:
         self.main_window.accent_color = self.settings.value("accent_color", "#C06C84")
 
         # Load font family
-        font_family = self.settings.value("font", "TrixieCyrG-Plain")
+        font_family = self.settings.value("font", "Noto Sans")
 
-        # Load size (default 10). If Sonic mode and user left default 10, bump to 12
         font_size = self.settings.value("font-size", 10, type=int)
 
         # Create font
@@ -409,20 +401,7 @@ class UIStateManager:
         os.makedirs(str(colored_dir), exist_ok=True)
 
         # Determine which GIFs to use based on setting
-        ui_mode = self.settings.value("ui_mode", "default")
-        if ui_mode == "sonic":
-            sonic_dir = Paths.resource("sonic/gifs")
-            sonic_downloads = []
-            if sonic_dir.exists() and sonic_dir.is_dir():
-                sonic_downloads.extend(
-                    [str(p) for p in sonic_dir.glob("downloading*.gif")]
-                )
-
-            if sonic_downloads:
-                available_gifs = sorted(sonic_downloads)
-            else:
-                available_gifs = []
-        elif self.disable_default_gifs:
+        if self.disable_default_gifs:
             # Use only custom GIFs
             custom_gifs = sorted(
                 [str(p) for p in colored_dir.glob("downloading_custom*.gif")]

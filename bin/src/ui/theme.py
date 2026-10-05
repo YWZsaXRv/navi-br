@@ -301,9 +301,9 @@ def apply_font(
 
     If font_file is provided, loads that font file and applies it.
     If font is provided (with a family name), checks if it's a system font.
-    Otherwise, falls back to the default TrixieCyrG font.
+    Otherwise, falls back to the default Noto Sans font.
     """
-    default_font_file = "TrixieCyrG-Plain Regular.otf"
+    default_font_file = "NotoSans-Bold.ttf"
 
     # Case 1: Specific font file provided
     if font_file:

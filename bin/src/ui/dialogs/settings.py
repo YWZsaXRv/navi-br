@@ -642,98 +642,6 @@ class SettingsDialog(QDialog):
         lbl.setWordWrap(True)
         layout.addWidget(lbl)
 
-    def _create_audio_tab(self) -> None:
-        """Create the Audio settings tab."""
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
-        layout.setContentsMargins(15, 15, 15, 15)
-
-        # Playback Group
-        pb_group = QGroupBox("Reprodução de Áudio")
-        pb_layout = QVBoxLayout()
-
-        self.play_etw_checkbox = create_checkbox_setting(
-            'Tocar "Entering The Wired" na inicialização',
-            "play_etw",
-            True,
-            self,
-            "Tocar áudio de introdução na inicialização.",
-        )
-        pb_layout.addWidget(self.play_etw_checkbox)
-
-        self.play_lall_checkbox = create_checkbox_setting(
-            'Tocar "Let\'s All Love Lain" na saída',
-            "play_lall",
-            True,
-            self,
-            "Tocar áudio na saída.",
-        )
-        pb_layout.addWidget(self.play_lall_checkbox)
-
-        self.play_50hz_hum_checkbox = create_checkbox_setting(
-            "Tocar som de fundo (hum)",
-            "play_50hz_hum",
-            True,
-            self,
-            "Tocar zumbido ambiente de fundo.",
-        )
-        self.play_50hz_hum_checkbox.stateChanged.connect(self.on_hum_checkbox_changed)
-        pb_layout.addWidget(self.play_50hz_hum_checkbox)
-
-        pb_group.setLayout(pb_layout)
-        layout.addWidget(pb_group)
-
-        # Volume Group
-        vol_group = QGroupBox("Configurações de Volume")
-        vol_layout = QVBoxLayout()
-
-        (
-            m_layout,
-            self.master_volume_slider,
-            _,
-            _,
-        ) = create_slider_setting("Volume Principal", "master_volume", 80, self)
-        vol_layout.addLayout(m_layout)
-
-        (
-            e_layout,
-            self.effects_volume_slider,
-            _,
-            _,
-        ) = create_slider_setting("Volume Efeitos", "effects_volume", 50, self)
-        vol_layout.addLayout(e_layout)
-
-        (
-            h_layout,
-            self.hum_volume_slider,
-            _,
-            _,
-        ) = create_slider_setting("Volume Hum", "hum_volume", 20, self)
-        vol_layout.addLayout(h_layout)
-
-        vol_group.setLayout(vol_layout)
-        layout.addWidget(vol_group)
-
-        # Test Group
-        test_group = QGroupBox("Testar Sons")
-        test_layout = QVBoxLayout()
-        btn_layout = QHBoxLayout()
-
-        self.test_etw_button = QPushButton("Testar Som ETW")
-        self.test_lall_button = QPushButton("Testar Som LALL")
-        self.test_etw_button.clicked.connect(self.test_etw_sound)
-        self.test_lall_button.clicked.connect(self.test_lall_sound)
-
-        btn_layout.addWidget(self.test_etw_button)
-        btn_layout.addWidget(self.test_lall_button)
-        test_layout.addLayout(btn_layout)
-
-        test_group.setLayout(test_layout)
-        layout.addWidget(test_group)
-
-        layout.addStretch()
-        self.tab_widget.addTab(tab, "Áudio")
-
     def _create_style_tab(self) -> None:
         """Create the Style settings tab."""
         tab = QWidget()
@@ -913,7 +821,7 @@ class SettingsDialog(QDialog):
             self.update_font_button_text()
 
     def reset_font(self) -> None:
-        default = QFont("TrixieCyrG-Plain", 10)
+        default = QFont("Noto Sans", 10)
         default.setBold(False)
         default.setItalic(False)
         self.current_font = default

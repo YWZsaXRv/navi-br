@@ -10,7 +10,6 @@ import urllib.request
 from pathlib import Path
 from typing import Optional, Tuple
 
-from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor, QFont
 from PyQt6.QtWidgets import (
     QCheckBox,
@@ -18,7 +17,6 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QPushButton,
-    QSlider,
     QVBoxLayout,
     QWidget,
     QComboBox,
@@ -608,53 +606,6 @@ def add_gradient_border(
         );
     """
     element.setStyleSheet(current_style + border_style)
-
-
-def create_slider_setting(
-    name: str,
-    setting_key: str,
-    default_value: int,
-    parent_widget: Optional[QWidget] = None,
-) -> Tuple[QHBoxLayout, QSlider, QLabel, QPushButton]:
-    """Helper function to create a slider setting with value label/reset."""
-    layout = QHBoxLayout()
-
-    label = QLabel(f"{name}:")
-    label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-    label.setFixedWidth(105)
-
-    slider = QSlider(Qt.Orientation.Horizontal)
-    slider.setRange(0, 100)
-    slider.setTickPosition(QSlider.TickPosition.TicksBothSides)
-
-    value_label = QLabel(f"{default_value}%")
-    value_label.setFixedWidth(30)
-
-    reset_button = QPushButton("Reset")
-    reset_button.setFixedHeight(25)
-    reset_button.clicked.connect(lambda: slider.setValue(default_value))
-
-    if parent_widget and hasattr(parent_widget, "settings"):
-        current_value = parent_widget.settings.value(
-            setting_key, default_value, type=int
-        )
-        slider.setValue(current_value)
-        value_label.setText(f"{current_value}%")
-
-        # Connect value change to update label
-        def update_label(value):
-            value_label.setText(f"{value}%")
-            if hasattr(parent_widget, f"on_{setting_key}_changed"):
-                getattr(parent_widget, f"on_{setting_key}_changed")(value)
-
-        slider.valueChanged.connect(update_label)
-
-    layout.addWidget(label)
-    layout.addWidget(slider, 1)
-    layout.addWidget(value_label)
-    layout.addWidget(reset_button)
-
-    return layout, slider, value_label, reset_button
 
 
 class CheckboxSetting(QWidget):
