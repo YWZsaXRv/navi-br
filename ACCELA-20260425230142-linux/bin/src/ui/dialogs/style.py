@@ -27,7 +27,7 @@ class StyleDialog(QDialog):
 
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.setWindowTitle("Style Settings")
+        self.setWindowTitle("Configurações de Estilo")
         self.settings = get_settings()
         self.main_layout = QVBoxLayout(self)
         self.main_window = parent
@@ -55,12 +55,12 @@ class StyleDialog(QDialog):
     def _setup_color_settings(self) -> None:
         """Setup accent and background color controls."""
         color_group = QVBoxLayout()
-        color_label = QLabel("Color Settings")
+        color_label = QLabel("Configurações de Cor")
         color_label.setStyleSheet("font-weight: bold;")
         color_group.addWidget(color_label)
 
         accent_layout, self.accent_color_button, accent_reset = create_color_setting(
-            "Accent Color:", "accent_color", "#C06C84", self
+            "Cor de Destaque:", "accent_color", "#C06C84", self
         )
         # noinspection PyUnresolvedReferences
         self.accent_color_button.clicked.connect(self.choose_accent_color)
@@ -69,7 +69,7 @@ class StyleDialog(QDialog):
         color_group.addLayout(accent_layout)
 
         bg_layout, self.bg_color_button, bg_reset = create_color_setting(
-            "Background Color:", "background_color", "#000000", self
+            "Cor de Fundo:", "background_color", "#000000", self
         )
         # noinspection PyUnresolvedReferences
         self.bg_color_button.clicked.connect(self.choose_bg_color)
@@ -82,20 +82,20 @@ class StyleDialog(QDialog):
     def _setup_font_settings(self) -> None:
         """Setup font selection controls."""
         font_group = QVBoxLayout()
-        font_label = QLabel("Font Settings")
+        font_label = QLabel("Configurações de Fonte")
         font_label.setStyleSheet("font-weight: bold;")
         font_group.addWidget(font_label)
 
         font_layout = QHBoxLayout()
-        font_chooser_label = QLabel("Font:")
+        font_chooser_label = QLabel("Fonte:")
 
-        self.font_button = QPushButton("Choose Font")
+        self.font_button = QPushButton("Escolher Fonte")
         self._load_current_font()
         self.update_font_button_text()
         # noinspection PyUnresolvedReferences
         self.font_button.clicked.connect(self.choose_font)
 
-        font_reset = QPushButton("Reset")
+        font_reset = QPushButton("Redefinir")
         # noinspection PyUnresolvedReferences
         font_reset.clicked.connect(self.reset_font)
 
@@ -128,20 +128,20 @@ class StyleDialog(QDialog):
         """Setup configuration checkboxes."""
         # Ignore warnings
         ignore_warn = self.settings.value("ignore_color_warnings", False, type=bool)
-        self.ignore_color_warnings_checkbox = QCheckBox("Ignore color warnings")
+        self.ignore_color_warnings_checkbox = QCheckBox("Ignorar avisos de cor")
         self.ignore_color_warnings_checkbox.setChecked(ignore_warn)
         self.ignore_color_warnings_checkbox.setToolTip(
-            "Lets you ignore the color warnings and set any color."
+            "Permite ignorar avisos de cor e definir qualquer cor."
         )
         # Insert after color group (index 1 in layout)
         self.main_layout.insertWidget(1, self.ignore_color_warnings_checkbox)
 
         # Titlebar position
-        self.titlebar_position_checkbox = QCheckBox("Move Titlebar to Top")
+        self.titlebar_position_checkbox = QCheckBox("Mover Barra de Título para Topo")
         is_top = self.settings.value("titlebar_position", "bottom", type=str) == "top"
         self.titlebar_position_checkbox.setChecked(is_top)
         self.titlebar_position_checkbox.setToolTip(
-            "Move the titlebar from the bottom to the top of the window."
+            "Mover a barra de título de baixo para o topo da janela."
         )
         # noinspection PyUnresolvedReferences
         self.titlebar_position_checkbox.stateChanged.connect(
@@ -150,11 +150,11 @@ class StyleDialog(QDialog):
         self.main_layout.addWidget(self.titlebar_position_checkbox)
 
         # GIF display
-        self.gif_display_checkbox = QCheckBox("Show GIF Display")
+        self.gif_display_checkbox = QCheckBox("Mostrar Exibição de GIF")
         gif_enabled = self.settings.value("gif_display_enabled", True, type=bool)
         self.gif_display_checkbox.setChecked(gif_enabled)
         self.gif_display_checkbox.setToolTip(
-            "Show or hide the animated GIF display in the main window."
+            "Mostrar ou ocultar a exibição de GIF animado na janela principal."
         )
         # noinspection PyUnresolvedReferences
         self.gif_display_checkbox.stateChanged.connect(self.on_gif_display_changed)

@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class DepotSelectionDialog(QDialog):
     def __init__(self, app_id, game_name, depots, header_url, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Select Depots to Download")
+        self.setWindowTitle("Selecionar Depots para Baixar")
         self.depots = depots
         self.game_name = game_name
         self.header_url = header_url
@@ -34,7 +34,7 @@ class DepotSelectionDialog(QDialog):
 
         self.anchor_row = -1
 
-        self.header_label = QLabel("Loading header image...")
+        self.header_label = QLabel("Carregando imagem de cabeçalho...")
         self.header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.header_label.setFixedHeight(108)
         layout.addWidget(self.header_label)
@@ -163,13 +163,13 @@ class DepotSelectionDialog(QDialog):
         self.list_widget.itemClicked.connect(self.on_depot_item_clicked)
 
         button_layout = QHBoxLayout()
-        select_all_button = QPushButton("Select All")
+        select_all_button = QPushButton("Selecionar Todos")
         select_all_button.clicked.connect(
             lambda: self._toggle_all_checkboxes(check=True)
         )
         button_layout.addWidget(select_all_button)
 
-        deselect_all_button = QPushButton("Deselect All")
+        deselect_all_button = QPushButton("Desselecionar Todos")
         deselect_all_button.clicked.connect(
             lambda: self._toggle_all_checkboxes(check=False)
         )
@@ -309,7 +309,7 @@ class DepotSelectionDialog(QDialog):
 
     def _show_no_image(self):
         """Show fallback text when image is not available."""
-        self.header_label.setText("Header image not available.")
+        self.header_label.setText("Imagem de cabeçalho não disponível.")
         self.header_label.setStyleSheet("")
 
     def _cleanup_fetcher(self, _data: bytes) -> None:

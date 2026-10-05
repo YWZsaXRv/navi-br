@@ -148,7 +148,7 @@ class FetchManifestDialog(QDialog):
 
         # 2. Search Input
         self.search_input = QLineEdit()
-        self.search_input.setPlaceholderText("Search for a game...")
+        self.search_input.setPlaceholderText("Buscar um jogo...")
         self.search_input.returnPressed.connect(self.on_search)
         layout.addWidget(self.search_input)
 
@@ -161,7 +161,7 @@ class FetchManifestDialog(QDialog):
         layout.addWidget(self.results_list)
 
         # 4. Status Label
-        self.status_label = QLabel("Search for a game to begin")
+        self.status_label = QLabel("Busque um jogo para começar")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.status_label)
 
@@ -264,14 +264,14 @@ class FetchManifestDialog(QDialog):
     def on_search(self):
         query = self.search_input.text().strip()
         if len(query) < 2:
-            self.status_label.setText("Enter at least 2 characters")
+            self.status_label.setText("Digite pelo menos 2 caracteres")
             return
 
         # Reset UI
         self.results_list.clear()
         self._stop_active_image_fetchers()
         self._toggle_inputs(False)
-        self.status_label.setText("Searching...")
+        self.status_label.setText("Buscando...")
 
         # Run search + filtering in a worker thread.
         worker = self.task_runner.run(self._search_and_filter_results, query)
@@ -409,17 +409,17 @@ class FetchManifestDialog(QDialog):
         raw_total = int(results.get("raw_total", len(filtered_results)))
 
         if not filtered_results:
-            self.status_label.setText("No results found")
+            self.status_label.setText("Nenhum resultado encontrado")
             return
 
         for game in filtered_results:
             self._add_game_to_list(game)
 
         hidden_count = max(0, raw_total - len(filtered_results))
-        status_msg = f"Found {len(filtered_results)} games"
+        status_msg = f"Encontrados {len(filtered_results)} jogos"
         if hidden_count > 0:
-            status_msg += f" ({hidden_count} hidden)"
-        self.status_label.setText(status_msg + ". Double-click to download")
+            status_msg += f" ({hidden_count} ocultos)"
+        self.status_label.setText(status_msg + ". Clique duas vezes para baixar")
 
     @staticmethod
     def _is_blacklisted(game_name: str) -> bool:
@@ -547,7 +547,7 @@ class FetchManifestDialog(QDialog):
             return
 
         logger.info(f"Manifest downloaded: {filepath}")
-        self.status_label.setText("Download complete! Adding to queue")
+        self.status_label.setText("Download completo! Adicionando à fila")
 
         if self.parent_window and hasattr(self.parent_window, "job_queue"):
             self.parent_window.job_queue.add_job(filepath)
@@ -564,8 +564,8 @@ class FetchManifestDialog(QDialog):
 
     def _handle_error(self, message):
         logger.error(f"Operation failed: {message}")
-        QMessageBox.critical(self, "Error", message)
-        self.status_label.setText("Error occurred")
+        QMessageBox.critical(self, "Erro", message)
+        self.status_label.setText("Ocorreu um erro")
 
     def on_task_error(self, error_info):
         _, error_value, _ = error_info

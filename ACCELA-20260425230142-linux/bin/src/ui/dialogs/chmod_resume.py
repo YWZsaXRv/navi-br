@@ -19,7 +19,7 @@ class ChmodResumeDialog(QDialog):
 
     def __init__(self, game_name, file_count, success, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Make Executable Complete")
+        self.setWindowTitle("Tornar Executável Concluído")
         self.setMinimumWidth(400)
         self.setMinimumHeight(300)
         self.setModal(True)
@@ -41,7 +41,7 @@ class ChmodResumeDialog(QDialog):
         accent_color = settings.value("accent_color", "#C06C84")
 
         # Title
-        title = ScaledFontLabel("Make Executable Complete")
+        title = ScaledFontLabel("Tornar Executável Concluído")
         title.setStyleSheet(f"font-size: 16pt; color: {accent_color};")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
@@ -70,16 +70,16 @@ class ChmodResumeDialog(QDialog):
 
         # Status message
         if success and file_count > 0:
-            status_text = "Completed Successfully"
+            status_text = "Concluído com Sucesso"
             status_color = "#00FF00"
         elif file_count > 0:
-            status_text = "All Permissions Set"
+            status_text = "Todas Permissões Definidas"
             status_color = "#00FF00"
         elif file_count == 0:
-            status_text = "No Executable Files Found"
+            status_text = "Nenhum Arquivo Executável Encontrado"
             status_color = "#888888"
         else:
-            status_text = "Operation Failed"
+            status_text = "Operação Falhou"
             status_color = "#FF6B6B"
 
         status_label = ScaledFontLabel(status_text)

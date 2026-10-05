@@ -235,7 +235,7 @@ class LainMinigameDialog(QDialog):
 
     def _create_terminal_display(self) -> None:
         """Create the terminal output area."""
-        terminal_group = QGroupBox("TERMINAL OUTPUT")
+        terminal_group = QGroupBox("SAÍDA DO TERMINAL")
         terminal_layout = QVBoxLayout()
 
         self.terminal_display = QTextEdit()
@@ -253,7 +253,7 @@ class LainMinigameDialog(QDialog):
 
     def _create_command_grid(self) -> None:
         """Create the grid of command buttons."""
-        commands_group = QGroupBox("AVAILABLE COMMANDS")
+        commands_group = QGroupBox("COMANDOS DISPONÍVEIS")
         commands_layout = QGridLayout()
 
         self.command_buttons = []
@@ -276,7 +276,7 @@ class LainMinigameDialog(QDialog):
     def _create_controls(self) -> None:
         """Create the bottom control buttons."""
         control_layout = QHBoxLayout()
-        self.start_button = QPushButton("INITIALIZE CONNECTION")
+        self.start_button = QPushButton("INICIALIZAR CONEXÃO")
         self.start_button.clicked.connect(self.start_game)
         control_layout.addWidget(self.start_button)
         self.layout.addLayout(control_layout, 1)
@@ -659,7 +659,7 @@ class LainMinigameDialog(QDialog):
 
         if self.start_button:
             self.start_button.setHidden(False)
-            self.start_button.setText("REINITIALIZE CONNECTION")
+            self.start_button.setText("REINICIALIZAR CONEXÃO")
 
         for btn in self.command_buttons:
             btn.setText("")
@@ -674,7 +674,7 @@ class LainMinigameDialog(QDialog):
 
         reply = QMessageBox.question(
             self,
-            "Session Terminated",
+            "Sessão Encerrada",
             f"Final Score: {final}\n\nWould you like to play again?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,

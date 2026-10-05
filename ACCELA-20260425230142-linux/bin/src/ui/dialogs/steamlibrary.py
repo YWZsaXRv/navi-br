@@ -21,7 +21,7 @@ class SteamLibraryDialog(QDialog):
 
     def __init__(self, library_paths: List[str], parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.setWindowTitle("Select Steam Library")
+        self.setWindowTitle("Selecionar Biblioteca Steam")
         self.setMinimumWidth(500)
 
         self.selected_path: Optional[str] = None
@@ -65,7 +65,7 @@ class SteamLibraryDialog(QDialog):
         current_item = self.list_widget.currentItem()
 
         if not current_item:
-            QMessageBox.warning(self, "No Selection", "Please select a library folder.")
+            QMessageBox.warning(self, "Nenhuma Seleção", "Por favor, selecione uma pasta de biblioteca.")
             return
 
         self.selected_path = current_item.text()

@@ -31,7 +31,7 @@ class StatusDialog(QDialog):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.parent_window = parent
-        self.setWindowTitle("Last Download Task Status")
+        self.setWindowTitle("Status da Última Tarefa de Download")
         self.resize(450, 180)
         self.setMinimumSize(400, 150)
 
@@ -152,7 +152,7 @@ class StatusDialog(QDialog):
         """Create the open logs button and OK button."""
         button_layout = QHBoxLayout()
 
-        logs_button = QPushButton("Open Logs")
+        logs_button = QPushButton("Abrir Logs")
         logs_button.clicked.connect(open_log_directory)
         button_layout.addWidget(logs_button)
 

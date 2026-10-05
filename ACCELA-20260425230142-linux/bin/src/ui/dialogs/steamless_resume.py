@@ -28,7 +28,7 @@ class SteamlessResumeDialog(QDialog):
         parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
-        self.setWindowTitle("Steamless Complete")
+        self.setWindowTitle("Steamless Concluído")
         self.setMinimumWidth(400)
         self.setMinimumHeight(300)
         self.setModal(True)

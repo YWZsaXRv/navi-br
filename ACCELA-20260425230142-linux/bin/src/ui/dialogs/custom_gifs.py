@@ -39,22 +39,22 @@ class CustomGifItem(QWidget):
         self.name_label.setMinimumWidth(200)
 
         # Current file display
-        self.current_file_label = QLabel("No custom file")
+        self.current_file_label = QLabel("Nenhum arquivo personalizado")
         self.current_file_label.setStyleSheet("color: #888888; font-style: italic;")
 
         # View button
-        self.view_button = QPushButton("View")
+        self.view_button = QPushButton("Visualizar")
         self.view_button.clicked.connect(self.view_gif)
         self.view_button.setEnabled(False)
         self.view_button.setFixedWidth(80)
 
         # Upload button
-        self.upload_button = QPushButton("Upload")
+        self.upload_button = QPushButton("Enviar")
         self.upload_button.clicked.connect(self.upload_gif)
         self.upload_button.setFixedWidth(80)
 
         # Remove button
-        self.remove_button = QPushButton("Remove")
+        self.remove_button = QPushButton("Remover")
         self.remove_button.clicked.connect(self.remove_gif)
         self.remove_button.setEnabled(False)
         self.remove_button.setFixedWidth(80)
@@ -96,11 +96,11 @@ class CustomGifItem(QWidget):
 
         if os.path.exists(custom_path):
             self.original_file_path = custom_path
-            self.current_file_label.setText("Custom Applied")
+            self.current_file_label.setText("Personalizado Aplicado")
             self.current_file_label.setStyleSheet("color: #4CAF50;")
             self.remove_button.setEnabled(True)
             self.view_button.setEnabled(True)
-            self.upload_button.setText("Replace")
+            self.upload_button.setText("Substituir")
 
     @staticmethod
     def get_custom_dir():
@@ -213,12 +213,12 @@ class CustomGifItem(QWidget):
             file_to_show = self.original_file_path
 
         if not file_to_show:
-            QMessageBox.warning(self, "No File", "No custom file to view.")
+            QMessageBox.warning(self, "Nenhum Arquivo", "Nenhum arquivo personalizado para visualizar.")
             return
 
         # Create and show the view dialog
         view_dialog = QDialog(self)
-        view_dialog.setWindowTitle(f"Viewing: {os.path.basename(file_to_show)}")
+        view_dialog.setWindowTitle(f"Visualizando: {os.path.basename(file_to_show)}")
         view_dialog.setMinimumSize(400, 400)
 
         layout = QVBoxLayout(view_dialog)
@@ -230,7 +230,7 @@ class CustomGifItem(QWidget):
         # Load and display the image
         pixmap = QPixmap(file_to_show)
         if pixmap.isNull():
-            QMessageBox.warning(self, "Error", "Could not load the image file.")
+            QMessageBox.warning(self, "Erro", "Não foi possível carregar o arquivo de imagem.")
             return
 
         # Scale the image to fit the dialog while maintaining aspect ratio
@@ -278,7 +278,7 @@ class CustomGifItem(QWidget):
             self.original_file_path = permanent_path
             self.temp_file_path = None
 
-            self.current_file_label.setText("Custom Applied")
+            self.current_file_label.setText("Personalizado Aplicado")
             self.current_file_label.setStyleSheet("color: #4CAF50;")
             self.view_button.setEnabled(True)
             logger.info(f"Applied custom GIF for {self.gif_name}: {permanent_path}")
@@ -302,7 +302,7 @@ class CustomGifsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.settings = get_settings()
-        self.setWindowTitle("Custom Gifs")
+        self.setWindowTitle("GIFs Personalizados")
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
         self.resize(700, 500)
@@ -325,34 +325,34 @@ class CustomGifsDialog(QDialog):
         layout = QVBoxLayout(self)
 
         # Title and description
-        title_label = QLabel("Custom GIF Management")
+        title_label = QLabel("Gerenciamento de GIFs Personalizados")
         title_label.setStyleSheet(
             "font-size: 24px; font-weight: bold; margin-bottom: 10px;"
         )
         layout.addWidget(title_label)
 
         desc_label = QLabel(
-            f"Upload custom GIFs to replace the default ones.\nCustom GIFs are stored in:\n{get_base_path() / 'gifs' / 'custom'}"
+            f"Enviar GIFs personalizados para substituir os padrões.\nGIFs personalizados são salvos em:\n{get_base_path() / 'gifs' / 'custom'}"
         )
         desc_label.setStyleSheet("color: #888888; margin-bottom: 20px;")
         desc_label.setWordWrap(True)
         layout.addWidget(desc_label)
 
         self.default_gifs_checkbox = create_checkbox_setting(
-            "Disable default download gifs",
+            "Desativar GIFs de download padrão",
             "disable_default_gifs",
             False,
             self,
-            "Disable the default Lain download GIFs",
+            "Desativar GIFs de download padrão do Lain",
         )
         layout.addWidget(self.default_gifs_checkbox)
 
         self.disable_color_gifs_checkbox = create_checkbox_setting(
-            "Disable coloring gifs using accent color",
+            "Desativar coloração de GIFs com cor de destaque",
             "disable_color_gifs",
             False,
             self,
-            "Disable recoloring GIFs based on accent color",
+            "Desativar recolorir GIFs baseados na cor de destaque",
         )
         layout.addWidget(self.disable_color_gifs_checkbox)
 
@@ -401,7 +401,7 @@ class CustomGifsDialog(QDialog):
 
     def add_new_download_section(self):
         """Add section for adding new download GIF slots"""
-        group = QGroupBox("Add More Download GIF Slots")
+        group = QGroupBox("Adicionar Mais Slots de GIF de Download")
         group_layout = QHBoxLayout(group)
 
         add_button_layout = QHBoxLayout()
@@ -421,10 +421,10 @@ class CustomGifsDialog(QDialog):
 
         self.next_download_num = max_num + 1
         self.next_download_label = QLabel(
-            f"Next: downloading_custom{self.next_download_num}.gif"
+            f"Próximo: downloading_custom{self.next_download_num}.gif"
         )
 
-        add_button = QPushButton("Add New Download GIF")
+        add_button = QPushButton("Adicionar Novo GIF de Download")
         add_button.clicked.connect(self.add_download_gif)
 
         add_button_layout.addWidget(self.next_download_label)
@@ -449,8 +449,8 @@ class CustomGifsDialog(QDialog):
             if not last_item.original_file_path and not last_item.temp_file_path:
                 QMessageBox.warning(
                     self,
-                    "Previous Slot Empty",
-                    f"Please upload a GIF or image for the previous slot ({last_item.gif_name}) before adding a new one.",
+                    "Slot Anterior Vazio",
+                    f"Por favor, envie um GIF ou imagem para o slot anterior ({last_item.gif_name}) antes de adicionar um novo.",
                 )
                 return
 
@@ -548,10 +548,10 @@ class CustomGifsDialog(QDialog):
                 except ValueError:
                     pass
             self.next_download_num = max_num + 1
-            self.next_download_label.setText(
-                f"Next: downloading_custom{self.next_download_num}.gif"
-            )
-            return
+        self.next_download_label.setText(
+            f"Próximo: downloading_custom{self.next_download_num}.gif"
+        )
+        return
 
         # Renumber all download GIFs
         for i, item in enumerate(download_items):
@@ -639,9 +639,9 @@ class CustomGifsDialog(QDialog):
         if failed_items:
             QMessageBox.warning(
                 self,
-                "Partial Success",
-                f"Failed to apply changes for: {', '.join(failed_items)}\n"
-                "Other changes were applied successfully.",
+                "Sucesso Parcial",
+                f"Falha ao aplicar alterações para: {', '.join(failed_items)}\n"
+                "Outras alterações foram aplicadas com sucesso.",
             )
 
         # Clean up temp directory
@@ -652,8 +652,8 @@ class CustomGifsDialog(QDialog):
         logger.info("Custom GIFs applied successfully")
         QMessageBox.information(
             self,
-            "Success",
-            "Custom GIFs have been applied!\n\nClick OK again to reload them.",
+            "Sucesso",
+            "GIFs personalizados foram aplicados!\n\nClique em OK novamente para recarregá-los.",
         )
 
         super().accept()

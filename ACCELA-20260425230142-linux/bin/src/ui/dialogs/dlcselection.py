@@ -22,9 +22,9 @@ class DlcSelectionDialog(QDialog):
         super().__init__(parent)
         # Platform-specific title
         if sys.platform == "linux":
-            title = "Select DLC for SLSsteam Wrapper"
+            title = "Selecionar DLC para Wrapper SLSsteam"
         else:
-            title = "Select DLC for GreenLuma Wrapper"
+            title = "Selecionar DLC para Wrapper GreenLuma"
         self.setWindowTitle(title)
         self.dlcs = dlcs
         self.setMinimumWidth(600)
@@ -54,13 +54,13 @@ class DlcSelectionDialog(QDialog):
         self.list_widget.itemClicked.connect(self.on_dlc_item_clicked)
 
         button_layout = QHBoxLayout()
-        select_all_button = QPushButton("Select All")
+        select_all_button = QPushButton("Selecionar Todos")
         select_all_button.clicked.connect(
             lambda: self._toggle_all_checkboxes(check=True)
         )
         button_layout.addWidget(select_all_button)
 
-        deselect_all_button = QPushButton("Deselect All")
+        deselect_all_button = QPushButton("Desselecionar Todos")
         deselect_all_button.clicked.connect(
             lambda: self._toggle_all_checkboxes(check=False)
         )

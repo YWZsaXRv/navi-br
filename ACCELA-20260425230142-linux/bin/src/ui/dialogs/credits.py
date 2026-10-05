@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class CreditsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Credits")
+        self.setWindowTitle("Créditos")
         self.setMinimumWidth(400)
         self.setMinimumHeight(250)
         self.resize(400, 342)  # Set exact size as requested
@@ -41,7 +41,7 @@ class CreditsDialog(QDialog):
         self._create_credits_content()
 
         # Dialog buttons
-        close_button = QPushButton("Close")
+        close_button = QPushButton("Fechar")
         close_button.clicked.connect(self.reject)
         self.main_layout.addWidget(close_button)
 
@@ -52,7 +52,7 @@ class CreditsDialog(QDialog):
         credits_layout.setContentsMargins(15, 15, 15, 15)
 
         # --- Credits Information ---
-        credits_group = QGroupBox("Credits")
+        credits_group = QGroupBox("Créditos")
         credits_info_layout = QVBoxLayout()
 
         # Developer information
@@ -76,7 +76,7 @@ class CreditsDialog(QDialog):
         credits_layout.addWidget(credits_group)
 
         # --- Special Thanks ---
-        special_thanks_group = QGroupBox("Special Thanks")
+        special_thanks_group = QGroupBox("Agradecimentos Especiais")
         special_thanks_layout = QVBoxLayout()
 
         tools_label = QLabel(
