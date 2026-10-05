@@ -1,7 +1,5 @@
 """
 Text-based menu system for CLI mode using urwid.
-
-Supports both Linux and Windows terminals.
 """
 
 import logging
@@ -11,15 +9,6 @@ from functools import partial
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import urwid
-
-# Handle Windows specific curses requirements
-if sys.platform == "win32":
-    try:
-        import windows_curses
-
-        windows_curses.enable()
-    except ImportError:
-        windows_curses = None
 
 logger = logging.getLogger(__name__)
 

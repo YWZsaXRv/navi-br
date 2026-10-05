@@ -10,5 +10,4 @@ PyYAML
 gevent
 vdf
 urwid>=2.1.0
-windows-curses>=2.0.0; sys_platform == 'win32'
 pyopengl
