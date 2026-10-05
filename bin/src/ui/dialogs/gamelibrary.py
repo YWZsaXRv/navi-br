@@ -205,7 +205,6 @@ class GameLibraryDialog(QDialog):
     """Dialog to display and manage the game library."""
 
     _mtime_cache: dict[str, float] = {}
-    goldberg_check_complete = pyqtSignal(bool)  # is_applied
     manifest_download_complete = pyqtSignal(str, str, dict)  # fpath, error, game_data
     uninstall_complete = pyqtSignal(bool, str)  # success, error_message
 
@@ -393,7 +392,6 @@ class GameLibraryDialog(QDialog):
         )
 
         self.games_list.itemClicked.connect(self._on_item_selected)
-        self.goldberg_check_complete.connect(self._on_goldberg_check_complete)
         self.manifest_download_complete.connect(self._on_manifest_download_complete)
         self.uninstall_complete.connect(self._on_uninstall_complete)
 
@@ -1092,7 +1090,6 @@ class GameLibraryDialog(QDialog):
 
         path = game_data.get("install_path")
         name = game_data.get("game_name")
-        appid = str(game_data.get("appid", ""))
 
         # Steamless
         sl_btn = QPushButton("Remover DRM (Steamless)")
@@ -1105,62 +1102,6 @@ class GameLibraryDialog(QDialog):
         fix_btn = QPushButton("Corrigir Instalação (Remover .acf)")
         fix_btn.clicked.connect(lambda: self._fix_game_install(game_data))
         layout.addWidget(fix_btn)
-
-        # Goldberg
-        self.gb_btn = QPushButton("Verificando status do Goldberg...")
-        self.gb_btn.setEnabled(False)
-        layout.addWidget(self.gb_btn)
-
-        # Start background check
-        self.executor.submit(self._check_goldberg_async, path)
-
-        def _on_gb_click():
-            if not self.main_window or not self.main_window.task_manager:
-                return
-
-            # Re-check status synchronously for the action (since we need current state)
-            # Or better, rely on button text/state which we updated
-            is_applied = "Remove" in self.gb_btn.text()
-
-            if is_applied:
-                self.main_window.task_manager.remove_goldberg_from_game(
-                    path, appid, name, show_dialog=True
-                )
-            else:
-                self.main_window.task_manager.apply_goldberg_to_game(
-                    path, appid, name, show_dialog=True
-                )
-
-            # Re-trigger async check to update button
-            self.gb_btn.setText("Atualizando status...")
-            self.gb_btn.setEnabled(False)
-            self.executor.submit(self._check_goldberg_async, path)
-
-        self.gb_btn.clicked.connect(_on_gb_click)
-
-        layout.addStretch()
-        tab_widget.addTab(tab, "Ferramentas")
-
-    def _check_goldberg_async(self, path: str) -> None:
-        """Background task to check Goldberg status."""
-        is_applied = GameLibraryDialog._is_goldberg_applied(path)
-        self.goldberg_check_complete.emit(is_applied)
-
-    def _on_goldberg_check_complete(self, is_applied: bool) -> None:
-        """Slot to update UI after background check."""
-        # Ensure the dialog/button still exists and is relevant
-        if not hasattr(self, "gb_btn"):
-            return
-
-        self.gb_btn.setText("Remove Goldberg" if is_applied else "Apply Goldberg")
-        self.gb_btn.setEnabled(True)
-
-        if is_applied:
-            self.gb_btn.setStyleSheet(
-                f"border: 1px solid {self.accent_color}; color: {self.accent_color};"
-            )
-        else:
-            self.gb_btn.setStyleSheet("")
 
     # --- Actions ---
 
@@ -1337,23 +1278,6 @@ class GameLibraryDialog(QDialog):
         QMessageBox.information(self, "Done", "Manifest removed.")
         if sys.platform == "linux":
             slssteam_api_send(f"install|{appid}|0")
-
-    @staticmethod
-    def _is_goldberg_applied(game_dir: str) -> bool:
-        """Check for Goldberg backup files (.valve)."""
-        if not game_dir or game_dir == "N/A" or not os.path.exists(game_dir):
-            return False
-
-        for root, _, files in os.walk(game_dir):
-            for fname in files:
-                if fname.lower() in (
-                    "steam_api.dll.valve",
-                    "steam_api64.dll.valve",
-                    "libsteam_api.so.valve",
-                    "libsteam_api64.so.valve",
-                ):
-                    return True
-        return False
 
     @staticmethod
     def _format_size(size_bytes: int) -> str:

@@ -425,29 +425,6 @@ class SettingsDialog(QDialog):
         layout.addStretch()
         self.tab_widget.addTab(tab, "Downloads")
 
-    def goldberg_checked_warning(self) -> None:
-        """Warn when Goldberg is enabled alongside Steam integration."""
-        # Goldberg auto-apply removed
-        pass
-
-    def goldberg_checked_warning_from_mode(self, type) -> None:
-        """Warn when Steam integration is enabled while Goldberg is active."""
-        # Goldberg auto-apply removed
-        pass
-
-    def goldberg_warning_box(self, checkbox, warning) -> bool:
-        # Goldberg auto-apply removed
-        return False
-        confirm_box.setDefaultButton(QMessageBox.StandardButton.No)
-        second_reply = confirm_box.exec()
-
-        if second_reply == QMessageBox.StandardButton.No:
-            checkbox.setChecked(False)
-            checkbox.checkbox.setCheckState(Qt.CheckState.Unchecked)
-            return True
-
-        return False
-
     def _create_morrenus_tab(self) -> None:
         """Create the Morrenus API settings tab."""
         tab = QWidget()
