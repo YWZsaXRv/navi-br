@@ -316,27 +316,27 @@ class GameLibraryDialog(QDialog):
         # --- Top Bar ---
         top_layout = QHBoxLayout()
 
-        self.scan_button = QPushButton("Scan Libraries")
+        self.scan_button = QPushButton("Escanear Bibliotecas")
         self.scan_button.clicked.connect(self._scan_for_games)
         top_layout.addWidget(self.scan_button)
 
         # Search bar
         self.search_edit = QLineEdit()
-        self.search_edit.setPlaceholderText("Search games...")
+        self.search_edit.setPlaceholderText("Buscar jogos...")
         self.search_edit.textChanged.connect(self._on_search_text_changed)
         top_layout.addWidget(self.search_edit)
 
         top_layout.addStretch()
 
-        sort_label = QLabel("Sort by:")
+        sort_label = QLabel("Ordenar por:")
         top_layout.addWidget(sort_label)
 
         self.sort_combo = QComboBox()
-        self.sort_combo.addItem("Recently Installed", "recently_installed")
-        self.sort_combo.addItem("Name (A-Z)", "name_asc")
-        self.sort_combo.addItem("Name (Z-A)", "name_desc")
-        self.sort_combo.addItem("Size (Smallest)", "size_asc")
-        self.sort_combo.addItem("Size (Largest)", "size_desc")
+        self.sort_combo.addItem("Instalados Recentemente", "recently_installed")
+        self.sort_combo.addItem("Nome (A-Z)", "name_asc")
+        self.sort_combo.addItem("Nome (Z-A)", "name_desc")
+        self.sort_combo.addItem("Tamanho (Menor)", "size_asc")
+        self.sort_combo.addItem("Tamanho (Maior)", "size_desc")
         self.sort_combo.addItem("AppID", "appid")
 
         if self.settings:
@@ -356,7 +356,7 @@ class GameLibraryDialog(QDialog):
         loading_layout.setContentsMargins(0, 0, 0, 6)
         loading_layout.setSpacing(6)
 
-        self.loading_label = QLabel("Loading game library...")
+        self.loading_label = QLabel("Carregando biblioteca de jogos...")
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         loading_layout.addWidget(self.loading_label)
 
@@ -374,7 +374,7 @@ class GameLibraryDialog(QDialog):
         layout.addWidget(self.games_list)
 
         # --- Footer ---
-        self.info_label = QLabel("Found 0 installed Steam games")
+        self.info_label = QLabel("Encontrados 0 jogos Steam instalados")
         layout.addWidget(self.info_label)
 
     def _connect_signals(self) -> None:
@@ -420,8 +420,8 @@ class GameLibraryDialog(QDialog):
 
         self._scanning = True
         self.scan_button.setEnabled(False)
-        self.scan_button.setText("Scanning...")
-        self.info_label.setText("Scanning Steam libraries...")
+        self.scan_button.setText("Escaneando...")
+        self.info_label.setText("Escaneando bibliotecas Steam...")
         self._refreshing = True
         self.games_list.clear()
 
@@ -429,7 +429,7 @@ class GameLibraryDialog(QDialog):
 
     def _on_scan_complete(self, count: int) -> None:
         self.scan_button.setEnabled(True)
-        self.scan_button.setText("Scan Libraries")
+        self.scan_button.setText("Escanear Bibliotecas")
 
         if count > 0:
             self._checking_updates = True
@@ -437,7 +437,7 @@ class GameLibraryDialog(QDialog):
             return
 
         self.info_label.setText(
-            f"Scan complete: Found {count} installed Steam game(s)."
+            f"Escaneamento completo: {count} jogo(s) Steam instalado(s) encontrado(s)."
         )
         self._scanning = False
         # Force refresh to clear "Scanning..." state if 0 found
@@ -621,7 +621,7 @@ class GameLibraryDialog(QDialog):
         self._pending_accela_count = 0
         self._loaded_games_count = 0
 
-        self.loading_label.setText("Loading game library...")
+        self.loading_label.setText("Carregando biblioteca de jogos...")
         self.loading_bar.setRange(0, max(len(games), 1))
         self.loading_bar.setValue(0)
         self.loading_widget.show()
@@ -885,7 +885,7 @@ class GameLibraryDialog(QDialog):
     def _show_game_details_dialog(self, game_data: dict) -> None:
         """Show detailed game info in a tabbed dialog."""
         self._details_dialog = QDialog(self)
-        self._details_dialog.setWindowTitle("Game Details")
+        self._details_dialog.setWindowTitle("Detalhes do Jogo")
         self._details_dialog.setMinimumWidth(500)
         self._details_dialog.setModal(True)
 
@@ -971,19 +971,19 @@ class GameLibraryDialog(QDialog):
 
         # Footer Actions
         btn_layout = QHBoxLayout()
-        open_btn = QPushButton("Open Folder")
+        open_btn = QPushButton("Abrir Pasta")
         open_btn.clicked.connect(
             lambda: GameLibraryDialog._open_folder(game_data.get("install_path"))
         )
         btn_layout.addWidget(open_btn)
 
-        close_btn = QPushButton("Close")
+        close_btn = QPushButton("Fechar")
         close_btn.clicked.connect(dialog.accept)
         btn_layout.addWidget(close_btn)
 
         layout.addStretch()
         layout.addLayout(btn_layout)
-        tab_widget.addTab(tab, "Overview")
+        tab_widget.addTab(tab, "Visão Geral")
 
     def _add_fake_appid_controls(self, layout, game_data) -> None:
         """Helper to add Linux FakeAppID UI controls."""
@@ -1065,25 +1065,25 @@ class GameLibraryDialog(QDialog):
         tab = QWidget()
         layout = QVBoxLayout(tab)
 
-        lbl = QLabel("Remove this game and its files?")
+        lbl = QLabel("Remover este jogo e seus arquivos?")
         lbl.setStyleSheet(f"color: {self.accent_color};")
         layout.addWidget(lbl)
 
         opts = {}
         if platform.system() == "Linux":
-            opts["compat"] = QCheckBox("Remove Proton/Wine Data")
-            opts["saves"] = QCheckBox("Remove Cloud Saves")
+            opts["compat"] = QCheckBox("Remover Dados Proton/Wine")
+            opts["saves"] = QCheckBox("Remover Saves na Nuvem")
             opts["compat"].setStyleSheet(f"color: {self.accent_color};")
             opts["saves"].setStyleSheet(f"color: {self.accent_color};")
             layout.addWidget(opts["compat"])
             layout.addWidget(opts["saves"])
 
-        btn = QPushButton("Uninstall Game")
+        btn = QPushButton("Desinstalar Jogo")
         btn.clicked.connect(lambda: self._uninstall_game(game_data, dialog, opts))
         layout.addWidget(btn)
         layout.addStretch()
 
-        tab_widget.addTab(tab, "Uninstall")
+        tab_widget.addTab(tab, "Desinstalar")
 
     def _create_tools_tab(self, tab_widget, game_data, dialog) -> None:
         """Helper to create the Tools tab."""
@@ -1095,19 +1095,19 @@ class GameLibraryDialog(QDialog):
         appid = str(game_data.get("appid", ""))
 
         # Steamless
-        sl_btn = QPushButton("Remove DRM (Steamless)")
+        sl_btn = QPushButton("Remover DRM (Steamless)")
         sl_btn.clicked.connect(
             lambda: self.main_window.task_manager.run_steamless_for_game(path, name)
         )
         layout.addWidget(sl_btn)
 
         # ACF Fix
-        fix_btn = QPushButton("Fix Install (Remove .acf)")
+        fix_btn = QPushButton("Corrigir Instalação (Remover .acf)")
         fix_btn.clicked.connect(lambda: self._fix_game_install(game_data))
         layout.addWidget(fix_btn)
 
         # Goldberg
-        self.gb_btn = QPushButton("Checking Goldberg status...")
+        self.gb_btn = QPushButton("Verificando status do Goldberg...")
         self.gb_btn.setEnabled(False)
         layout.addWidget(self.gb_btn)
 
@@ -1132,14 +1132,14 @@ class GameLibraryDialog(QDialog):
                 )
 
             # Re-trigger async check to update button
-            self.gb_btn.setText("Updating status...")
+            self.gb_btn.setText("Atualizando status...")
             self.gb_btn.setEnabled(False)
             self.executor.submit(self._check_goldberg_async, path)
 
         self.gb_btn.clicked.connect(_on_gb_click)
 
         layout.addStretch()
-        tab_widget.addTab(tab, "Tools")
+        tab_widget.addTab(tab, "Ferramentas")
 
     def _check_goldberg_async(self, path: str) -> None:
         """Background task to check Goldberg status."""
