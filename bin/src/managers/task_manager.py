@@ -391,10 +391,6 @@ class TaskManager(QObject):
         if self.download_task:
             size_on_disk = self.download_task.total_download_size_for_this_job
 
-        # Capture settings
-        auto_apply_goldberg_val = self.settings.value(
-            "auto_apply_goldberg", False, type=bool
-        )
         config_management_enabled_val = False
         try:
             config_management_enabled_val = is_slssteam_config_management_enabled()
@@ -404,19 +400,18 @@ class TaskManager(QObject):
         # Start the worker thread
         threading.Thread(
             target=self._run_finalize_io_worker,
-            args=(size_on_disk, auto_apply_goldberg_val, config_management_enabled_val),
+            args=(size_on_disk, config_management_enabled_val),
             daemon=True,
         ).start()
 
     def _run_finalize_io_worker(
-        self, size_on_disk: int, auto_apply_goldberg: bool, config_enabled: bool
+        self, size_on_disk: int, config_enabled: bool
     ):
         """Background thread worker for post-download I/O"""
         try:
             self._finalize_acf_and_manifests(size_on_disk)
             self._persist_wrapper_metadata()
             self._finalize_platform_specifics(config_enabled)
-            self._finalize_goldberg(auto_apply_goldberg)
             self._finalize_greenluma(config_enabled)
 
         except OSError as e:
@@ -471,22 +466,9 @@ class TaskManager(QObject):
         if self.slssteam_mode_was_active and config_enabled:
             self._add_appids_to_slssteam_config()
 
-    def _finalize_goldberg(self, auto_apply: bool):
-        # 5. Goldberg
-        if not (auto_apply and not self.is_cancelling and self.current_dest_path):
-            return
-
-        game_dir = get_game_directory(self.current_dest_path, self.game_data)
-
-        try:
-            self.apply_goldberg_to_game(
-                game_directory=game_dir,
-                appid=str(self.game_data.get("appid", "")),
-                game_name=self.game_data.get("game_name", ""),
-                show_dialog=False,
-            )
-        except OSError as e:
-            logger.error(f"Error applying Goldberg: {e}")
+    def _finalize_goldberg(self):
+        # 5. Goldberg - auto apply removed, manual only
+        return
 
     def _finalize_greenluma(self, config_enabled: bool):
         # 6. GreenLuma Files (Win32)
@@ -535,17 +517,6 @@ class TaskManager(QObject):
         )
         slssteam_mode = is_slssteam_mode_enabled()
 
-        if (
-            shortcuts_enabled
-            and slssteam_mode
-            and sys.platform == "linux"
-            and not self.is_cancelling
-        ):
-            if "shortcuts_linux" not in self._job_steps_completed:
-                self._job_steps_completed.add("shortcuts_linux")
-                self._start_application_shortcuts_step()
-                return
-
         achievements_enabled = self.settings.value(
             "generate_achievements", False, type=bool
         )
@@ -558,16 +529,6 @@ class TaskManager(QObject):
                 self._start_achievement_generation()
                 return
 
-        if (
-            shortcuts_enabled
-            and not self.is_cancelling
-            and "shortcuts_linux" not in self._job_steps_completed
-        ):
-            if "shortcuts_std" not in self._job_steps_completed:
-                self._job_steps_completed.add("shortcuts_std")
-                self._start_application_shortcuts_step()
-                return
-
         # --- FINISH ---
         logger.info("All post-processing steps complete. Finishing job.")
         self.main_window.job_queue.jobs_completed_count += 1
@@ -575,12 +536,6 @@ class TaskManager(QObject):
             self.main_window.game_manager.scan_steam_libraries_async()
 
         self.job_finished()
-
-    def _start_application_shortcuts_step(self):
-        self.main_window.drop_text_label.setText(
-            f"Creating Application Shortcuts: {self.game_data.get('game_name', '')}"
-        )
-        self._start_application_shortcuts_processing()
 
     def _should_prompt_for_steam_restart(self) -> bool:
         if self.is_cancelling:
@@ -1347,14 +1302,6 @@ class TaskManager(QObject):
             logger.info("Application shortcuts creation completed successfully")
         else:
             logger.info("Application shortcuts creation failed")
-
-        QMetaObject.invokeMethod(
-            self, "_finalize_job_logic", Qt.ConnectionType.QueuedConnection
-        )
-
-    def _handle_application_shortcuts_error(self, error_info):
-        _, error_value, _ = error_info
-        logger.error(f"Application shortcuts creation failed: {error_value}")
 
         QMetaObject.invokeMethod(
             self, "_finalize_job_logic", Qt.ConnectionType.QueuedConnection

@@ -352,9 +352,8 @@ class DownloadDepotsTask(QObject):
         dotnet_cmd = dotnet_path
         dll_path = resource_path(os.path.join("deps", "DepotDownloader.dll"))
 
-        # Get max downloads from settings
-        settings = get_settings()
-        max_downloads = settings.value("max_downloads", 20, type=int)
+        # Use default max downloads (setting removed)
+        max_downloads = 20
 
         commands = []
         skipped_depots = []

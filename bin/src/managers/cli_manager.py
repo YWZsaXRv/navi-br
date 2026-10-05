@@ -387,38 +387,11 @@ class CLITaskManager:
         if sys.platform == "linux" and self.slssteam_mode_was_active:
             self._add_appids_to_slssteam_config()
 
-        # Auto-apply Goldberg after download completion
-        auto_apply_goldberg = self.settings.value(
-            "auto_apply_goldberg", False, type=bool
-        )
-        if auto_apply_goldberg and self.game_data and self.current_dest_path:
-            game_directory = get_game_directory(self.current_dest_path, self.game_data)
-            self.logger.info("Auto-applying Goldberg after download completion")
-            self._apply_goldberg(
-                game_directory,
-                str(self.game_data.get("appid", "")),
-                self.game_data.get("game_name", ""),
-            )
-            if sys.platform == "linux":
-                self._set_linux_permissions(game_directory)
-
         # Steamless processing
         steamless_enabled = self.settings.value("use_steamless", False, type=bool)
         if steamless_enabled:
             self.logger.info("Steamless is enabled, starting DRM removal...")
             self._run_steamless()
-
-        # Application shortcuts (Linux + Steam integration)
-        shortcuts_enabled = self.settings.value(
-            "create_application_shortcuts", False, type=bool
-        )
-        if (
-            shortcuts_enabled
-            and self.slssteam_mode_was_active
-            and sys.platform == "linux"
-        ):
-            self.logger.info("Application shortcuts creation is enabled...")
-            self._run_application_shortcuts()
 
         # Achievement generation
         achievements_enabled = self.settings.value(
@@ -939,50 +912,6 @@ class CLITaskManager:
         loop.exec()
 
         self.logger.info("Steamless processing completed")
-
-    def _run_application_shortcuts(self):
-        """Create application shortcuts"""
-        if not self.game_data:
-            return
-
-        # Only available on Linux with Steam library integration enabled
-        if sys.platform != "linux":
-            self.logger.info("Application shortcuts are only supported on Linux")
-            return
-
-        if not is_slssteam_mode_enabled():
-            self.logger.info(
-                "Steam library integration is disabled, skipping shortcuts creation"
-            )
-            return
-
-        app_id = self.game_data.get("appid")
-        game_name = self.game_data.get("game_name")
-        if not app_id:
-            return
-
-        sgdb_api_key = self.settings.value("sgdb_api_key", "", type=str)
-        if not sgdb_api_key:
-            return
-
-        try:
-            from core.tasks.application_shortcuts import ApplicationShortcutsTask
-        except ImportError:
-            self.logger.error("ApplicationShortcutsTask module not found")
-            return
-
-        self.logger.info("Creating application shortcuts...")
-
-        shortcuts_task = ApplicationShortcutsTask()
-        shortcuts_task.set_api_key(sgdb_api_key)
-        shortcuts_task.progress.connect(self.logger.info)
-
-        loop = QEventLoop()
-        shortcuts_task.completed.connect(loop.quit)
-        TaskRunner().run(shortcuts_task.run, app_id, game_name)
-        loop.exec()
-
-        self.logger.info("Application shortcuts created")
 
     def _run_achievement_generation(self):
         """Generate achievements using SLScheevo"""
