@@ -97,14 +97,16 @@ except ImportError:
         return False
 
 
+from utils.brand import DISPLAY_NAME
+
 logger = logging.getLogger(__name__)
 
 
 def format_game_display_name(game_data: dict) -> str:
-    """Return the display name for a game, including the ACCELA marker."""
+    """nome de exibicao do jogo, incluindo o marcador do navi-br."""
     name = game_data.get("game_name", "Unknown")
     if game_data.get("is_accela_install"):
-        return f"{name} [ACCELA]"
+        return f"{name} [{DISPLAY_NAME}]"
     return name
 
 
@@ -663,7 +665,7 @@ class GameLibraryDialog(QDialog):
 
         self.info_label.setText(
             f"Found {len(self._pending_games)} Steam game(s) "
-            f"({self._pending_accela_count} ACCELA-managed) - "
+            f"({self._pending_accela_count} {DISPLAY_NAME}-managed) - "
             f"Total Size: {GameLibraryDialog._format_size(self._pending_total_size)}"
         )
         if self._search_text:

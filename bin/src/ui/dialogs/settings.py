@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
 from core import morrenus_api
 from ui.dialogs.custom_gifs import CustomGifsDialog
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from utils.brand import DISPLAY_NAME
 from utils.helpers import (
     create_checkbox_setting,
     create_font_setting,
@@ -507,7 +508,7 @@ class SettingsDialog(QDialog):
             "sls_config_management",
             True,
             self,
-            f"Permitir ACCELA gerenciar arquivos de configuração do {wrapper_name}.",
+            f"Permitir {DISPLAY_NAME} gerenciar arquivos de configuração do {wrapper_name}.",
         )
         int_layout.addWidget(self.sls_config_management_checkbox)
 

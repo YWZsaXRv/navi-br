@@ -55,19 +55,19 @@ class CreditsDialog(QDialog):
         credits_info_layout = QVBoxLayout()
 
         # Developer information
-        dev_label = QLabel("Developed by: Lain Iwakura")
+        dev_label = QLabel("Desenvolvido por: Lain Iwakura")
         dev_label.setStyleSheet(
             f"font-size: 14px; font-weight: bold; color: {self.accent_color};"
         )
         credits_info_layout.addWidget(dev_label)
 
         # Address information
-        address_label = QLabel("Address: Mimorigasaka, Setagaya Ward, Tokyo")
+        address_label = QLabel("Endereço: Takei Nakama, Tokyo")
         address_label.setStyleSheet("font-size: 12px; margin-top: 10px;")
         credits_info_layout.addWidget(address_label)
 
         # Phone information
-        phone_label = QLabel("Phone: 858-924-0180")
+        phone_label = QLabel("Telefone: 4002-8922")
         phone_label.setStyleSheet("font-size: 12px; margin-top: 5px;")
         credits_info_layout.addWidget(phone_label)
 
@@ -79,7 +79,13 @@ class CreditsDialog(QDialog):
         special_thanks_layout = QVBoxLayout()
 
         tools_label = QLabel(
-            "• GreenLuma\n• SLSsteam\n• Steamless\n• DepotDownloaderMod\n• SLScheevo"
+            "• SLSsteam\n"
+            "• h3adcr-b\n"
+            "• Steamless\n"
+            "• DepotDownloaderMod\n"
+            "• SLScheevo\n"
+            "• steam[client] (solsticegamestudios)\n"
+            "• Morrenus API"
         )
         tools_label.setStyleSheet("font-size: 11px; color: #CCCCCC; margin-left: 15px;")
         special_thanks_layout.addWidget(tools_label)
