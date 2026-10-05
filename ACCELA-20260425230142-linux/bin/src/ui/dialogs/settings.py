@@ -198,7 +198,7 @@ class SettingsDialog(QDialog):
 
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
-        self.setWindowTitle("Settings")
+        self.setWindowTitle("Configurações")
         self.setMinimumWidth(600)
         self.setMinimumHeight(700)
         self.resize(600, 700)
@@ -387,17 +387,17 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Download Settings Group
-        dl_group = QGroupBox("Download Settings")
+        dl_group = QGroupBox("Configurações de Download")
         dl_layout = QVBoxLayout()
 
-        library_tooltip = "Detect Steam libraries and let you choose where to install games."
+        library_tooltip = "Detectar bibliotecas Steam e permitir escolher onde instalar jogos."
         if sys.platform == "linux":
             library_tooltip += (
-                " On Linux, this also enables SLSsteam integration for those installs."
+                " No Linux, isso também habilita integração SLSsteam para essas instalações."
             )
 
         self.library_mode_checkbox = create_checkbox_setting(
-            "Limit Downloads to Steam Libraries",
+            "Limitar Downloads às Bibliotecas Steam",
             "library_mode",
             False,
             self,
@@ -406,18 +406,18 @@ class SettingsDialog(QDialog):
         dl_layout.addWidget(self.library_mode_checkbox)
 
         self.auto_skip_single_choice_checkbox = create_checkbox_setting(
-            "Skip single-choice selection",
+            "Pular seleção única",
             "auto_skip_single_choice",
             False,
             self,
-            "Automatically skip selection when only one option exists.",
+            "Pular automaticamente quando só existe uma opção.",
         )
         dl_layout.addWidget(self.auto_skip_single_choice_checkbox)
 
         # Max Downloads
         max_dl_layout = QHBoxLayout()
-        max_dl_label = QLabel("Maximum concurrent downloads")
-        max_dl_label.setToolTip("Set maximum concurrent downloads (0-255)")
+        max_dl_label = QLabel("Downloads simultâneos máximos")
+        max_dl_label.setToolTip("Definir downloads simultâneos máximos (0-255)")
 
         self.max_downloads_spinbox = QSpinBox()
         self.max_downloads_spinbox.setRange(0, 255)
@@ -432,33 +432,33 @@ class SettingsDialog(QDialog):
         layout.addWidget(dl_group)
 
         # Post-Processing Group
-        pp_group = QGroupBox("Post-Processing")
+        pp_group = QGroupBox("Pós-Processamento")
         pp_layout = QVBoxLayout()
 
         self.achievements_checkbox = create_checkbox_setting(
-            "Generate Steam Achievements",
+            "Gerar Conquistas Steam",
             "generate_achievements",
             False,
             self,
-            "Generate achievement files for your games after downloads.",
+            "Gerar arquivos de conquista para seus jogos após downloads.",
         )
         pp_layout.addWidget(self.achievements_checkbox)
 
         self.steamless_checkbox = create_checkbox_setting(
-            "Remove Steam DRM with Steamless",
+            "Remover DRM Steam com Steamless",
             "use_steamless",
             False,
             self,
-            "Remove DRM from game executables after downloading.",
+            "Remover DRM dos executáveis dos jogos após baixar.",
         )
         pp_layout.addWidget(self.steamless_checkbox)
 
         self.auto_apply_goldberg_checkbox = create_checkbox_setting(
-            "Apply Goldberg Automatically",
+            "Aplicar Goldberg Automaticamente",
             "auto_apply_goldberg",
             False,
             self,
-            "Automatically apply Goldberg after downloads.",
+            "Aplicar Goldberg automaticamente após downloads.",
         )
         pp_layout.addWidget(self.auto_apply_goldberg_checkbox)
         self.auto_apply_goldberg_checkbox.stateChanged.connect(
@@ -467,11 +467,11 @@ class SettingsDialog(QDialog):
 
         if sys.platform == "linux":
             self.application_shortcuts_checkbox = create_checkbox_setting(
-                "Create Application Shortcuts",
+                "Criar Atalhos de Aplicação",
                 "create_application_shortcuts",
                 False,
                 self,
-                "Create desktop shortcuts and install icons from SteamGridDB.",
+                "Criar atalhos de desktop e instalar ícones do SteamGridDB.",
             )
             pp_layout.addWidget(self.application_shortcuts_checkbox)
         else:
@@ -559,13 +559,13 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # API Keys Group
-        key_group = QGroupBox("API Keys")
+        key_group = QGroupBox("Chaves de API")
         key_layout = QVBoxLayout()
         key_layout.setSpacing(10)
 
         morrenus_layout, self.api_key_input = self._create_api_key_setting(
-            "Morrenus API Key:",
-            "Paste your Morrenus API key",
+            "Chave API Morrenus:",
+            "Cole sua chave API Morrenus",
             "morrenus_api_key",
             help_url="https://hubcapmanifest.com",
         )
@@ -573,8 +573,8 @@ class SettingsDialog(QDialog):
 
         if sys.platform == "linux":
             sgdb_layout, self.sgdb_api_key_input = self._create_api_key_setting(
-                "SteamGridDB API Key:",
-                "Paste your SteamGridDB API key",
+                "Chave API SteamGridDB:",
+                "Cole sua chave API SteamGridDB",
                 "sgdb_api_key",
                 help_url="https://www.steamgriddb.com/profile/account",
             )
@@ -586,7 +586,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(key_group)
 
         # Stats Group
-        stats_group = QGroupBox("Morrenus Stats")
+        stats_group = QGroupBox("Estatísticas Morrenus")
         stats_layout = QVBoxLayout()
         stats_layout.setContentsMargins(5, 10, 5, 10)
 
@@ -602,7 +602,7 @@ class SettingsDialog(QDialog):
         self.morrenus_tab_initialized = False
         self.tab_widget.currentChanged.connect(self._on_tab_changed)
 
-        self.tab_widget.addTab(tab, "Integrations")
+        self.tab_widget.addTab(tab, "Integrações")
 
     def _on_tab_changed(self, index: int) -> None:
         """Handle tab change events."""
@@ -620,23 +620,23 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Integration Group
-        int_group = QGroupBox("Steam Integration")
+        int_group = QGroupBox("Integração Steam")
         int_layout = QVBoxLayout()
 
         if sys.platform == "linux":
             wrapper_name = "SLSsteam"
             self.sls_mode_checkbox = None
             linux_hint = QLabel(
-                "SLSsteam is enabled automatically for Steam library installs on Linux."
+                "SLSsteam é habilitado automaticamente para instalações em bibliotecas Steam no Linux."
             )
             linux_hint.setWordWrap(True)
             int_layout.addWidget(linux_hint)
         else:
             wrapper_name = "GreenLuma"
-            wrapper_full = "GreenLuma Wrapper Mode"
+            wrapper_full = "Modo Wrapper GreenLuma"
             tooltip = (
-                "Integrate games with Steam using GreenLuma.\n"
-                "Games appear in your Steam library automatically."
+                "Integrar jogos com Steam usando GreenLuma.\n"
+                "Jogos aparecem na sua biblioteca Steam automaticamente."
             )
             self.sls_mode_checkbox = create_checkbox_setting(
                 wrapper_full, "slssteam_mode", False, self, tooltip
@@ -647,11 +647,11 @@ class SettingsDialog(QDialog):
             int_layout.addWidget(self.sls_mode_checkbox)
 
         self.sls_config_management_checkbox = create_checkbox_setting(
-            f"{wrapper_name} Config Management",
+            f"{wrapper_name} Gerenciamento de Config",
             "sls_config_management",
             True,
             self,
-            f"Allow ACCELA to manage {wrapper_name} configuration files.",
+            f"Permitir ACCELA gerenciar arquivos de configuração do {wrapper_name}.",
         )
         int_layout.addWidget(self.sls_config_management_checkbox)
 
@@ -659,24 +659,24 @@ class SettingsDialog(QDialog):
         layout.addWidget(int_group)
 
         # Settings Group
-        settings_group = QGroupBox("Steam Settings ")
+        settings_group = QGroupBox("Configurações Steam")
         settings_layout = QVBoxLayout()
 
         self.prompt_steam_restart_checkbox = create_checkbox_setting(
-            "Prompt Steam Restart",
+            "Perguntar Reiniciar Steam",
             "prompt_steam_restart",
             True,
             self,
-            "Show prompt to restart Steam after Steam-integrated downloads.",
+            "Mostrar prompt para reiniciar Steam após downloads integrados ao Steam.",
         )
         settings_layout.addWidget(self.prompt_steam_restart_checkbox)
 
         self.block_steam_updates_checkbox = create_checkbox_setting(
-            "Block Steam Updates",
+            "Bloquear Atualizações Steam",
             "block_steam_updates",
             SettingsDialog._is_steam_updates_blocked(),
             self,
-            "Prevent Steam from automatically updating itself.",
+            "Impedir que o Steam atualize automaticamente.",
         )
         settings_layout.addWidget(self.block_steam_updates_checkbox)
 
@@ -693,26 +693,26 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Tools Group
-        tools_group = QGroupBox("Tools")
+        tools_group = QGroupBox("Ferramentas")
         tools_layout = QVBoxLayout()
 
         SettingsDialog._add_tool_button(
             tools_layout,
-            "Configure Achievements",
-            "Launch SLScheevo to setup achievement credentials.",
+            "Configurar Conquistas",
+            "Iniciar SLScheevo para configurar credenciais de conquista.",
             self.run_slscheevo,
         )
 
         SettingsDialog._add_tool_button(
             tools_layout,
-            "Remove DRM",
-            "Run Steamless manually on a game .exe.",
+            "Remover DRM",
+            "Executar Steamless manualmente em um .exe do jogo.",
             self.run_steamless_manually,
         )
 
-        self.download_slssteam_button = QPushButton("Open SLSsteam installer")
+        self.download_slssteam_button = QPushButton("Abrir instalador SLSsteam")
         self.download_slssteam_button.setToolTip(
-            "Open the recommended SLSsteam installer page (GitHub)."
+            "Abrir página recomendada do instalador SLSsteam (GitHub)."
         )
         self.download_slssteam_button.clicked.connect(self.download_slssteam)
 
@@ -743,20 +743,20 @@ class SettingsDialog(QDialog):
 
         # Windows Registry Group
         if sys.platform == "win32":
-            reg_group = QGroupBox("Windows Registry")
+            reg_group = QGroupBox("Registro do Windows")
             reg_layout = QVBoxLayout()
 
             SettingsDialog._add_tool_button(
                 reg_layout,
-                "Register Registry Entries",
-                "Register accela:// URL protocol and .zip context menu entries.",
+                "Registrar Entradas no Registro",
+                "Registrar protocolo accela:// e entradas de menu de contexto .zip.",
                 SettingsDialog.register_registry_entries,
             )
 
             SettingsDialog._add_tool_button(
                 reg_layout,
-                "Remove Registry Entries",
-                "Remove accela:// URL protocol and .zip context menu entries.",
+                "Remover Entradas do Registro",
+                "Remover protocolo accela:// e entradas de menu de contexto .zip.",
                 SettingsDialog.remove_registry_entries,
             )
 
@@ -764,7 +764,7 @@ class SettingsDialog(QDialog):
             layout.addWidget(reg_group)
 
         layout.addStretch()
-        self.tab_widget.addTab(tab, "Tools")
+        self.tab_widget.addTab(tab, "Ferramentas")
 
     @staticmethod
     def _add_tool_button(layout: QVBoxLayout, text: str, tooltip: str, slot) -> None:
@@ -790,33 +790,33 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Playback Group
-        pb_group = QGroupBox("Audio Playback")
+        pb_group = QGroupBox("Reprodução de Áudio")
         pb_layout = QVBoxLayout()
 
         self.play_etw_checkbox = create_checkbox_setting(
-            'Play "Entering The Wired" on start',
+            'Tocar "Entering The Wired" na inicialização',
             "play_etw",
             True,
             self,
-            "Play intro audio on start.",
+            "Tocar áudio de introdução na inicialização.",
         )
         pb_layout.addWidget(self.play_etw_checkbox)
 
         self.play_lall_checkbox = create_checkbox_setting(
-            'Play "Let\'s All Love Lain" on exit',
+            'Tocar "Let\'s All Love Lain" na saída',
             "play_lall",
             True,
             self,
-            "Play audio on exit.",
+            "Tocar áudio na saída.",
         )
         pb_layout.addWidget(self.play_lall_checkbox)
 
         self.play_50hz_hum_checkbox = create_checkbox_setting(
-            "Play background hum sound",
+            "Tocar som de fundo (hum)",
             "play_50hz_hum",
             True,
             self,
-            "Play ambient background hum.",
+            "Tocar zumbido ambiente de fundo.",
         )
         self.play_50hz_hum_checkbox.stateChanged.connect(self.on_hum_checkbox_changed)
         pb_layout.addWidget(self.play_50hz_hum_checkbox)
@@ -825,7 +825,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(pb_group)
 
         # Volume Group
-        vol_group = QGroupBox("Volume Settings")
+        vol_group = QGroupBox("Configurações de Volume")
         vol_layout = QVBoxLayout()
 
         (
@@ -833,7 +833,7 @@ class SettingsDialog(QDialog):
             self.master_volume_slider,
             _,
             _,
-        ) = create_slider_setting("Master Volume", "master_volume", 80, self)
+        ) = create_slider_setting("Volume Principal", "master_volume", 80, self)
         vol_layout.addLayout(m_layout)
 
         (
@@ -841,7 +841,7 @@ class SettingsDialog(QDialog):
             self.effects_volume_slider,
             _,
             _,
-        ) = create_slider_setting("Effects Volume", "effects_volume", 50, self)
+        ) = create_slider_setting("Volume Efeitos", "effects_volume", 50, self)
         vol_layout.addLayout(e_layout)
 
         (
@@ -849,19 +849,19 @@ class SettingsDialog(QDialog):
             self.hum_volume_slider,
             _,
             _,
-        ) = create_slider_setting("Hum Volume", "hum_volume", 20, self)
+        ) = create_slider_setting("Volume Hum", "hum_volume", 20, self)
         vol_layout.addLayout(h_layout)
 
         vol_group.setLayout(vol_layout)
         layout.addWidget(vol_group)
 
         # Test Group
-        test_group = QGroupBox("Test Sounds")
+        test_group = QGroupBox("Testar Sons")
         test_layout = QVBoxLayout()
         btn_layout = QHBoxLayout()
 
-        self.test_etw_button = QPushButton("Test ETW Sound")
-        self.test_lall_button = QPushButton("Test LALL Sound")
+        self.test_etw_button = QPushButton("Testar Som ETW")
+        self.test_lall_button = QPushButton("Testar Som LALL")
         self.test_etw_button.clicked.connect(self.test_etw_sound)
         self.test_lall_button.clicked.connect(self.test_lall_sound)
 
@@ -873,7 +873,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(test_group)
 
         layout.addStretch()
-        self.tab_widget.addTab(tab, "Audio")
+        self.tab_widget.addTab(tab, "Áudio")
 
     # Audio Handlers
     def on_hum_checkbox_changed(self, value: bool) -> None:
@@ -918,7 +918,7 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Color Group
-        color_group = QGroupBox("Color Settings")
+        color_group = QGroupBox("Configurações de Cor")
         color_layout = QVBoxLayout()
 
         # Accent
@@ -927,8 +927,8 @@ class SettingsDialog(QDialog):
         self.accent_color_button.setStyleSheet(
             f"background-color: {self._user_accent_color};"
         )
-        self.accent_reset_button = QPushButton("Reset")
-        acc_layout.addWidget(QLabel("Accent Color:"))
+        self.accent_reset_button = QPushButton("Redefinir")
+        acc_layout.addWidget(QLabel("Cor de Destaque:"))
         acc_layout.addWidget(self.accent_color_button)
         acc_layout.addWidget(self.accent_reset_button)
         acc_layout.addStretch()
@@ -942,8 +942,8 @@ class SettingsDialog(QDialog):
         self.bg_color_button.setStyleSheet(
             f"background-color: {self._user_background_color};"
         )
-        self.bg_reset_button = QPushButton("Reset")
-        bg_layout.addWidget(QLabel("Background Color:"))
+        self.bg_reset_button = QPushButton("Redefinir")
+        bg_layout.addWidget(QLabel("Cor de Fundo:"))
         bg_layout.addWidget(self.bg_color_button)
         bg_layout.addWidget(self.bg_reset_button)
         bg_layout.addStretch()
@@ -952,11 +952,11 @@ class SettingsDialog(QDialog):
         color_layout.addLayout(bg_layout)
 
         self.ignore_color_warnings_checkbox = create_checkbox_setting(
-            "Ignore color warnings",
+            "Ignorar avisos de cor",
             "ignore_color_warnings",
             False,
             self,
-            "Allow any color combination.",
+            "Permitir qualquer combinação de cores.",
         )
         color_layout.addWidget(self.ignore_color_warnings_checkbox)
 
@@ -964,7 +964,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(color_group)
 
         # Font Group
-        font_group = QGroupBox("Font Settings")
+        font_group = QGroupBox("Configurações de Fonte")
         font_layout = QVBoxLayout()
         font_children, self.font_button, self.font_reset_button = create_font_setting(
             self
@@ -976,39 +976,39 @@ class SettingsDialog(QDialog):
         layout.addWidget(font_group)
 
         # Display Group
-        disp_group = QGroupBox("Display Settings")
+        disp_group = QGroupBox("Configurações de Exibição")
         disp_layout = QVBoxLayout()
 
-        self.titlebar_position_checkbox = QCheckBox("Move Titlebar to Top")
+        self.titlebar_position_checkbox = QCheckBox("Mover Barra de Título para Topo")
         is_top = self.settings.value("titlebar_position", "bottom", type=str) == "top"
         self.titlebar_position_checkbox.setChecked(is_top)
-        self.titlebar_position_checkbox.setToolTip("Move the titlebar to the top.")
+        self.titlebar_position_checkbox.setToolTip("Mover a barra de título para o topo.")
         self.titlebar_position_checkbox.stateChanged.connect(
             self.on_titlebar_position_changed
         )
         disp_layout.addWidget(self.titlebar_position_checkbox)
         SettingsDialog._add_checkbox_explanation(
-            disp_layout, "Move the titlebar to the top of the window."
+            disp_layout, "Mover a barra de título para o topo da janela."
         )
 
-        self.sonic_mode_checkbox = QCheckBox("Enable Sonic Mode")
+        self.sonic_mode_checkbox = QCheckBox("Ativar Modo Sonic")
         sonic_on = self.settings.value("ui_mode", "default") == "sonic"
         self.sonic_mode_checkbox.setChecked(sonic_on)
         self.sonic_mode_checkbox.setToolTip(
-            "Apply Sonic color palette, font and resources."
+            "Aplicar paleta de cores, fonte e recursos do Sonic."
         )
         disp_layout.addWidget(self.sonic_mode_checkbox)
         SettingsDialog._add_checkbox_explanation(
             disp_layout,
-            "Apply Sonic color palette, font and default media resources.",
+            "Aplicar paleta de cores, fonte e recursos de mídia padrão do Sonic.",
         )
 
         self.gif_display_checkbox = create_checkbox_setting(
-            "Show GIF Display",
+            "Mostrar Exibição de GIF",
             "gif_display_enabled",
             True,
             self,
-            "Show animated GIF in the main window.",
+            "Mostrar GIF animado na janela principal.",
         )
         self.gif_display_checkbox.stateChanged.connect(self.on_gif_display_changed)
         disp_layout.addWidget(self.gif_display_checkbox)
@@ -1018,18 +1018,18 @@ class SettingsDialog(QDialog):
 
         # Custom GIFs
         gif_layout = QHBoxLayout()
-        custom_gifs_btn = QPushButton("Custom Gifs")
+        custom_gifs_btn = QPushButton("GIFs Personalizados")
         custom_gifs_btn.clicked.connect(self.open_custom_gifs_dialog)
         gif_layout.addWidget(custom_gifs_btn)
 
-        clear_cache_btn = QPushButton("Clear GIF Cache")
+        clear_cache_btn = QPushButton("Limpar Cache de GIF")
         clear_cache_btn.clicked.connect(self.clear_gif_cache)
-        clear_cache_btn.setToolTip("Regenerate all GIFs.")
+        clear_cache_btn.setToolTip("Regenerar todos os GIFs.")
         gif_layout.addWidget(clear_cache_btn)
         layout.addLayout(gif_layout)
 
         layout.addStretch()
-        self.tab_widget.addTab(tab, "Style")
+        self.tab_widget.addTab(tab, "Estilo")
 
     @staticmethod
     def _add_checkbox_explanation(layout: QVBoxLayout, text: str) -> None:
@@ -1135,20 +1135,20 @@ class SettingsDialog(QDialog):
         layout = QVBoxLayout(tab)
         layout.setContentsMargins(15, 15, 15, 15)
 
-        settings_group = QGroupBox("CRT Settings")
+        settings_group = QGroupBox("Configurações CRT")
         settings_layout = QVBoxLayout()
 
-        self.crt_overlay_checkbox = create_checkbox_setting("Show CRT Overlay", "crt_overlay_enabled", True, self, "Show CRT Overlay in the main window.",)
+        self.crt_overlay_checkbox = create_checkbox_setting("Mostrar Overlay CRT", "crt_overlay_enabled", True, self, "Mostrar Overlay CRT na janela principal.",)
         settings_layout.addWidget(self.crt_overlay_checkbox)
 
-        self.crt_overlay_fsw_checkbox = create_checkbox_setting("Force software overlay", "crt_overlay_fsw", False, self, "Forces only the software overlay to be used")
+        self.crt_overlay_fsw_checkbox = create_checkbox_setting("Forçar overlay software", "crt_overlay_fsw", False, self, "Força apenas o overlay software a ser usado")
         settings_layout.addWidget(self.crt_overlay_fsw_checkbox)
 
-        self.crt_overlay_fgl_checkbox = create_checkbox_setting("Force OpenGL overlay", "crt_overlay_fgl", False, self, "Forces only the OpenGL overlay to be used")
+        self.crt_overlay_fgl_checkbox = create_checkbox_setting("Forçar overlay OpenGL", "crt_overlay_fgl", False, self, "Força apenas o overlay OpenGL a ser usado")
         settings_layout.addWidget(self.crt_overlay_fgl_checkbox)
 
         preset_layout, self.crt_overlay_preset_combo = create_combo_setting(
-            "CRT Preset",
+            "Preset CRT",
             "crt_overlay_preset",
             [
                 ("Preset A", "preset_a"),
@@ -1156,29 +1156,29 @@ class SettingsDialog(QDialog):
             ],
             "preset_a",
             self,
-            "Visual style of the CRT effect.",
+            "Estilo visual do efeito CRT.",
         )
         settings_layout.addLayout(preset_layout)
 
         self.crt_overlay_singleband = create_checkbox_setting(
-            "OpenGL: Thin Band", "crt_overlay_singleband", False, self
+            "OpenGL: Banda Fina", "crt_overlay_singleband", False, self
         )
         settings_layout.addWidget(
             self.crt_overlay_singleband
         )  # TODO: do actual picker instead
 
         direction_layout, self.crt_overlay_direction_combo = create_combo_setting(
-            "Scan direction",
+            "Direção do Scan",
             "crt_overlay_direction",
             [
-                ("Top to bottom", "top_to_bottom"),
-                ("Bottom to top", "bottom_to_top"),
-                ("Left to right", "left_to_right"),
-                ("Right to left", "right_to_left"),
+                ("Topo para base", "top_to_bottom"),
+                ("Base para topo", "bottom_to_top"),
+                ("Esquerda para direita", "left_to_right"),
+                ("Direita para esquerda", "right_to_left"),
             ],
             "top_to_bottom",
             self,
-            "Direction of the moving scan beam.",
+            "Direção do feixe de varredura em movimento.",
         )
         settings_layout.addLayout(direction_layout)
 
@@ -1186,7 +1186,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(settings_group)
 
         layout.addStretch()
-        self.tab_widget.addTab(tab, "Effects")
+        self.tab_widget.addTab(tab, "Efeitos")
 
     def on_gif_display_changed(self, state: int) -> None:
         enabled = state == 2
