@@ -19,7 +19,6 @@ except ImportError:
     psutil = None
 
 from core import steam_helpers
-from core.tasks.application_shortcuts import ApplicationShortcutsTask
 from core.tasks.download_depots_task import DownloadDepotsTask
 from core.tasks.download_slssteam_task import DownloadSLSsteamTask
 from core.tasks.generate_achievements_task import GenerateAchievementsTask
@@ -66,8 +65,6 @@ class TaskManager(QObject):
         self.achievement_task_runner = None
         self.achievement_worker = None
         self.steamless_task = None
-        self.application_shortcuts_task = None
-        self.application_shortcuts_task_runner = None
         self.slssteam_download_task = None
         self.slssteam_download_runner = None
 
@@ -511,11 +508,6 @@ class TaskManager(QObject):
                 )
                 self._start_steamless_processing()
                 return
-
-        shortcuts_enabled = self.settings.value(
-            "create_application_shortcuts", False, type=bool
-        )
-        slssteam_mode = is_slssteam_mode_enabled()
 
         achievements_enabled = self.settings.value(
             "generate_achievements", False, type=bool
@@ -1261,77 +1253,6 @@ class TaskManager(QObject):
         self.achievement_worker = None
         self.main_window.job_queue.check_if_safe_to_start_next_job()
 
-    def _on_application_shortcuts_task_cleanup(self):
-        self.application_shortcuts_task_runner = None
-        self.application_shortcuts_task = None
-        self.main_window.job_queue.check_if_safe_to_start_next_job()
-
-    def _start_application_shortcuts_processing(self):
-        if not self.game_data:
-            self._finalize_job_logic()
-            return
-
-        app_id = self.game_data.get("appid")
-        game_name = self.game_data.get("game_name")
-        sgdb_api_key = self.settings.value("sgdb_api_key", "", type=str)
-
-        if not app_id or not sgdb_api_key:
-            self._finalize_job_logic()
-            return
-
-        logger.info("\n" + "=" * 40)
-        logger.info("Starting Application Shortcuts Creation...")
-
-        self.application_shortcuts_task = ApplicationShortcutsTask()
-        self.application_shortcuts_task.set_api_key(sgdb_api_key)
-        self.application_shortcuts_task.progress.connect(logger.info)
-
-        self.application_shortcuts_task_runner = TaskRunner()
-        self.application_shortcuts_task_runner.cleanup_complete.connect(
-            self._on_application_shortcuts_task_cleanup
-        )
-
-        worker = self.application_shortcuts_task_runner.run(
-            self.application_shortcuts_task.run, app_id, game_name
-        )
-        worker.finished.connect(self._on_application_shortcuts_complete)
-        worker.error.connect(self._handle_application_shortcuts_error)
-
-    def _on_application_shortcuts_complete(self, result):
-        if result:
-            logger.info("Application shortcuts creation completed successfully")
-        else:
-            logger.info("Application shortcuts creation failed")
-
-        QMetaObject.invokeMethod(
-            self, "_finalize_job_logic", Qt.ConnectionType.QueuedConnection
-        )
-
-    def _add_appids_to_slssteam_config(self):
-        if not self.game_data:
-            return
-
-        try:
-            config_path = get_user_config_path()
-            if not config_path.exists():
-                return
-
-            main_appid = self.game_data.get("appid")
-            game_name = self.game_data.get("game_name", "")
-            if main_appid:
-                add_additional_app(config_path, str(main_appid), game_name)
-
-            selected_dlcs = self.game_data.get("selected_dlcs", [])
-            dlcs = self.game_data.get("dlcs", {})
-
-            if main_appid and selected_dlcs and len(selected_dlcs) > 64:
-                for dlc_id in selected_dlcs:
-                    dlc_name = dlcs.get(dlc_id, "")
-                    add_dlc_data(config_path, str(main_appid), str(dlc_id), dlc_name)
-
-        except OSError as e:
-            logger.warning(f"Failed to add AppIDs to SLSsteam config: {e}")
-
     def _create_greenluma_applist_files(self, steam_path, config_enabled=True):
         if not config_enabled:
             return
@@ -1758,11 +1679,6 @@ class TaskManager(QObject):
 
         if self.steamless_task:
             self.steamless_task.stop()
-
-        if self.application_shortcuts_task:
-            self.application_shortcuts_task.stop()
-            self.application_shortcuts_task_runner = None
-            self.application_shortcuts_task = None
 
         TaskRunner.stop_all_active()
 
