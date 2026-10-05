@@ -20,9 +20,6 @@ except ImportError:
         "`steam[client]` package not found. Skipping steam.client fetch method."
     )
 
-CACHE_DIR = os.path.join(tempfile.gettempdir(), "mistwalker_api_cache")
-CACHE_EXPIRATION_SECONDS = 86400
-
 
 def get_depot_info_from_api(app_id, access_token=None):
     # 1. Try to get complete info from DB first
@@ -440,76 +437,3 @@ def batched_get_product_info(
         logger.debug(f"Failed appids: {failed_appids}")
 
     return all_results
-
-
-def get_manifest_id(appid, depot_id=None, use_cache=True):
-    try:
-        if not use_cache:
-            # Force a refresh by clearing any existing cache for this app
-            db = DatabaseManager()
-            db.clear_app_info(appid)
-
-        app_data = get_depot_info_from_api(appid)
-        if not app_data:
-            return {
-                "success": False,
-                "manifest_id": None,
-                "depot_id": depot_id,
-                "error": "Failed to fetch app data",
-            }
-
-        depots = app_data.get("depots", {})
-        if not depots:
-            return {
-                "success": False,
-                "manifest_id": None,
-                "depot_id": depot_id,
-                "error": "No depots found for this app",
-            }
-
-        # Use specified depot or first depot
-        if depot_id:
-            if str(depot_id) not in depots:
-                return {
-                    "success": False,
-                    "manifest_id": None,
-                    "depot_id": depot_id,
-                    "error": f"Depot {depot_id} not found",
-                }
-            target_depot_id = str(depot_id)
-        else:
-            target_depot_id = list(depots.keys())[0]
-
-        depot_info = depots.get(target_depot_id, {})
-        manifest_id = depot_info.get("manifest_id")
-
-        if not manifest_id:
-            # If manifest_id is missing from cached data, try force refresh
-            if use_cache:
-                logger.debug(
-                    f"Manifest ID not found in cached data for {appid}, trying force refresh"
-                )
-                return get_manifest_id(appid, depot_id, use_cache=False)
-
-            return {
-                "success": False,
-                "manifest_id": None,
-                "depot_id": target_depot_id,
-                "error": "No manifest ID found",
-            }
-
-        return {
-            "success": True,
-            "manifest_id": manifest_id,
-            "depot_id": target_depot_id,
-            "error": None,
-        }
-
-    except (BaseException, Exception, TimeoutError, Timeout) as e:
-        logger.error(f"Error fetching manifest for {appid}: {e}")
-        return {
-            "success": False,
-            "manifest_id": None,
-            "depot_id": depot_id,
-            "error": f"Unexpected error: {str(e)}",
-        }

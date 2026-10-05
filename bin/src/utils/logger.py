@@ -52,7 +52,6 @@ class QtLogHandler(QObject, logging.Handler):
 
 # Global handler instance
 qt_log_handler = QtLogHandler()
-_current_log_name: Optional[str] = None
 _log_dir = get_base_path() / "logs"
 
 
@@ -166,7 +165,7 @@ def open_log_directory() -> bool:
 
 def get_log_path() -> Path:
     """Return path to a timestamped log file with counter if needed."""
-    global _current_log_name, _log_dir
+    global _log_dir
 
     try:
         _log_dir.mkdir(parents=True, exist_ok=True)
@@ -193,7 +192,6 @@ def get_log_path() -> Path:
             break
         counter += 1
 
-    _current_log_name = log_name
     return log_path
 
 

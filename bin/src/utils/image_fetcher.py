@@ -1,7 +1,7 @@
 import logging
 import time
 from functools import wraps
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import requests
 from PyQt6.QtCore import QObject, QUrl, pyqtSignal
@@ -146,20 +146,6 @@ class ImageFetcher(QObject):
 
     @staticmethod
     @time_function
-    def _get_best_image_url(url_list: List[str]) -> str:
-        """URL checking with HEAD requests to find a working image URL."""
-        if len(url_list) == 1:
-            return url_list[0]
-
-        for url in url_list:
-            if send_request(url):
-                return url
-
-        # Fallback
-        return url_list[0]
-
-    @staticmethod
-    @time_function
     def get_header_image_url(app_id: Union[int, str]) -> str:
         """
         Get the best header image URL for a given app ID.
@@ -214,16 +200,3 @@ class ImageFetcher(QObject):
             return None
 
         return app_data.get("data", {}).get("header_image")
-
-    @staticmethod
-    def get_capsule_image_url(app_id: Union[int, str]) -> str:
-        """Get the best capsule image URL for a given app ID."""
-        urls = [
-            f"https://cdn.akamai.steamstatic.com/steam/apps/{app_id}/capsule_184x69.jpg",
-            f"https://cdn.akamai.steamstatic.com/steam/apps/{app_id}/library_capsule.jpg",
-        ]
-
-        if str(app_id) == "3949040":
-            return "https://cdn.akamai.steamstatic.com/steam/apps/3949040/library_capsule.jpg"
-
-        return ImageFetcher._get_best_image_url(urls)

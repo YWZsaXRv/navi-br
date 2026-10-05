@@ -10,7 +10,7 @@ import urllib.request
 from pathlib import Path
 from typing import Optional, Tuple
 
-from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
     QCheckBox,
     QLabel,
@@ -469,11 +469,6 @@ def get_slscheevo_save_path() -> Path:
     return _get_slscheevo_save_path()
 
 
-def is_running_in_pyinstaller() -> bool:
-    """Check if the application is running as a PyInstaller bundle."""
-    return getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
-
-
 def check_venv(path: str | Path) -> Path | None:
     """Check if a path is a valid virtual environment."""
     # Convert to absolute path immediately
@@ -553,59 +548,6 @@ def get_venv_python() -> str | None:
     return None
 
 
-def get_venv_activate() -> str | None:
-    """Get venv activate script path if available."""
-    venv_path = get_venv_path()
-
-    if venv_path:
-        if sys.platform == "win32":
-            activate_script = venv_path / "Scripts" / "activate.bat"
-        else:
-            activate_script = venv_path / "bin" / "activate"
-
-        if activate_script.exists():
-            return str(activate_script)
-
-    return None
-
-
-def add_gradient_border(
-    element: QWidget, accent_color: str, background_color: str
-) -> None:
-    """Add a gradient border to a UI element."""
-    accent_q_color = QColor(accent_color).darker().name()
-    bg_q_color = QColor(background_color).darker().name()
-
-    current_style = element.styleSheet()
-    border_style = f"""
-        border-top: 2px solid qlineargradient(
-            x1:0, y1:0, x2:1, y2:0,
-            stop:0 {accent_q_color},
-            stop:0.5 {bg_q_color},
-            stop:1 {accent_q_color}
-        );
-        border-bottom: 2px solid qlineargradient(
-            x1:0, y1:0, x2:1, y2:0,
-            stop:0 {accent_q_color},
-            stop:0.5 {bg_q_color},
-            stop:1 {accent_q_color}
-        );
-        border-left: 2px solid qlineargradient(
-            x1:0, y1:0, x2:0, y2:1,
-            stop:0 {accent_q_color},
-            stop:0.5 {bg_q_color},
-            stop:1 {accent_q_color}
-        );
-        border-right: 2px solid qlineargradient(
-            x1:0, y1:0, x2:0, y2:1,
-            stop:0 {accent_q_color},
-            stop:0.5 {bg_q_color},
-            stop:1 {accent_q_color}
-        );
-    """
-    element.setStyleSheet(current_style + border_style)
-
-
 class CheckboxSetting(QWidget):
     """A small widget that contains a QCheckBox and an explanatory QLabel.
 
@@ -679,36 +621,6 @@ def create_checkbox_setting(
 ) -> CheckboxSetting:
     """Helper function to create a checkbox setting."""
     return CheckboxSetting(text, setting_key, default_value, parent_widget, tooltip)
-
-def create_color_setting(
-    name: str,
-    setting_key: str,
-    default_color: str,
-    parent_widget: Optional[QWidget] = None,
-) -> Tuple[QHBoxLayout, QPushButton, QPushButton]:
-    """Helper function to create a color picker setting."""
-    layout = QHBoxLayout()
-
-    label = QLabel(f"{name}:")
-
-    color_button = QPushButton()
-    if parent_widget and hasattr(parent_widget, "settings"):
-        current_color = parent_widget.settings.value(
-            setting_key, default_color, type=str
-        )
-        color_button.setStyleSheet(f"background-color: {current_color};")
-    else:
-        color_button.setStyleSheet(f"background-color: {default_color};")
-
-    reset_button = QPushButton("Reset")
-
-    layout.addWidget(label)
-    layout.addWidget(color_button)
-    layout.addWidget(reset_button)
-    layout.addStretch()
-
-    return layout, color_button, reset_button
-
 
 def create_font_setting(
     parent_widget: Optional[QWidget] = None,

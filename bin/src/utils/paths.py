@@ -37,7 +37,3 @@ class Paths:
             return cls.BASE_DIR / relative_path
         return cls.BASE_DIR
 
-    @classmethod
-    def absolute(cls, path: str) -> Path:
-        """Return the absolute, expanded path as a Path object."""
-        return Path(path).expanduser().resolve()

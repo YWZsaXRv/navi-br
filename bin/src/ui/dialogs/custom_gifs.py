@@ -553,58 +553,6 @@ class CustomGifsDialog(QDialog):
         )
         return
 
-        # Renumber all download GIFs
-        for i, item in enumerate(download_items):
-            old_name = item.gif_name
-            new_name = f"downloading_custom{i}.gif"
-
-            if old_name != new_name:
-                # Update the item's gif_name
-                item.gif_name = new_name
-
-                # Update display name
-                display_name = CustomGifItem.get_display_name(new_name)
-                item.name_label.setText(display_name)
-
-                # If there's an original file, rename it
-                if item.original_file_path and os.path.exists(item.original_file_path):
-                    custom_dir = CustomGifItem.get_custom_dir()
-                    new_path = os.path.join(custom_dir, new_name)
-                    try:
-                        os.rename(item.original_file_path, new_path)
-                        item.original_file_path = new_path
-                        logger.info(f"Renamed {old_name} to {new_name}")
-                    except Exception as e:
-                        logger.error(f"Failed to rename {old_name} to {new_name}: {e}")
-
-                # If there's a temp file, rename it
-                if item.temp_file_path and os.path.exists(item.temp_file_path):
-                    temp_dir = self.get_temp_dir()
-                    new_temp_path = os.path.join(temp_dir, new_name)
-                    try:
-                        os.rename(item.temp_file_path, new_temp_path)
-                        item.temp_file_path = new_temp_path
-                    except Exception as e:
-                        logger.error(
-                            f"Failed to rename temp file {old_name} to {new_name}: {e}"
-                        )
-
-        # Update the download_gifs list
-        self.download_gifs = [item.gif_name for item in download_items]
-
-        # Update next download number (highest number + 1)
-        if download_items:
-            max_num = len(download_items) - 1  # Since we just renumbered sequentially
-        else:
-            max_num = -1
-
-        self.next_download_num = max_num + 1
-        self.next_download_label.setText(
-            f"Next: downloading_custom{self.next_download_num}.gif"
-        )
-
-        logger.info(f"Renumbered download GIFs. Next number: {self.next_download_num}")
-
     def accept(self):
         """Handle OK button - apply all changes and reload GIFs"""
         if self.main_window:

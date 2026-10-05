@@ -661,26 +661,6 @@ class TaskManager(QObject):
         steamless_task.set_game_directory(game_directory)
         steamless_task.start()
 
-    def run_chmod_for_game(
-        self, game_directory: str, game_name: str, show_dialog: bool = False
-    ):
-        logger.info(f"Starting chmod for game: {game_name}")
-
-        def chmod_worker():
-            count = self._run_chmod_recursive(game_directory)
-            logger.info(f"Chmod completed: {count} files processed")
-
-            if show_dialog:
-                # Deferred import
-                from ui.dialogs.chmod_resume import ChmodResumeDialog
-
-                def show():
-                    self._show_chmod_resume_dialog(game_name, count, ChmodResumeDialog)
-
-                QTimer.singleShot(0, show)
-
-        threading.Thread(target=chmod_worker, daemon=True).start()
-
     @staticmethod
     def _run_chmod_recursive(game_directory) -> int:
         import stat
@@ -735,15 +715,6 @@ class TaskManager(QObject):
                         pass
 
         return chmod_count
-
-    def _show_chmod_resume_dialog(self, game_name: str, file_count: int, dialog_class):
-        dialog = dialog_class(
-            game_name=game_name,
-            file_count=file_count,
-            success=True,
-            parent=self.main_window,
-        )
-        dialog.exec()
 
     def _on_steamless_progress(self, message):
         self._steamless_progress_log.append(message)

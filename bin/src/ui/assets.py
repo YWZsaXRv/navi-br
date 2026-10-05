@@ -40,10 +40,6 @@ MAXIMIZE = r"""
 <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M4.5 3C3.67157 3 3 3.67157 3 4.5V11.5C3 12.3284 3.67157 13 4.5 13H11.5C12.3284 13 13 12.3284 13 11.5V4.5C13 3.67157 12.3284 3 11.5 3H4.5ZM4.5 4H11.5C11.7761 4 12 4.22386 12 4.5V11.5C12 11.7761 11.7761 12 11.5 12H4.5C4.22386 12 4 11.7761 4 11.5V4.5C4 4.22386 4.22386 4 4.5 4Z" fill="#212121" style="--darkreader-inline-fill: var(--darkreader-background-212121, #191b1c);" data-darkreader-inline-fill=""></path> </g></svg>
 """
 
-CLOSE = r"""
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M18 6L6 18" stroke="#33363F" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" style="--darkreader-inline-stroke: var(--darkreader-text-33363f, #c4bfb7);" data-darkreader-inline-stroke=""></path> <path d="M6 6L18 18" stroke="#33363F" stroke-width="2" stroke-linecap="square" stroke-linejoin="round" style="--darkreader-inline-stroke: var(--darkreader-text-33363f, #c4bfb7);" data-darkreader-inline-stroke=""></path> </g></svg>
-"""
-
 POWER_SVG = r"""
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
@@ -70,16 +66,6 @@ SEARCH_SVG = r"""
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
   <circle cx="11" cy="11" r="8"></circle>
   <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-</svg>
-"""
-
-PALETTE_SVG = r"""
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="13.5" cy="6.5" r=".5"></circle>
-  <circle cx="17.5" cy="10.5" r=".5"></circle>
-  <circle cx="8.5" cy="7.5" r=".5"></circle>
-  <circle cx="6.5" cy="12.5" r=".5"></circle>
-  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
 </svg>
 """
 
