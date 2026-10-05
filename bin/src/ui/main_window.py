@@ -26,7 +26,6 @@ from PyQt6.QtWidgets import (
 )
 
 from components.custom_widgets import ScaledFontLabel, ScaledLabel
-from managers.audio_manager import AudioManager
 from managers.game_manager import GameManager
 from managers.gif_manager import GIFManager
 from managers.job_queue_manager import JobQueueManager
@@ -137,7 +136,6 @@ class MainWindow(QMainWindow):
         self.gif_manager = None
         self.ui_state = None
         self.job_queue = None
-        self.audio_manager = None
         self.game_manager = None
         self.exit_shortcut = None
         self.sequence_timeout = None
@@ -255,7 +253,6 @@ class MainWindow(QMainWindow):
         self.gif_manager = GIFManager(self)
         self.ui_state = UIStateManager(self)
         self.job_queue = JobQueueManager(self)
-        self.audio_manager = AudioManager(self)
         self.game_manager = GameManager(self)
 
         logger.info("Starting initial game library scan...")
