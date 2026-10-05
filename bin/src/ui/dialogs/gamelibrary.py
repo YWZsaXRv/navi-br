@@ -702,16 +702,6 @@ class GameLibraryDialog(QDialog):
 
         return size
 
-    def _resolve_and_update_item(self, item: QListWidgetItem, game_data: dict) -> None:
-        """Resolve AppID in a background thread and update the item."""
-        name = game_data.get("game_name")
-        resolved_appid = self._resolve_appid_by_name(name)
-        if resolved_appid:
-            game_data["appid"] = resolved_appid
-            QTimer.singleShot(
-                0, lambda: self._update_item_with_resolved_id(item, game_data)
-            )
-
     @staticmethod
     def _resolve_appid_by_name(name: str) -> str | None:
         """Search the local database for an AppID by name."""
@@ -730,15 +720,6 @@ class GameLibraryDialog(QDialog):
         except Exception as e:
             logger.debug(f"DB lookup failed for '{name}': {e}")
         return None
-
-    def _update_item_with_resolved_id(
-        self, item: QListWidgetItem, game_data: dict
-    ) -> None:
-        """Update the item on the main thread with the resolved AppID."""
-        if self._closing:
-            return
-        item.setData(Qt.ItemDataRole.UserRole, game_data)
-        self._fetch_item_image(item, game_data["appid"])
 
     def _on_item_selected(self, item: QListWidgetItem) -> None:
         """Handle click on list item."""

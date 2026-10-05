@@ -44,9 +44,7 @@ class GameManager(QObject):
     """
 
     # Signals
-    game_updated = pyqtSignal(str)
     library_updated = pyqtSignal()
-    game_selected = pyqtSignal(str)
     scan_complete = pyqtSignal(int)  # Emits number of games found
     game_update_status_changed = pyqtSignal(str, str)  # (appid, update_status)
 
@@ -57,7 +55,6 @@ class GameManager(QObject):
 
         # Game library data
         self.games = []
-        self.selected_game = None
         self.filtered_games = []
 
         # Manifest check task management
@@ -76,16 +73,6 @@ class GameManager(QObject):
         """Helper method to sort games by name (case-insensitive)"""
         return sorted(games_list, key=lambda x: x.get("game_name", "").lower())
 
-    def add_game(self, game_data):
-        """Add a game to the library"""
-        # TODO: Implement game addition logic
-        logger.info(f"Adding game to library: {game_data.get('game_name', 'Unknown')}")
-        self.games.append(game_data)
-        # Sort the main games list
-        self.games = self._get_sorted_games(self.games)
-        self._apply_filters()
-        self.library_updated.emit()
-
     def remove_game(self, game_id):
         """Remove a game from the library"""
         # TODO: Implement game removal logic
@@ -96,44 +83,10 @@ class GameManager(QObject):
         self._apply_filters()
         self.library_updated.emit()
 
-    def get_game(self, game_id):
-        """Get a specific game by ID"""
-        for game in self.games:
-            if game.get("appid") == game_id:
-                return game
-        return None
-
     def get_all_games(self):
         """Get all games in the library - returns sorted list"""
         games_to_return = self.filtered_games if self.filtered_games else self.games
         return self._get_sorted_games(games_to_return)
-
-    def select_game(self, game_id):
-        """Select a specific game"""
-        game = self.get_game(game_id)
-        if game:
-            self.selected_game = game
-            self.game_selected.emit(game_id)
-            logger.info(
-                f"Selected game: {game.get('game_name', 'Unknown')} ({game_id})"
-            )
-            return True
-        return False
-
-    def update_game(self, game_id, game_data):
-        """Update game information"""
-        # TODO: Implement game update logic
-        logger.info(f"Updating game: {game_id}")
-        for i, game in enumerate(self.games):
-            if game.get("appid") == game_id:
-                self.games[i].update(game_data)
-                # Sort the main games list after update
-                self.games = self._get_sorted_games(self.games)
-                self.game_updated.emit(game_id)
-                self._apply_filters()
-                self.library_updated.emit()
-                return True
-        return False
 
     def _apply_filters(self):
         """Apply current filters to the game list"""
@@ -156,11 +109,6 @@ class GameManager(QObject):
         self.filtered_games = self._get_sorted_games(matched_games)
         self.library_updated.emit()
 
-    def clear_filters(self):
-        """Clear all applied filters"""
-        self.filtered_games = []
-        self._apply_filters()
-        self.library_updated.emit()
 
     def check_game_updates_async(self):
         """
@@ -271,16 +219,6 @@ class GameManager(QObject):
         # Use TaskRunner to run in background thread
         self.scan_runner = TaskRunner()
         self.scan_runner.run(do_scan)
-
-    def cancel_scan(self):
-        """Cancel any in-progress library scan."""
-        self._scan_cancelled = True
-        if self.scan_runner is not None:
-            try:
-                self.scan_runner.stop(wait_ms=0, terminate_on_timeout=False)
-            except Exception as e:
-                logger.debug(f"Error stopping scan runner: {e}")
-            self.scan_runner = None
 
     def _perform_scan(self):
         """
@@ -815,32 +753,6 @@ class GameManager(QObject):
 
         return acf_size_available
 
-    def clear_library(self):
-        """Clear all games from the library"""
-        logger.info("Clearing entire game library")
-        self.games.clear()
-        self.filtered_games.clear()
-        self.selected_game = None
-        self.library_updated.emit()
-
-    @staticmethod
-    def import_library(file_path):
-        """Import library from a file"""
-        # TODO: Implement library import
-        logger.info(f"Importing library from: {file_path}")
-        return False
-
-    def get_library_stats(self):
-        """Get statistics about the game library"""
-        total_games = len(self.games)
-        total_size = sum(game.get("size_on_disk", 0) for game in self.games)
-
-        return {
-            "total_games": total_games,
-            "total_size": total_size,
-            "filtered_count": len(self.filtered_games),
-        }
-
     def cleanup(self):
         """Clean up GameManager resources"""
         logger.info("Cleaning up GameManager")
@@ -859,7 +771,6 @@ class GameManager(QObject):
 
         self.games.clear()
         self.filtered_games.clear()
-        self.selected_game = None
         self._games_to_check = []
 
     def cancel_update_checks(self):

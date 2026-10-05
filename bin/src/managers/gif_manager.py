@@ -406,16 +406,6 @@ class GIFManager:
 
         return needs_regeneration
 
-    def _process_gifs_parallel(self, gif_list, input_dirs, color_subdir, accent_color):
-        """
-        Process GIFs in parallel batches without pickle issues
-        """
-        batch_data, max_workers = self._prepare_gif_batch(
-            gif_list, input_dirs, color_subdir, accent_color
-        )
-
-        return self._process_gif_batch_executor(batch_data, max_workers)
-
     def _process_single_gif_thread_worker(self, gif_data):
         """
         Worker function for processing a single GIF in a thread
