@@ -10,6 +10,7 @@ from ui.main_window import MainWindow
 from ui.theme import update_appearance
 from managers.cli_manager import run_cli_mode, open_cli_terminal
 from utils.logger import setup_logging
+from utils.brand import DISPLAY_NAME, URL_SCHEME_PREFIXES
 from utils.settings import get_settings
 from utils.yaml_config_manager import (
     backup_config_on_startup,
@@ -48,7 +49,7 @@ def main():
     logger = setup_logging()
 
     logger.info("========================================")
-    logger.info(f"ACCELA {app_version} starting...")
+    logger.info(f"{DISPLAY_NAME} {app_version} starting...")
     logger.info("========================================")
 
     # People only have substance within the memories of other people.
@@ -76,7 +77,12 @@ def main():
     def _parse_url_action(url: str):
         nonlocal cli_mode, command_line_appid
         try:
-            url_content = url[9:]  # Remove 'accela://'
+            for prefix in URL_SCHEME_PREFIXES:
+                if url.startswith(prefix):
+                    url_content = url[len(prefix) :]
+                    break
+            else:
+                return
             if url_content.startswith("cli/"):
                 cli_mode = True
                 rest = url_content[4:]
@@ -116,7 +122,7 @@ def main():
             else:
                 logger.error(f"Invalid AppID: {appid_str} (must be a number)")
             i += 1
-        elif arg.startswith("accela://"):
+        elif arg.startswith(URL_SCHEME_PREFIXES):
             _parse_url_action(arg)
         elif arg.lower().endswith(".zip"):
             zip_file_path = os.path.abspath(arg)

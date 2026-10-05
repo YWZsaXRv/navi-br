@@ -11,6 +11,7 @@ import requests
 import yaml
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from utils.brand import APP_ID
 from utils.helpers import get_base_path
 
 logger = logging.getLogger(__name__)
@@ -315,7 +316,7 @@ class DownloadSLSsteamTask(QObject):
             xdg_data_home = os.environ.get("XDG_DATA_HOME") or os.path.expanduser(
                 "~/.local/share"
             )
-            slssteam_dir = Path(xdg_data_home) / "ACCELA" / "SLSsteam"
+            slssteam_dir = Path(xdg_data_home) / APP_ID / "SLSsteam"
             slssteam_manual = Path(xdg_data_home) / "SLSsteam" / "SLSsteam.so"
 
             # Check if SLSsteam is installed either through ACCELA or manually

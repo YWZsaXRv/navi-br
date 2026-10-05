@@ -9,10 +9,10 @@ from typing import List, Optional
 
 from PyQt6.QtCore import QObject, pyqtSignal
 
+from utils.brand import APP_ID
 from utils.helpers import get_base_path
 
 # Constants
-APP_NAME = "accela"
 MAX_PREVIOUS_LOGS = 4
 
 logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ def setup_logging() -> logging.Logger:
     if not file_handler:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         temp_dir = Path(os.environ.get("TEMP", os.getcwd()))
-        fallback_path = temp_dir / f"{APP_NAME}_{timestamp}.log"
+        fallback_path = temp_dir / f"{APP_ID}_{timestamp}.log"
         print(f"Attempting fallback log: {fallback_path}", file=sys.stderr)
         file_handler = _create_file_handler(fallback_path)
 
@@ -171,13 +171,13 @@ def get_log_path() -> Path:
         _log_dir.mkdir(parents=True, exist_ok=True)
     except OSError:
         # Fallback to temp directory
-        temp_dir = Path(os.environ.get("TEMP", os.getcwd())) / "logs" / APP_NAME
+        temp_dir = Path(os.environ.get("TEMP", os.getcwd())) / "logs" / APP_ID
         temp_dir.mkdir(parents=True, exist_ok=True)
         _log_dir = temp_dir
 
     # Base name with timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base_name = f"{APP_NAME}_{timestamp}"
+    base_name = f"{APP_ID}_{timestamp}"
 
     # Find next available filename
     counter = 1
@@ -205,7 +205,7 @@ def cleanup_old_logs() -> None:
         return
 
     # Get all app specific .log files
-    log_files = [f for f in log_dir.glob(f"{APP_NAME}*.log") if f.is_file()]
+    log_files = [f for f in log_dir.glob(f"{APP_ID}*.log") if f.is_file()]
 
     if not log_files:
         return

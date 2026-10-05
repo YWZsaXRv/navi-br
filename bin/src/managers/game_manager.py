@@ -12,6 +12,7 @@ from core.steam_helpers import (
     find_steam_install,
 )
 from core.tasks.manifest_check_task import ManifestCheckTask
+from utils.brand import DISPLAY_NAME
 from utils.helpers import get_base_path
 from utils.task_runner import TaskRunner
 from utils.yaml_config_manager import (
@@ -251,10 +252,11 @@ class GameManager(QObject):
         )
         logger.info(
             "Scan complete. Scanned %s library location(s), found %s installed Steam "
-            "game(s) (%s ACCELA-managed).",
+            "game(s) (%s managed by %s).",
             scanned_libraries,
             games_found,
             accela_games_found,
+            DISPLAY_NAME,
         )
         # Sort games after scanning
         self.games = self._get_sorted_games(self.games)
@@ -335,7 +337,7 @@ class GameManager(QObject):
                             games_found += 1
                             logger.debug(
                                 "  Found %s game: %s",
-                                "ACCELA" if marker_path else "Steam",
+                                DISPLAY_NAME if marker_path else "Steam",
                                 game_name,
                             )
                     except (OSError, FileNotFoundError, PermissionError):
@@ -561,7 +563,7 @@ class GameManager(QObject):
                 "library_path": library_path,
                 "library_index": get_library_index(library_path, steam_path),
                 "size_on_disk": 0,  # Will be calculated below
-                "source": "ACCELA" if is_accela_install else "Steam",
+                "source": DISPLAY_NAME if is_accela_install else "Steam",
                 "is_accela_install": is_accela_install,
                 "depot_downloader_path": marker_path or "",
                 "accela_marker_path": marker_path or "",
@@ -1140,7 +1142,7 @@ class GameManager(QObject):
         from core.steam_helpers import find_steam_install
 
         if not game_data.get("is_accela_install"):
-            logger.debug("Skipping GreenLuma cleanup for non-ACCELA install")
+            logger.debug("Skipping GreenLuma cleanup for non-%s install", DISPLAY_NAME)
             return
 
         # AppList cleanup on Windows should only run when GreenLuma wrapper mode is enabled.

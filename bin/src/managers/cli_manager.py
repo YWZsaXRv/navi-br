@@ -25,6 +25,7 @@ from core.tasks.process_zip_task import ProcessZipTask
 from core.tasks.download_depots_task import DownloadDepotsTask
 from core.morrenus_api import download_manifest as download_morrenus_manifest
 
+from utils.brand import DISPLAY_NAME
 from utils.settings import get_settings
 from utils.task_runner import TaskRunner
 from utils.paths import Paths
@@ -138,13 +139,13 @@ def run_cli_mode(
     settings = get_settings()
 
     logger.info("=" * 50)
-    logger.info("ACCELA CLI Mode")
+    logger.info("%s CLI Mode", DISPLAY_NAME)
     logger.info("=" * 50)
 
     # Fix GreenLuma offline mode
     fix_greenluma_offline_mode()
 
-    # Apply ACCELA theme
+    # aplica o tema do app
     from main import update_appearance
 
     accent_color = settings.value("accent_color", "#C06C84")

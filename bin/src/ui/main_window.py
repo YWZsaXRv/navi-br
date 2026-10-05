@@ -39,6 +39,7 @@ from ui.dialogs.gamelibrary import GameLibraryDialog
 from ui.dialogs.lain import LainMinigameDialog
 from ui.dialogs.settings import SettingsDialog
 from ui.dialogs.status import StatusDialog
+from utils.brand import DISPLAY_NAME
 from utils.logger import qt_log_handler
 from utils.paths import Paths
 from utils.settings import get_settings
@@ -169,7 +170,7 @@ class MainWindow(QMainWindow):
 
     def _setup_window_properties(self) -> None:
         """Configure basic window properties."""
-        self.setWindowTitle("ACCELA")
+        self.setWindowTitle(DISPLAY_NAME)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setGeometry(100, 100, 800, 600)
 

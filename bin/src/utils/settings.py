@@ -1,9 +1,8 @@
 from PyQt6.QtCore import QSettings
 
-APP_NAME = "ACCELA"
-ORG_NAME = "Tachibana Labs"
+from utils.brand import APP_ID, ORG_NAME
 
 
 def get_settings() -> QSettings:
     """Get the application settings object."""
-    return QSettings(ORG_NAME, APP_NAME)
+    return QSettings(ORG_NAME, APP_ID)

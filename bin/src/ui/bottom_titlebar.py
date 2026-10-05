@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from utils.brand import DISPLAY_NAME
 from utils.helpers import get_base_path
 from utils.settings import get_settings
 from utils.version import app_version
@@ -82,7 +83,7 @@ class BottomTitleBar(QFrame):
         left_widget = self._create_left_section()
         right_widget = self._create_right_section()
 
-        self.title_label = QLabel("ACCELA")
+        self.title_label = QLabel(DISPLAY_NAME)
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.title_label.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred

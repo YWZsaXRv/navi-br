@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from utils.brand import APP_ID
 from utils.paths import Paths
 
 logger = logging.getLogger(__name__)
@@ -348,7 +349,7 @@ def resource_path(relative_path: str) -> Path:
     return Path(os.path.join(base_path, relative_path))
 
 
-def get_base_path(app_name: str = "ACCELA") -> Path:
+def get_base_path(app_name: str = APP_ID) -> Path:
     """Return the base directory for the current platform (no logs dir)."""
     system = platform.system().lower()
 
