@@ -559,7 +559,6 @@ class SteamlessTask(QThread):
     def __init__(self):
         super().__init__()
         self._is_running = True
-        self._thread_completed = False
         self._game_directory = None
         self._target_exe = None  # Optional: specific exe to process
 
@@ -568,7 +567,6 @@ class SteamlessTask(QThread):
         self.steamless_integration = None
         self._integration_mutex = QMutex()
         self.dotnet_available = False
-        self.process = None
 
     @staticmethod
     def _get_steamless_path():
@@ -635,7 +633,6 @@ class SteamlessTask(QThread):
                 self.error.emit((Exception, error_msg, ""))
                 self.result.emit(success)
                 self.completed.emit()
-                self._thread_completed = True
                 return
 
             logger.info(
@@ -650,14 +647,12 @@ class SteamlessTask(QThread):
                     self.error.emit((Exception, error_msg, ""))
                     self.result.emit(success)
                     self.completed.emit()
-                    self._thread_completed = True
                     return
 
                 # Check prerequisites (dotnet, Steamless files)
                 if not self._setup_steamless_integration():
                     self.result.emit(success)
                     self.completed.emit()
-                    self._thread_completed = True
                     return
 
                 # Create SteamlessIntegration instance
@@ -701,7 +696,6 @@ class SteamlessTask(QThread):
                 if self.isRunning():
                     self.result.emit(final_success)
                     self.completed.emit()
-                self._thread_completed = True
 
             except Exception as e:
                 error_msg = f"Unexpected error during Steamless processing: {e}"
@@ -712,7 +706,6 @@ class SteamlessTask(QThread):
                 self.error.emit((type(e), str(e), traceback.format_exc()))
                 self.result.emit(success)
                 self.completed.emit()
-                self._thread_completed = True
                 return
 
         except Exception as e:
@@ -807,13 +800,3 @@ class SteamlessTask(QThread):
             self.steamless_integration = None
         finally:
             self._integration_mutex.unlock()
-
-        self.process = None
-
-    def is_dotnet_available(self):
-        """Check if .NET 9 is available for Steamless execution"""
-        return self.dotnet_available
-
-    def get_steamless_path(self):
-        """Get the path to the Steamless directory"""
-        return str(self.steamless_path)

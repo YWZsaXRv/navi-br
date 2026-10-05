@@ -50,8 +50,6 @@ class GameManager(QObject):
 
     def __init__(self, main_window):
         super().__init__()
-        self.main_window = main_window
-        self.settings = main_window.settings
 
         # Game library data
         self.games = []

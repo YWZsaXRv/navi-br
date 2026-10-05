@@ -23,7 +23,6 @@ class CreditsDialog(QDialog):
         self.resize(400, 342)  # Set exact size as requested
         self.settings = get_settings()
         self.main_layout = QVBoxLayout(self)
-        self.main_window = parent
         self.accent_color = self.settings.value("accent_color", "#C06C84")
 
         logger.debug("Opening CreditsDialog.")

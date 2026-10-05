@@ -89,8 +89,6 @@ class GIFManager:
         self.disable_color_gifs = self.settings.value(
             "disable_color_gifs", False, type=bool
         )
-        # Store the current disable_color_gifs setting for comparison
-        self._current_disable_color_gifs = self.disable_color_gifs
         self.regenerate_anyway = False
         # Don't create progress dialog here - create it when needed
         self.progress_dialog = None

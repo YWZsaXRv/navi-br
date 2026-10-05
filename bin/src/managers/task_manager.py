@@ -88,7 +88,6 @@ class TaskManager(QObject):
         self._last_steamless_success = None
         self._steamless_ran = False
         self._steamless_error = False
-        self._last_slscheevo_success = None
         self._slscheevo_ran = False
         self._slscheevo_error = False
 
@@ -106,7 +105,6 @@ class TaskManager(QObject):
         self.STATUS_OK = "#00FF00"
         self.STATUS_IN_PROGRESS = "#FFA500"
         self.STATUS_ERROR = "#FF0000"
-        self.STATUS_NOT_RUN = "accent"
 
     @property
     def last_installed_game(self):
@@ -173,7 +171,6 @@ class TaskManager(QObject):
             game_data["appid"],
             game_data["game_name"],
             game_data["depots"],
-            game_data.get("header_url"),
             self.main_window,
         )
 
@@ -269,7 +266,6 @@ class TaskManager(QObject):
         self.is_cancelling = False
 
         self._last_steamless_success = None
-        self._last_slscheevo_success = None
         self._steamless_ran = False
         self._steamless_error = False
         self._slscheevo_ran = False
@@ -841,7 +837,6 @@ class TaskManager(QObject):
             success = result.get("success", False)
             message = result.get("message", "Unknown status")
 
-        self._last_slscheevo_success = success
         if success:
             logger.info(f"Achievement generation completed: {message}")
         else:
@@ -854,7 +849,6 @@ class TaskManager(QObject):
     def _handle_achievement_error(self, error_info):
         _, error_value, _ = error_info
         logger.error(f"Achievement generation failed: {error_value}")
-        self._last_slscheevo_success = False
         self._slscheevo_error = True
 
         QMetaObject.invokeMethod(

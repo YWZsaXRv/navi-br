@@ -53,7 +53,6 @@ class BottomTitleBar(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.parent_window = parent
-        self.drag_pos = None
         self.setFixedHeight(32)
         self.no_previous_state = True
 

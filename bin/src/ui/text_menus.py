@@ -308,7 +308,6 @@ class DlcSelectionMenu(CheckboxSelectionMenu):
         )
         super().__init__(title)
         self.items_map = dlcs
-        self.selected_dlcs = self.selected_items
 
     def _get_item_text(self, item_id: str, item_data: Any) -> str:
         return f"{item_id} - {item_data}"
