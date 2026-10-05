@@ -89,7 +89,7 @@ detect_install_type() {
 
 # Function to clean up existing installation
 cleanup_existing() {
-    log_info "Removing existing installation..."
+    log_info "Removendo instalação existente..."
     
     # Remove old installation directories
     if [[ -d "$INSTALL_DESTINATION_SOURCE" ]] || [[ -f "$INSTALL_DESTINATION/run.sh" ]] || [[ -d "$INSTALL_DESTINATION/.venv" ]]; then
@@ -139,7 +139,7 @@ Type=Application
 Categories=Utility;Application;
 MimeType=x-scheme-handler/accela;
 EOL
-    log_info "Added ACCELA to programs"
+    log_info "ACCELA adicionado aos programas"
     
     # Update icon cache and desktop database
     # Skip GTK icon cache on KDE since it hangs
@@ -155,7 +155,7 @@ EOL
     # Register URL scheme handler
     if command -v xdg-mime &>/dev/null; then
         xdg-mime default accela.desktop x-scheme-handler/accela
-        log_info "Registered accela:// URL scheme handler"
+        log_info "Manipulador de esquema accela:// registrado"
     fi
 }
 
@@ -190,7 +190,7 @@ EOL
     chmod +x "$wrapper_path"
 
     if ! echo ":${PATH}:" | grep -q ":${bin_dir}:"; then
-        log_warn "${bin_dir} is not in PATH. Add it to run 'accela' from the terminal."
+        log_warn "${bin_dir} não está no PATH. Adicione para rodar 'accela' do terminal."
     fi
 }
 
@@ -203,16 +203,16 @@ venv() {
 
 # Function to install from source
 install_source() {
-    log_info "Installing ACCELA source..."
+    log_info "Instalando código-fonte do ACCELA..."
 
     # Check if source directory exists and has the required files
     if [ ! -f "$SOURCE/run.sh" ]; then
-        log_error "Error: run.sh not found in $SOURCE"
+        log_error "Erro: run.sh não encontrado em $SOURCE"
         exit 1
     fi
     
     if [ ! -d "$SOURCE/src" ]; then
-        log_error "Error: src directory not found in $SOURCE"
+        log_error "Erro: diretório src não encontrado em $SOURCE"
         exit 1
     fi
     
@@ -231,11 +231,11 @@ install_source() {
     
     # Check if Python 3 is available
     if ! command -v python3 &>/dev/null; then
-        log_error "Error: python3 not found, Please install python."
+        log_error "Erro: python3 não encontrado. Por favor instale python."
         exit 1
     fi
     
-    log_info "Setting up requirements and checking dependencies"
+    log_info "Configurando dependências e verificando requisitos"
     
     if [ "${SKIPVENV:-}" != "1" ]; then
         venv
@@ -254,17 +254,17 @@ install_source() {
 
 # Function to install from binary
 install_binary() {
-    log_info "Installing ACCELA binary..."
+    log_info "Instalando binário ACCELA..."
         rm -rf "$INSTALL_DESTINATION/.venv" 2>/dev/null
 
     # Check if binary exists
     if [ ! -f "$SOURCE/ACCELA" ]; then
-        log_error "Error: ACCELA binary not found in $SOURCE"
+        log_error "Erro: binário ACCELA não encontrado em $SOURCE"
         exit 1
     fi
     
     if [ ! -f "$SOURCE/accela.png" ]; then
-        log_error "Error: accela.png not found in $SOURCE"
+        log_error "Erro: accela.png não encontrado em $SOURCE"
         exit 1
     fi
     
@@ -281,17 +281,17 @@ install_binary() {
 
 # Function to install from AppImage
 install_appimage() {
-    log_info "Installing ACCELA AppImage..."
+    log_info "Instalando AppImage do ACCELA..."
     rm -rf "$INSTALL_DESTINATION/.venv" 2>/dev/null
 
     # Check if AppImage exists
     if [ ! -f "$SOURCE/ACCELA.AppImage" ]; then
-        log_error "Error: ACCELA.AppImage not found in $SOURCE"
+        log_error "Erro: ACCELA.AppImage não encontrado em $SOURCE"
         exit 1
     fi
     
     if [ ! -f "$SOURCE/accela.png" ]; then
-        log_error "Error: accela.png not found in $SOURCE"
+        log_error "Erro: accela.png não encontrado em $SOURCE"
         exit 1
     fi
     
@@ -307,14 +307,14 @@ install_appimage() {
 }
 
 installed_message() {
-    msglaunch="Run by launching ACCELA from your applications menu"
-    echo -e "${GREEN}[INFO]${NC} ACCELA has been installed to $INSTALL_DESTINATION"
+    msglaunch="Execute iniciando o ACCELA no menu de aplicações"
+    echo -e "${GREEN}[INFO]${NC} ACCELA foi instalado em $INSTALL_DESTINATION"
     echo -e "${GREEN}[INFO]${NC} $msglaunch"
     (
         sleep 5
         set +eu
         if [ "$NOTIFY_SEND_AVAILABLE" -eq 0 ]; then
-            notify-send -t 10000 "INFO" "ACCELA has been installed to\n$INSTALL_DESTINATION" 2>/dev/null
+            notify-send -t 10000 "INFO" "ACCELA foi instalado em\n$INSTALL_DESTINATION" 2>/dev/null
         fi
         sleep 7
         if [ "$NOTIFY_SEND_AVAILABLE" -eq 0 ]; then
@@ -347,11 +347,11 @@ case "$INSTALL_TYPE" in
         installed_message
         ;;
     "unknown")
-        log_error "Unable to detect installation type. Please ensure the current directory contains either AppImage, the binary or bin folder"
+        log_error "Não foi possível detectar tipo de instalação. Verifique se o diretório atual contém AppImage, binário ou pasta bin"
         exit 1
         ;;
     *)
-        log_error "Unknown installation type: $INSTALL_TYPE"
+        log_error "Tipo de instalação desconhecido: $INSTALL_TYPE"
         exit 1
         ;;
 esac
