@@ -24,7 +24,6 @@ from PyQt6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QSizePolicy,
-    QSpinBox,
     QTabWidget,
     QVBoxLayout,
     QWidget,
@@ -37,7 +36,6 @@ from ui.dialogs.dialog_helpers import create_standard_buttons
 from utils.helpers import (
     create_checkbox_setting,
     create_font_setting,
-    create_slider_setting,
     get_base_path,
     get_slscheevo_path,
     get_slscheevo_save_path,
@@ -209,11 +207,8 @@ class SettingsDialog(QDialog):
         self.tab_widget = None
         self.library_mode_checkbox = None
         self.auto_skip_single_choice_checkbox = None
-        self.max_downloads_spinbox = None
         self.steamless_checkbox = None
         self.achievements_checkbox = None
-        self.auto_apply_goldberg_checkbox = None
-        self.application_shortcuts_checkbox = None
         self.sls_mode_checkbox = None
         self.sls_config_management_checkbox = None
         self.prompt_steam_restart_checkbox = None
@@ -221,21 +216,14 @@ class SettingsDialog(QDialog):
         self.download_slssteam_button = None
         self.slssteam_status_label = None
         self.slssteam_hash_warning_label = None
-        self.play_etw_checkbox = None
-        self.play_lall_checkbox = None
-        self.play_50hz_hum_checkbox = None
-        self.test_etw_button = None
-        self.test_lall_button = None
         self.accent_color_button = None
         self.accent_reset_button = None
         self.bg_color_button = None
         self.bg_reset_button = None
         self.titlebar_position_checkbox = None
-        self.sonic_mode_checkbox = None
         self.gif_display_checkbox = None
         self.ignore_color_warnings_checkbox = None
         self.current_font = QFont()
-        self.sgdb_api_key_input = None
         self.morrenus_stats_widget = None
         self.morrenus_tab_initialized = False
 
@@ -243,7 +231,6 @@ class SettingsDialog(QDialog):
         self._original_morrenus_key = self.settings.value(
             "morrenus_api_key", "", type=str
         )
-        self._original_sgdb_key = self.settings.value("sgdb_api_key", "", type=str)
 
         self._user_accent_color = self.settings.value(
             "user_accent_color",
@@ -272,11 +259,6 @@ class SettingsDialog(QDialog):
         self._create_tab_widget()
         self._setup_tabs()
         self.main_layout.addWidget(self.tab_widget)
-
-        # Sync audio preview values
-        if self.main_window and hasattr(self.main_window, "audio_manager"):
-            # noinspection PyUnresolvedReferences
-            self.main_window.audio_manager.sync_preview_values_from_settings()
 
         self._create_dialog_buttons()
 
@@ -311,9 +293,7 @@ class SettingsDialog(QDialog):
         self._create_morrenus_tab()
         self._create_steam_tab()
         self._create_tools_tab()
-        self._create_audio_tab()
         self._create_style_tab()
-        self._create_effects_tab()
 
     def _create_dialog_buttons(self) -> None:
         """Create standard Ok/Cancel buttons."""
@@ -414,20 +394,6 @@ class SettingsDialog(QDialog):
         )
         dl_layout.addWidget(self.auto_skip_single_choice_checkbox)
 
-        # Max Downloads
-        max_dl_layout = QHBoxLayout()
-        max_dl_label = QLabel("Downloads simultâneos máximos")
-        max_dl_label.setToolTip("Definir downloads simultâneos máximos (0-255)")
-
-        self.max_downloads_spinbox = QSpinBox()
-        self.max_downloads_spinbox.setRange(0, 255)
-        current_max = self.settings.value("max_downloads", 255, type=int)
-        self.max_downloads_spinbox.setValue(current_max)
-
-        max_dl_layout.addWidget(max_dl_label)
-        max_dl_layout.addWidget(self.max_downloads_spinbox)
-        dl_layout.addLayout(max_dl_layout)
-
         dl_group.setLayout(dl_layout)
         layout.addWidget(dl_group)
 
@@ -453,30 +419,6 @@ class SettingsDialog(QDialog):
         )
         pp_layout.addWidget(self.steamless_checkbox)
 
-        self.auto_apply_goldberg_checkbox = create_checkbox_setting(
-            "Aplicar Goldberg Automaticamente",
-            "auto_apply_goldberg",
-            False,
-            self,
-            "Aplicar Goldberg automaticamente após downloads.",
-        )
-        pp_layout.addWidget(self.auto_apply_goldberg_checkbox)
-        self.auto_apply_goldberg_checkbox.stateChanged.connect(
-            self.goldberg_checked_warning
-        )
-
-        if sys.platform == "linux":
-            self.application_shortcuts_checkbox = create_checkbox_setting(
-                "Criar Atalhos de Aplicação",
-                "create_application_shortcuts",
-                False,
-                self,
-                "Criar atalhos de desktop e instalar ícones do SteamGridDB.",
-            )
-            pp_layout.addWidget(self.application_shortcuts_checkbox)
-        else:
-            self.application_shortcuts_checkbox = None
-
         pp_group.setLayout(pp_layout)
         layout.addWidget(pp_group)
 
@@ -485,63 +427,17 @@ class SettingsDialog(QDialog):
 
     def goldberg_checked_warning(self) -> None:
         """Warn when Goldberg is enabled alongside Steam integration."""
-        checkbox = self.auto_apply_goldberg_checkbox
-        if not checkbox.isChecked():
-            return
-
-        integration_enabled = (
-            self.sls_mode_checkbox.isChecked()
-            if self.sls_mode_checkbox is not None
-            else is_slssteam_mode_enabled()
-        )
-        if not integration_enabled:
-            return
-
-        warning = "You are about to enable Goldberg integration which is meant to be able to play your downloaded games WITHOUT Steam. If you are going to use Steam to play your games keep this disabled, otherwise things will break. You have been warned. Continue?"
-
-        if self.goldberg_warning_box(checkbox, warning):
-            return
+        # Goldberg auto-apply removed
+        pass
 
     def goldberg_checked_warning_from_mode(self, type) -> None:
         """Warn when Steam integration is enabled while Goldberg is active."""
-        checkbox = self.sls_mode_checkbox
-        if not checkbox.isChecked():
-            return
-        try:
-            if not self.auto_apply_goldberg_checkbox.isChecked():
-                return
-        except:
-            if not self.settings.value("auto_apply_goldberg", False):
-                return
-
-        warning = f"You are about to enable {type} integration which is meant to be able to play your downloaded games WITH Steam. But you have Goldberg enabled, which is meant to be able to play your games WITHOUT Steam, if you are going to use Steam to play your games disable Goldberg in settings."
-
-        if self.goldberg_warning_box(checkbox, warning):
-            return
+        # Goldberg auto-apply removed
+        pass
 
     def goldberg_warning_box(self, checkbox, warning) -> bool:
-        # First
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("Warning")
-        msg_box.setText(warning)
-        msg_box.setStandardButtons(
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        msg_box.setDefaultButton(QMessageBox.StandardButton.No)
-        reply = msg_box.exec()
-
-        if reply == QMessageBox.StandardButton.No:
-            checkbox.setChecked(False)
-            checkbox.checkbox.setCheckState(Qt.CheckState.Unchecked)
-            return True
-
-        # Second
-        confirm_box = QMessageBox(self)
-        confirm_box.setWindowTitle("Warning")
-        confirm_box.setText(warning + " \n\nAre you sure?")
-        confirm_box.setStandardButtons(
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
+        # Goldberg auto-apply removed
+        return False
         confirm_box.setDefaultButton(QMessageBox.StandardButton.No)
         second_reply = confirm_box.exec()
 
@@ -570,17 +466,6 @@ class SettingsDialog(QDialog):
             help_url="https://hubcapmanifest.com",
         )
         key_layout.addLayout(morrenus_layout)
-
-        if sys.platform == "linux":
-            sgdb_layout, self.sgdb_api_key_input = self._create_api_key_setting(
-                "Chave API SteamGridDB:",
-                "Cole sua chave API SteamGridDB",
-                "sgdb_api_key",
-                help_url="https://www.steamgriddb.com/profile/account",
-            )
-            key_layout.addLayout(sgdb_layout)
-        else:
-            self.sgdb_api_key_input = None
 
         key_group.setLayout(key_layout)
         layout.addWidget(key_group)
@@ -640,9 +525,6 @@ class SettingsDialog(QDialog):
             )
             self.sls_mode_checkbox = create_checkbox_setting(
                 wrapper_full, "slssteam_mode", False, self, tooltip
-            )
-            self.sls_mode_checkbox.stateChanged.connect(
-                lambda: self.goldberg_checked_warning_from_mode(wrapper_name)
             )
             int_layout.addWidget(self.sls_mode_checkbox)
 
@@ -875,42 +757,6 @@ class SettingsDialog(QDialog):
         layout.addStretch()
         self.tab_widget.addTab(tab, "Áudio")
 
-    # Audio Handlers
-    def on_hum_checkbox_changed(self, value: bool) -> None:
-        if value:
-            self.main_window.audio_manager.ensure_loop_playing()
-        else:
-            self.main_window.audio_manager.stop_loop()
-
-    def on_master_volume_changed(self, value: int) -> None:
-        self._apply_all_volumes_preview()
-
-    def on_effects_volume_changed(self, value: int) -> None:
-        self._apply_all_volumes_preview()
-
-    def on_hum_volume_changed(self, value: int) -> None:
-        self._apply_all_volumes_preview()
-
-    def _apply_all_volumes_preview(self) -> None:
-        """Read all three sliders and apply preview volumes to audio manager."""
-        if self.main_window and hasattr(self.main_window, "audio_manager"):
-            master = self.master_volume_slider.value()
-            effects = self.effects_volume_slider.value()
-            hum = self.hum_volume_slider.value()
-            self.main_window.audio_manager.preview_volume(master, effects, hum)
-
-    def test_etw_sound(self) -> None:
-        if self.main_window and hasattr(self.main_window, "audio_manager"):
-            self.main_window.audio_manager.play_sound(
-                self.main_window.audio_manager.SOUND_ETW, preview=True
-            )
-
-    def test_lall_sound(self) -> None:
-        if self.main_window and hasattr(self.main_window, "audio_manager"):
-            self.main_window.audio_manager.play_sound(
-                self.main_window.audio_manager.SOUND_LALL, preview=True
-            )
-
     def _create_style_tab(self) -> None:
         """Create the Style settings tab."""
         tab = QWidget()
@@ -989,18 +835,6 @@ class SettingsDialog(QDialog):
         disp_layout.addWidget(self.titlebar_position_checkbox)
         SettingsDialog._add_checkbox_explanation(
             disp_layout, "Mover a barra de título para o topo da janela."
-        )
-
-        self.sonic_mode_checkbox = QCheckBox("Ativar Modo Sonic")
-        sonic_on = self.settings.value("ui_mode", "default") == "sonic"
-        self.sonic_mode_checkbox.setChecked(sonic_on)
-        self.sonic_mode_checkbox.setToolTip(
-            "Aplicar paleta de cores, fonte e recursos do Sonic."
-        )
-        disp_layout.addWidget(self.sonic_mode_checkbox)
-        SettingsDialog._add_checkbox_explanation(
-            disp_layout,
-            "Aplicar paleta de cores, fonte e recursos de mídia padrão do Sonic.",
         )
 
         self.gif_display_checkbox = create_checkbox_setting(
@@ -1128,66 +962,6 @@ class SettingsDialog(QDialog):
             # noinspection PyUnresolvedReferences
             self.main_window.reposition_titlebar(pos)
 
-
-    def _create_effects_tab(self) -> None:
-        """Create the Effects settings tab."""
-        tab = QWidget()
-        layout = QVBoxLayout(tab)
-        layout.setContentsMargins(15, 15, 15, 15)
-
-        settings_group = QGroupBox("Configurações CRT")
-        settings_layout = QVBoxLayout()
-
-        self.crt_overlay_checkbox = create_checkbox_setting("Mostrar Overlay CRT", "crt_overlay_enabled", True, self, "Mostrar Overlay CRT na janela principal.",)
-        settings_layout.addWidget(self.crt_overlay_checkbox)
-
-        self.crt_overlay_fsw_checkbox = create_checkbox_setting("Forçar overlay software", "crt_overlay_fsw", False, self, "Força apenas o overlay software a ser usado")
-        settings_layout.addWidget(self.crt_overlay_fsw_checkbox)
-
-        self.crt_overlay_fgl_checkbox = create_checkbox_setting("Forçar overlay OpenGL", "crt_overlay_fgl", False, self, "Força apenas o overlay OpenGL a ser usado")
-        settings_layout.addWidget(self.crt_overlay_fgl_checkbox)
-
-        preset_layout, self.crt_overlay_preset_combo = create_combo_setting(
-            "Preset CRT",
-            "crt_overlay_preset",
-            [
-                ("Preset A", "preset_a"),
-                ("Preset B", "preset_b"),
-            ],
-            "preset_a",
-            self,
-            "Estilo visual do efeito CRT.",
-        )
-        settings_layout.addLayout(preset_layout)
-
-        self.crt_overlay_singleband = create_checkbox_setting(
-            "OpenGL: Banda Fina", "crt_overlay_singleband", False, self
-        )
-        settings_layout.addWidget(
-            self.crt_overlay_singleband
-        )  # TODO: do actual picker instead
-
-        direction_layout, self.crt_overlay_direction_combo = create_combo_setting(
-            "Direção do Scan",
-            "crt_overlay_direction",
-            [
-                ("Topo para base", "top_to_bottom"),
-                ("Base para topo", "bottom_to_top"),
-                ("Esquerda para direita", "left_to_right"),
-                ("Direita para esquerda", "right_to_left"),
-            ],
-            "top_to_bottom",
-            self,
-            "Direção do feixe de varredura em movimento.",
-        )
-        settings_layout.addLayout(direction_layout)
-
-        settings_group.setLayout(settings_layout)
-        layout.addWidget(settings_group)
-
-        layout.addStretch()
-        self.tab_widget.addTab(tab, "Efeitos")
-
     def on_gif_display_changed(self, state: int) -> None:
         enabled = state == 2
         self.settings.setValue("gif_display_enabled", enabled)
@@ -1199,19 +973,14 @@ class SettingsDialog(QDialog):
         """Save all settings and close."""
         self._save_general_settings()
         self._save_download_settings()
-        self._save_audio_settings()
         if not self._save_style_settings():
             return  # Style validation failed
-        self._save_effects_settings()
         logger.info("All settings saved.")
         super().accept()
 
     def _save_general_settings(self) -> None:
         api_key = self.api_key_input.text().strip()
         self.settings.setValue("morrenus_api_key", api_key)
-        if self.sgdb_api_key_input:
-            sgdb_key = self.sgdb_api_key_input.text().strip()
-            self.settings.setValue("sgdb_api_key", sgdb_key)
 
     def _save_download_settings(self) -> None:
         if self.sls_mode_checkbox is not None:
@@ -1233,39 +1002,10 @@ class SettingsDialog(QDialog):
             "generate_achievements", self.achievements_checkbox.isChecked()
         )
         self.settings.setValue("use_steamless", self.steamless_checkbox.isChecked())
-        self.settings.setValue(
-            "auto_apply_goldberg",
-            self.auto_apply_goldberg_checkbox.isChecked(),
-        )
-
-        if self.application_shortcuts_checkbox:
-            self.settings.setValue(
-                "create_application_shortcuts",
-                self.application_shortcuts_checkbox.isChecked(),
-            )
 
         block_updates = self.block_steam_updates_checkbox.isChecked()
         self.settings.setValue("block_steam_updates", block_updates)
         SettingsDialog._apply_steam_updates_block(block_updates)
-
-        val = 255
-        if hasattr(self, "max_downloads_spinbox"):
-            try:
-                val = max(0, min(255, int(self.max_downloads_spinbox.value())))
-            except (ValueError, TypeError):
-                pass
-        self.settings.setValue("max_downloads", val)
-
-    def _save_audio_settings(self) -> None:
-        self.settings.setValue("play_etw", self.play_etw_checkbox.isChecked())
-        self.settings.setValue("play_lall", self.play_lall_checkbox.isChecked())
-        self.settings.setValue("play_50hz_hum", self.play_50hz_hum_checkbox.isChecked())
-        self.settings.setValue("master_volume", self.master_volume_slider.value())
-        self.settings.setValue("effects_volume", self.effects_volume_slider.value())
-        self.settings.setValue("hum_volume", self.hum_volume_slider.value())
-        if self.main_window and hasattr(self.main_window, "audio_manager"):
-            # noinspection PyUnresolvedReferences
-            self.main_window.audio_manager.apply_audio_settings()
 
     def _save_style_settings(self) -> bool:
         acc_s = self.accent_color_button.styleSheet()
@@ -1276,36 +1016,14 @@ class SettingsDialog(QDialog):
         self.settings.setValue("user_accent_color", u_accent)
         self.settings.setValue("user_background_color", u_bg)
 
-        prev_mode = self.settings.value("ui_mode", "default")
-        sonic = (
-            hasattr(self, "sonic_mode_checkbox")
-            and self.sonic_mode_checkbox.isChecked()
-        )
-        new_mode = "sonic" if sonic else "default"
-        self.settings.setValue("ui_mode", new_mode)
-
-        if sonic:
-            applied_accent = "#ffcc00"
-            applied_bg = "#002c83"
-            self.settings.setValue("font-file", "sonic/sonic-1-hud-font.otf")
-        else:
-            applied_accent = u_accent
-            applied_bg = u_bg
-            self.settings.setValue("font-file", "")
-
-        # Reload sounds if mode changed
-        if (
-            prev_mode != new_mode
-            and self.main_window
-            and hasattr(self.main_window, "audio_manager")
-        ):
-            # noinspection PyUnresolvedReferences
-            self.main_window.audio_manager.reload_sounds_for_ui_mode()
+        applied_accent = u_accent
+        applied_bg = u_bg
+        self.settings.setValue("font-file", "")
 
         ignore = self.ignore_color_warnings_checkbox.isChecked()
         self.settings.setValue("ignore_color_warnings", ignore)
 
-        if not ignore and not sonic:
+        if not ignore:
             if SettingsDialog._is_too_close(QColor(u_accent), QColor(u_bg)):
                 QMessageBox.warning(
                     self,
@@ -1335,28 +1053,9 @@ class SettingsDialog(QDialog):
 
         return True
 
-    def _save_effects_settings(self) -> None:
-        self.settings.setValue("crt_overlay_enabled", self.crt_overlay_checkbox.isChecked())
-        self.settings.setValue("crt_overlay_fsw", self.crt_overlay_fsw_checkbox.isChecked())
-        self.settings.setValue("crt_overlay_fgl", self.crt_overlay_fgl_checkbox.isChecked())
-        self.settings.setValue("crt_overlay_preset", self.crt_overlay_preset_combo.currentData())
-        self.settings.setValue("crt_overlay_singleband", self.crt_overlay_singleband.isChecked())
-        self.settings.setValue("crt_overlay_direction", self.crt_overlay_direction_combo.currentData())
-
-        if self.main_window and hasattr(self.main_window, "crt_overlay"):
-            from ui.crt_overlay import restart_crt_overlay
-
-            self.main_window.crt_overlay = restart_crt_overlay(
-                parent=self.main_window,
-                old_overlay=self.main_window.crt_overlay,
-                settings=self.settings,
-            )
-
     def reject(self) -> None:
         """Revert settings on cancel."""
         self.settings.setValue("morrenus_api_key", self._original_morrenus_key)
-        if self.sgdb_api_key_input:
-            self.settings.setValue("sgdb_api_key", self._original_sgdb_key)
 
         # Revert live-previewed settings that were saved immediately
         self.settings.setValue("titlebar_position", self._original_titlebar_position)
@@ -1367,13 +1066,6 @@ class SettingsDialog(QDialog):
         self.settings.setValue(
             "gif_display_enabled", self._original_gif_display_enabled
         )
-        if self.main_window and hasattr(self.main_window, "update_gif_display"):
-            # noinspection PyUnresolvedReferences
-            self.main_window.update_gif_display(self._original_gif_display_enabled)
-
-        if self.main_window and hasattr(self.main_window, "audio_manager"):
-            # noinspection PyUnresolvedReferences
-            self.main_window.audio_manager.apply_audio_settings()
         super().reject()
 
     @staticmethod
