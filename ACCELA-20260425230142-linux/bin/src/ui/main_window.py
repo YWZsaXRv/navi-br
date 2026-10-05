@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         logger.info(f"Lain minigame completed with score: {score}")
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle("The Wired")
-        msg_box.setText(f"Connection Terminated\n\nFinal Score: {score}")
+        msg_box.setText(f"Conexão Encerrada\n\nPontuação Final: {score}")
         msg_box.exec()
 
     @staticmethod
@@ -385,7 +385,7 @@ class MainWindow(QMainWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
 
-        self.drop_text_label = ScaledFontLabel("Drag and Drop Zip here")
+        self.drop_text_label = ScaledFontLabel("Arraste e Solte ZIP aqui")
         self.drop_text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.drop_text_label.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding

@@ -107,7 +107,7 @@ class BottomTitleBar(QFrame):
             getattr(self.parent_window, "open_credits_dialog", None),
         )
         version_label.setStyleSheet("color: #888888;")
-        version_label.setToolTip("View credits")
+        version_label.setToolTip("Ver créditos")
         layout.addWidget(version_label, alignment=Qt.AlignmentFlag.AlignLeft)
 
         widget.setMinimumSize(widget.sizeHint())
