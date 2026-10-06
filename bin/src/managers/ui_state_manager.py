@@ -385,10 +385,7 @@ class UIStateManager:
         accent_style = f"color: {self.main_window.accent_color};"
 
         # Drop text label
-        self.main_window.drop_text_label.setStyleSheet(accent_style)
-
-        # ícone do drop é tinta do acento
-        self.main_window._pinta_icone_drop()
+        self.main_window._atualiza_zona_drop()
 
         # Cabeçalho da fila (mesmo estilo do cabeçalho de log)
         if getattr(self, "queue_label", None):

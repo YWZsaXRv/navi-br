@@ -4,7 +4,7 @@ import sys
 from collections import deque
 from typing import Optional
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import QEvent, Qt, QTimer
 from PyQt6.QtGui import (
     QColor,
     QDragEnterEvent,
@@ -15,6 +15,7 @@ from PyQt6.QtGui import (
     QShortcut,
 )
 from PyQt6.QtWidgets import (
+    QFileDialog,
     QFrame,
     QLabel,
     QMainWindow,
@@ -42,7 +43,7 @@ from ui.dialogs.lain import LainMinigameDialog
 from ui.dialogs.settings import SettingsDialog
 from ui.dialogs.status import StatusDialog
 from ui.frameless import Alcas
-from ui.theme import cabecalho_secao, sulco
+from ui.theme import cabecalho_secao, cor_secundaria, sulco, texto_sobre
 from ui.window_defaults import ALTURA, GAP, LARGURA, RECUO_LATERAL
 from utils.brand import DISPLAY_NAME
 from utils.logger import qt_log_handler
@@ -81,6 +82,7 @@ class MainWindow(QMainWindow):
         self.drop_zone_gif = None
         self.drop_text_label = None
         self.drop_icon = None
+        self.drop_hint = None
         self.lado_icone_drop = 0
         self.drop_destacado = False
         self.texto_drop_antes = None
@@ -245,22 +247,31 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.main_container, 3)
 
         self.main_layout = QVBoxLayout(self.main_container)
-        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        # o recuo lateral deixa a moldura do campo caber dentro da janela
+        # e o topo respira o mesmo que a borda de baixo da janela
+        self.main_layout.setContentsMargins(
+            RECUO_LATERAL, GAP, RECUO_LATERAL, 0
+        )
         self.main_layout.setSpacing(0)
 
         self._create_drop_zone()
         self._create_progress_section()
 
     def _create_drop_zone(self) -> None:
-        """Create the drag and drop area."""
+        """campo win95 onde o zip entra arrastando ou no duplo clique."""
         self.drop_zone_container = QWidget()
+        self.drop_zone_container.setObjectName("zona_drop")
         self.drop_zone_container.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
+        self.drop_zone_container.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.drop_zone_container.installEventFilter(self)
         self.drop_zone_layout = QVBoxLayout(self.drop_zone_container)
-        # folga mínima em cima do título quando a área aperta
-        self.drop_zone_layout.setContentsMargins(0, GAP, 0, 0)
+        self.drop_zone_layout.setContentsMargins(16, 16, 16, 16)
         self.drop_zone_layout.setSpacing(0)
+
+        # o respiro de cima e de baixo centraliza o bloco sozinho
+        self.drop_zone_layout.addStretch(1)
 
         self.drop_zone_gif = ScaledLabel()
         self.drop_zone_gif.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -268,17 +279,17 @@ class MainWindow(QMainWindow):
         self.drop_zone_gif.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
+        self.drop_zone_layout.addWidget(self.drop_zone_gif, 9)
 
-        self.drop_text_label = ScaledFontLabel("Arraste o ZIP aqui")
+        self.drop_text_label = ScaledFontLabel(
+            "Arraste o ZIP aqui", escala_por="largura"
+        )
         self.drop_text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.drop_text_label.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
         )
         self.drop_text_label.setMinimumHeight(32)
-        self.drop_text_label.setMaximumHeight(48)
-
-        self.drop_zone_layout.addWidget(self.drop_zone_gif, 9)
-        self.drop_zone_layout.addWidget(self.drop_text_label, 1)
+        self.drop_zone_layout.addWidget(self.drop_text_label)
         self.drop_zone_layout.addSpacing(12)
 
         self.drop_icon = QLabel()
@@ -286,7 +297,21 @@ class MainWindow(QMainWindow):
         self.drop_zone_layout.addWidget(
             self.drop_icon, 0, Qt.AlignmentFlag.AlignCenter
         )
+        self.drop_zone_layout.addSpacing(6)
+
+        # QLabel comum: o ScaledFontLabel mexe no tamanho da fonte sozinho
+        self.drop_hint = QLabel("ou dê 2 cliques para escolher o zip")
+        self.drop_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.drop_hint.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        )
+        self.drop_zone_layout.addWidget(
+            self.drop_hint, 0, Qt.AlignmentFlag.AlignCenter
+        )
+
+        self.drop_zone_layout.addStretch(1)
         self._ajusta_icone_drop()
+        self._atualiza_zona_drop()
         self.main_layout.addWidget(self.drop_zone_container, 10)
 
     def _ajusta_icone_drop(self) -> None:
@@ -301,12 +326,17 @@ class MainWindow(QMainWindow):
         self._pinta_icone_drop()
 
     def _pinta_icone_drop(self) -> None:
-        """normal, ou com a caixa marcada enquanto o zip está por cima."""
+        """branco no arraste (o campo vira seleção), acento no repouso."""
         if self.drop_icon is None or not self.lado_icone_drop:
             return
         svg = DROP_SVG_HOVER if self.drop_destacado else DROP_SVG
+        cor = (
+            texto_sobre(self.accent_color)
+            if self.drop_destacado
+            else self.accent_color
+        )
         self.drop_icon.setPixmap(
-            svg_para_pixmap(svg, QColor(self.accent_color), self.lado_icone_drop)
+            svg_para_pixmap(svg, QColor(cor), self.lado_icone_drop)
         )
 
     def _destaque_drop(self, ativo: bool) -> None:
@@ -326,13 +356,82 @@ class MainWindow(QMainWindow):
             if self.texto_drop_antes:
                 self.drop_text_label.setText(self.texto_drop_antes)
             self.texto_drop_antes = None
+        self._atualiza_zona_drop()
+
+    def _estilo_zona_drop(self) -> None:
+        """moldura rebaixada do win95; no arraste o campo vira seleção."""
+        fundo = QColor(self.background_color or "#c0c0c0")
+        # com seletor: declaração solta escorre pros filhos e vira caixa em volta deles
+        if self.drop_destacado:
+            sel = QColor(self.accent_color).name()
+            self.drop_zone_container.setStyleSheet(
+                f"QWidget#zona_drop {{"
+                f"background-color: {sel};"
+                f"border-top: 2px solid {sel};"
+                f"border-left: 2px solid {sel};"
+                f"border-bottom: 2px solid {sel};"
+                f"border-right: 2px solid {sel};"
+                f"}}"
+            )
+            return
+        escuro = sulco(fundo)
+        self.drop_zone_container.setStyleSheet(
+            f"QWidget#zona_drop {{"
+            f"background-color: {fundo.name()};"
+            f"border-top: 2px solid {escuro};"
+            f"border-left: 2px solid {escuro};"
+            f"border-bottom: 2px solid #FFFFFF;"
+            f"border-right: 2px solid #FFFFFF;"
+            f"}}"
+        )
+
+    def _pinta_textos_drop(self) -> None:
+        """texto e apoio acompanham o estado do campo."""
+        if self.drop_text_label is None:
+            return
+        if self.drop_destacado:
+            cor_texto = texto_sobre(self.accent_color)
+            cor_apoio = cor_texto
+        else:
+            cor_texto = self.accent_color
+            cor_apoio = cor_secundaria(self.background_color or "#c0c0c0")
+        self.drop_text_label.setStyleSheet(f"color: {cor_texto};")
+        if self.drop_hint is not None:
+            self.drop_hint.setStyleSheet(
+                f"color: {cor_apoio}; font-size: 11px; background: transparent;"
+            )
+
+    def _atualiza_zona_drop(self) -> None:
+        """campo, textos e ícone juntos: cor nova ou estado de arraste."""
+        if self.drop_zone_container is None:
+            return
+        self._estilo_zona_drop()
+        self._pinta_textos_drop()
         self._pinta_icone_drop()
+
+    def eventFilter(self, obj, event) -> bool:
+        if obj is self.drop_zone_container and event.type() == QEvent.Type.MouseButtonDblClick:
+            if event.button() == Qt.MouseButton.LeftButton:
+                self._escolhe_zips()
+                return True
+        return super().eventFilter(obj, event)
+
+    def _escolhe_zips(self) -> None:
+        """2 cliques no campo: quem prefere mouse escolhe os zips na mão."""
+        caminhos, _ = QFileDialog.getOpenFileNames(
+            self, "Escolher ZIP", "", "Arquivos ZIP (*.zip)"
+        )
+        if not caminhos:
+            return
+        logger.info(f"Added {len(caminhos)} file(s) to the queue via file dialog.")
+        for caminho in caminhos:
+            self.job_queue.add_job(caminho)
 
     def _create_progress_section(self) -> None:
         """Create the progress bar and speed label."""
         self.progress_container = QWidget()
         self.progress_layout = QVBoxLayout(self.progress_container)
-        self.progress_layout.setContentsMargins(20, 5, 20, 5)
+        self.progress_layout.setContentsMargins(0, 5, 0, 5)
 
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
@@ -431,14 +530,11 @@ class MainWindow(QMainWindow):
             self.layout.setStretchFactor(self.main_container, 3)
             self.layout.setStretchFactor(self.bottom_widget, 1)
         else:
-            current_height = self.height()
-            gif_height = self.drop_zone_gif.height()
-            new_height = max(200, current_height - gif_height)
-            self.resize(self.width(), new_height)
             self.main_layout.setStretchFactor(self.drop_zone_gif, 0)
             self.drop_zone_gif.setVisible(False)
-            self.layout.setStretchFactor(self.main_container, 1)
-            self.layout.setStretchFactor(self.bottom_widget, 3)
+            # sem gif a área de arrastar vira o miolo da janela
+            self.layout.setStretchFactor(self.main_container, 3)
+            self.layout.setStretchFactor(self.bottom_widget, 1)
 
         self.update()
         logger.info(f"GIF display updated: {'enabled' if enabled else 'disabled'}")
