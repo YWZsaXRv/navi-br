@@ -4,7 +4,6 @@ from typing import Optional, Tuple
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QDialog,
-    QDialogButtonBox,
     QLabel,
     QVBoxLayout,
     QWidget,
@@ -60,8 +59,6 @@ class SteamlessResumeDialog(QDialog):
         self._create_separator()
         self._create_stats_section(exe_count, processed_count)
         self._create_status_message(exe_count, processed_count, success)
-        self.layout.addSpacing(10)
-        self._create_buttons()
 
     def _create_header(self, game_name: str) -> None:
         """Create the title and game name labels."""
@@ -130,10 +127,3 @@ class SteamlessResumeDialog(QDialog):
         status_label.setStyleSheet(f"color: {color}; font-size: 12pt;")
         status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(status_label)
-
-    def _create_buttons(self) -> None:
-        """Create the dialog buttons."""
-        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
-        button_box.accepted.connect(self.accept)
-        button_box.setCenterButtons(True)
-        self.layout.addWidget(button_box)
