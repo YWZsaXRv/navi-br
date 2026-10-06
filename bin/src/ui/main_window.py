@@ -37,6 +37,7 @@ from managers.ui_state_manager import UIStateManager
 from ui.assets import DROP_SVG, DROP_SVG_HOVER, svg_para_pixmap
 from ui.bottom_titlebar import BottomTitleBar
 from ui.dialogs.credits import CreditsDialog
+from ui.dialogs.dialog_helpers import tira_icones_padrao
 from ui.dialogs.fetchmanifest import FetchManifestDialog
 from ui.dialogs.gamelibrary import GameLibraryDialog
 from ui.dialogs.lain import LainMinigameDialog
@@ -168,6 +169,8 @@ class MainWindow(QMainWindow):
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle("The Wired")
         msg_box.setText(f"Conexão Encerrada\n\nPontuação Final: {score}")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
+        tira_icones_padrao(msg_box)
         msg_box.exec()
 
     @staticmethod

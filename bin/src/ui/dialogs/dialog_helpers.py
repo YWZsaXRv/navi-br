@@ -1,8 +1,26 @@
 from PyQt6.QtCore import QEvent, QObject, Qt
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QVBoxLayout
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QLayout,
+    QMessageBox,
+    QVBoxLayout,
+)
 
 from ui.bottom_titlebar import ALTURA_BARRA, BottomTitleBar
 from ui.frameless import Alcas
+
+
+def tira_icones_padrao(widgeto) -> None:
+    """ok e cancelar saem com ícone do estilo; aqui é texto puro."""
+    if isinstance(widgeto, (QDialogButtonBox, QMessageBox)):
+        caixas = [widgeto]
+    else:
+        caixas = widgeto.findChildren(QDialogButtonBox)
+    for caixa in caixas:
+        for botao in caixa.buttons():
+            botao.setIcon(QIcon())
 
 
 def create_accept_button(on_accept):
@@ -10,6 +28,7 @@ def create_accept_button(on_accept):
     buttons = QDialogButtonBox()
     ok_btn = buttons.addButton(QDialogButtonBox.StandardButton.Ok)
     ok_btn.setText("OK")
+    tira_icones_padrao(buttons)
     buttons.accepted.connect(on_accept)
     return buttons
 

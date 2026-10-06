@@ -13,6 +13,7 @@ from PyQt6.QtGui import QColor, QFont, QDesktopServices
 from PyQt6.QtWidgets import (
     QCheckBox,
     QColorDialog,
+    QComboBox,
     QDialog,
     QFileDialog,
     QFontDialog,
@@ -31,7 +32,11 @@ from PyQt6.QtWidgets import (
 
 from core import morrenus_api
 from ui.dialogs.custom_gifs import CustomGifsDialog
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
+from ui.dialogs.dialog_helpers import (
+    aplicar_barra_titulo,
+    create_accept_button,
+    tira_icones_padrao,
+)
 from ui.theme import cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
@@ -799,9 +804,19 @@ class SettingsDialog(QDialog):
 
     # Font Handlers
     def choose_font(self) -> None:
-        font, ok = QFontDialog.getFont(self.current_font, self)
-        if ok:
-            self.current_font = font
+        dialogo = QFontDialog(self.current_font, self)
+        # suporte é só pt-br: sem efeitos e sem escolha de writing system
+        for grupo in dialogo.findChildren(QGroupBox):
+            if grupo.findChildren(QCheckBox):
+                grupo.hide()
+        for sistema in dialogo.findChildren(QComboBox):
+            sistema.hide()
+            for rotulo in dialogo.findChildren(QLabel):
+                if rotulo.buddy() is sistema:
+                    rotulo.hide()
+        tira_icones_padrao(dialogo)
+        if dialogo.exec():
+            self.current_font = dialogo.currentFont()
             self.update_font_button_text()
 
     def reset_font(self) -> None:
@@ -1159,6 +1174,7 @@ class SettingsDialog(QDialog):
         msg_box.setInformativeText(" ".join(cmd))
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
         msg_box.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        tira_icones_padrao(msg_box)
         msg_box.exec()
 
     def run_steamless_manually(self) -> None:
