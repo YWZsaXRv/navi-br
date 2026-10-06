@@ -3,8 +3,6 @@ psutil
 steam[client] @ git+https://github.com/solsticegamestudios/steam
 requests>=2.25.0
 cryptography
-pillow
-numpy
 zstandard
 PyYAML
 gevent
