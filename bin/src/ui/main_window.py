@@ -357,6 +357,13 @@ class MainWindow(QMainWindow):
         self._update_resize_handles_geometry()
         if hasattr(self, "crt_overlay"):
             self.crt_overlay.setGeometry(0, 0, self.width(), self.height())
+        if getattr(self, "log_output", None):
+            # o layout da seção de baixo ainda não rodou, refaz no próximo turno
+            self._agenda_ajuste_log()
+
+    def _agenda_ajuste_log(self) -> None:
+        """Reencaixa o log depois que o layout terminar de calcular os tamanhos."""
+        QTimer.singleShot(0, self._ajusta_altura_log)
 
     def _create_main_content(self) -> None:
         """Create the main content area with drop zone."""
@@ -380,7 +387,8 @@ class MainWindow(QMainWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
         self.drop_zone_layout = QVBoxLayout(self.drop_zone_container)
-        self.drop_zone_layout.setContentsMargins(0, 0, 0, 0)
+        # folga mínima em cima do título quando a área aperta
+        self.drop_zone_layout.setContentsMargins(0, GAP, 0, 0)
         self.drop_zone_layout.setSpacing(0)
 
         self.drop_zone_gif = ScaledLabel()
@@ -423,19 +431,74 @@ class MainWindow(QMainWindow):
     def _create_bottom_section(self) -> None:
         """Create the bottom section with queue and logs."""
         self.bottom_widget = QWidget()
-        self.bottom_layout = QHBoxLayout(self.bottom_widget)
-        self.bottom_layout.setContentsMargins(5, 5, 5, 5)
+        # vertical: o espaço que sobra fica em cima, log e fila descem juntos
+        self.bottom_layout = QVBoxLayout(self.bottom_widget)
+        self.bottom_layout.setContentsMargins(
+            RECUO_LATERAL, GAP, RECUO_LATERAL, GAP
+        )
+        self.bottom_layout.setSpacing(6)
+        self.bottom_layout.addStretch(1)
 
-        self.ui_state.setup_queue_panel()
-        self.bottom_layout.addWidget(self.ui_state.queue_widget, 1)
+        # cabeçalho do log: título e linha, o texto começa com respiro embaixo
+        logs_header = QLabel("Logs")
+        logs_header.setStyleSheet(cabecalho_secao(self.accent_color))
+        self.bottom_layout.addWidget(logs_header)
+
+        logs_line = QFrame()
+        logs_line.setFixedHeight(1)
+        logs_line.setStyleSheet(
+            f"background-color: {self.accent_color}; border: none;"
+        )
+        self.bottom_layout.addWidget(logs_line)
+
+        # respiro maior entre a linha e a primeira linha do log
+        self.bottom_layout.addSpacing(8)
 
         self.log_output = QTextEdit()
         self.log_output.setReadOnly(True)
+        # sem margem interna: o texto começa no mesmo recuo dos títulos
+        self.log_output.document().setDocumentMargin(0)
+        # altura colada no texto, senão sobra buraco entre o log e a fila
+        self.log_output.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
+        self.log_output.textChanged.connect(self._ajusta_altura_log)
         qt_log_handler.new_record.connect(self.log_output.append)
-        self.bottom_layout.addWidget(self.log_output, 1)
+        self.bottom_layout.addWidget(self.log_output)
+
+        self.ui_state.setup_queue_panel()
+        # a fila absorve o resto (leva 2 porque o cabeçalho dela pesa mais)
+        self.bottom_layout.addWidget(self.ui_state.queue_widget, 2)
 
         self.layout.addWidget(self.bottom_widget, 1)
         self.ui_state.queue_widget.setVisible(False)
+        self._ajusta_altura_log()
+
+    def _ajusta_altura_log(self) -> None:
+        """A altura do log segue o texto, o espaço que sobra fica em cima dele."""
+        doc = self.log_output.document()
+        altura = doc.lineCount() * self.log_output.fontMetrics().lineSpacing()
+        altura += 2 * doc.documentMargin() + 2
+
+        disponivel = self.bottom_widget.height()
+        if disponivel > 0:
+            # teto duplo: não passa de um terço da janela (senão a seção de
+            # baixo empurra a área principal) e não come o espaço da fila
+            reserva = 55
+            fila = getattr(self.ui_state, "queue_widget", None)
+            if fila is not None and fila.isVisible():
+                reserva += 165
+            teto = int(self.height() * 0.30)
+            altura = min(altura, max(48, min(teto, disponivel - reserva)))
+
+        altura = int(altura)
+        if self.log_output.height() != altura:
+            self.log_output.setFixedHeight(altura)
+
+        # só acompanha o fim se quem lê já estava no fim
+        barra = self.log_output.verticalScrollBar()
+        if barra.maximum() - barra.value() < 4:
+            barra.setValue(barra.maximum())
 
     def update_gif_display(self, enabled: Optional[bool] = None) -> None:
         """Update GIF display visibility and adjust window layout."""

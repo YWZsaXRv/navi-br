@@ -2,6 +2,7 @@ import logging
 
 from PyQt6.QtWidgets import (
     QDialog,
+    QHBoxLayout,
     QPushButton,
     QVBoxLayout,
     QGroupBox,
@@ -22,6 +23,8 @@ class CreditsDialog(QDialog):
         aplicar(self, parent)
         self.settings = get_settings()
         self.main_layout = QVBoxLayout(self)
+        self.main_layout.setContentsMargins(24, 24, 24, 24)
+        self.main_layout.setSpacing(16)
         self.accent_color = self.settings.value("accent_color", "#C06C84")
 
         logger.debug("Opening CreditsDialog.")
@@ -35,17 +38,21 @@ class CreditsDialog(QDialog):
         """
         )
 
+        self.main_layout.addStretch()
+
         # Create credits content
         self._create_credits_content()
 
-        # Dialog buttons
-        close_button = QPushButton("Fechar")
-        close_button.clicked.connect(self.reject)
-        self.main_layout.addWidget(close_button)
+        self.main_layout.addStretch()
 
-        # ajusta a altura ao conteudo, pra lista de agradecimentos nunca ser
-        # cortada. a largura continua presa no minimo de 400px.
-        self.adjustSize()
+        # rodapé com o fechar alinhado na direita
+        footer = QHBoxLayout()
+        footer.addStretch()
+        close_button = QPushButton("Fechar")
+        close_button.setFixedWidth(110)
+        close_button.clicked.connect(self.reject)
+        footer.addWidget(close_button)
+        self.main_layout.addLayout(footer)
 
     def _create_credits_content(self):
         """Create the credits content"""
@@ -54,7 +61,7 @@ class CreditsDialog(QDialog):
         credits_layout.setContentsMargins(15, 15, 15, 15)
 
         # --- Credits Information ---
-        credits_group = QGroupBox("Créditos")
+        credits_group = QGroupBox()
         credits_info_layout = QVBoxLayout()
 
         # Developer information
@@ -64,22 +71,29 @@ class CreditsDialog(QDialog):
         )
         credits_info_layout.addWidget(dev_label)
 
-        # Address information
+        # Address information (folga igual à das outras linhas, sem margem extra)
         address_label = QLabel("Endereço: Takei Nakama, Tokyo")
-        address_label.setStyleSheet("font-size: 12px; margin-top: 10px;")
+        address_label.setStyleSheet("font-size: 12px;")
         credits_info_layout.addWidget(address_label)
 
         # Phone information
         phone_label = QLabel("Telefone: 4002-8922")
-        phone_label.setStyleSheet("font-size: 12px; margin-top: 5px;")
+        phone_label.setStyleSheet("font-size: 12px;")
         credits_info_layout.addWidget(phone_label)
 
         credits_group.setLayout(credits_info_layout)
         credits_layout.addWidget(credits_group)
 
         # --- Special Thanks ---
-        special_thanks_group = QGroupBox("Agradecimentos especiais")
+        special_thanks_group = QGroupBox()
         special_thanks_layout = QVBoxLayout()
+
+        # deixa claro que a lista é de projetos usados, não de autores
+        tools_title = QLabel("Projetos incríveis que a ferramenta consome:")
+        tools_title.setStyleSheet(
+            f"font-size: 14px; font-weight: bold; color: {self.accent_color};"
+        )
+        special_thanks_layout.addWidget(tools_title)
 
         tools_label = QLabel(
             "• SLSsteam\n"
@@ -96,4 +110,10 @@ class CreditsDialog(QDialog):
         special_thanks_group.setLayout(special_thanks_layout)
         credits_layout.addWidget(special_thanks_group)
 
-        self.main_layout.addWidget(credits_widget)
+        # coluna centralizada, senão o grupo fica largo com texto curto sobrando
+        row = QHBoxLayout()
+        row.addStretch()
+        credits_widget.setFixedWidth(400)
+        row.addWidget(credits_widget)
+        row.addStretch()
+        self.main_layout.addLayout(row)

@@ -8,6 +8,7 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QDialog,
+    QDialogButtonBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -164,6 +165,15 @@ class FetchManifestDialog(QDialog):
         self.status_label = QLabel("Busque um jogo para começar")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.status_label)
+
+        # 5. botão fechar
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        fechar = buttons.button(QDialogButtonBox.StandardButton.Close)
+        fechar.setText("Fechar")
+        # sem isso o enter da busca clica no auto-default e fecha a janela
+        fechar.setAutoDefault(False)
+        buttons.rejected.connect(self.close)
+        layout.addWidget(buttons)
 
     def _create_api_status_bar(self, parent_layout):
         """Builds the top status bar widget."""

@@ -2,7 +2,7 @@ import logging
 from typing import Callable, Optional
 
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QColor, QIcon, QMouseEvent, QMovie, QPainter, QPixmap
+from PyQt6.QtGui import QColor, QIcon, QMouseEvent, QPainter, QPixmap
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import (
     QFrame,
@@ -10,11 +10,13 @@ from PyQt6.QtWidgets import (
     QLabel,
     QPushButton,
     QSizePolicy,
+    QVBoxLayout,
     QWidget,
 )
 
+from ui.theme import cor_secundaria
+from ui.window_defaults import GAP
 from utils.brand import DISPLAY_NAME
-from utils.helpers import get_base_path
 from utils.settings import get_settings
 from utils.version import app_version
 from .assets import (
@@ -43,9 +45,11 @@ class ClickableLabel(QLabel):
         self.setStyleSheet("cursor: pointer;")
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
+        # aceito antes de abrir o modal, senão o clique vaza pro titlebar e o
+        # startSystemMove começa sem ver o botão subir, a janela fica arrastando
+        event.accept()
         if self.callback:
             self.callback()
-        super().mousePressEvent(event)
 
 
 class BottomTitleBar(QFrame):
@@ -54,11 +58,9 @@ class BottomTitleBar(QFrame):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.parent_window = parent
-        self.setFixedHeight(32)
+        self.setFixedHeight(40)
         self.no_previous_state = True
 
-        self.navi_label: Optional[QLabel] = None
-        self.navi_movie: Optional[QMovie] = None
         self.title_label: Optional[QLabel] = None
 
         # Buttons
@@ -76,8 +78,18 @@ class BottomTitleBar(QFrame):
 
     def _setup_ui(self) -> None:
         """Setup the layout and widgets."""
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 0, 5, 0)
+        # a linha em cima é um widget próprio: se a borda ficar no QFrame do
+        # rodapé ela vaza pros rótulos internos (QLabel herda de QFrame)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
+        self.top_line = QLabel()
+        self.top_line.setFixedHeight(1)
+        outer.addWidget(self.top_line)
+
+        layout = QHBoxLayout()
+        # respiro em cima e embaixo, senão o conteúdo cola nas bordas
+        layout.setContentsMargins(5, GAP, 5, GAP)
         layout.setSpacing(5)
 
         left_widget = self._create_left_section()
@@ -92,79 +104,28 @@ class BottomTitleBar(QFrame):
         layout.addWidget(left_widget, 0, Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.title_label, 1)
         layout.addWidget(right_widget, 0, Qt.AlignmentFlag.AlignRight)
+        outer.addLayout(layout)
 
     def _create_left_section(self) -> QWidget:
-        """Create the left section containing animation and version."""
+        """Create the left section containing the version label."""
         widget = QWidget()
         layout = QHBoxLayout(widget)
         layout.setContentsMargins(0, 0, 0, 0)
-
-        self._setup_navi_animation(layout)
 
         version_label = ClickableLabel(
             app_version,
             self.parent_window,
             getattr(self.parent_window, "open_credits_dialog", None),
         )
-        version_label.setStyleSheet("color: #888888;")
+        version_label.setStyleSheet(
+            f"color: {cor_secundaria(get_settings().value('background_color', '#000000'))};"
+        )
         version_label.setToolTip("Ver créditos")
         layout.addWidget(version_label, alignment=Qt.AlignmentFlag.AlignLeft)
 
         widget.setMinimumSize(widget.sizeHint())
         widget.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         return widget
-
-    def _setup_navi_animation(self, layout: QHBoxLayout) -> None:
-        """Setup the Navi GIF animation label (may be empty initially)."""
-        self.navi_label = QLabel(self)  # Ensure parent is this title bar
-        self.navi_label.setVisible(True)
-        layout.addWidget(self.navi_label, alignment=Qt.AlignmentFlag.AlignLeft)
-
-        self.reload_navi_gif()
-
-    def reload_navi_gif(self) -> None:
-        """Reload the Navi GIF from disk and update the label."""
-        if not hasattr(self, "navi_label") or self.navi_label is None:
-            logger.warning("Cannot reload Navi GIF: navi_label missing")
-            return
-
-        # Stop existing movie if any
-        if hasattr(self, "navi_movie") and self.navi_movie is not None:
-            self.navi_movie.stop()
-            # Disconnect any signals to avoid stray events
-            self.navi_movie.deleteLater()
-            self.navi_movie = None
-
-        gif_path = get_base_path() / "gifs/colorized/navi.gif"
-        if not gif_path.exists():
-            logger.debug(f"Navi GIF not found at {gif_path}")
-            self.navi_label.clear()  # Clear any previous pixmap/movie
-            self.navi_label.setFixedSize(1, 1)  # Collapse to avoid empty space
-            return
-
-        new_movie = QMovie(str(gif_path))
-        if not new_movie.isValid():
-            logger.error(f"Invalid Navi GIF: {gif_path}")
-            self.navi_label.clear()
-            self.navi_label.setFixedSize(1, 1)
-            return
-
-        # Calculate size based on first frame
-        new_movie.jumpToFrame(0)
-        orig_size = new_movie.currentImage().size()
-        height = 20
-        width = (
-            int(height * (orig_size.width() / orig_size.height()))
-            if orig_size.height() > 0
-            else 57
-        )
-
-        self.navi_label.setFixedSize(width, height)
-        self.navi_label.setScaledContents(True)
-        self.navi_label.setMovie(new_movie)
-        new_movie.start()
-        self.navi_movie = new_movie
-        logger.info("Navi GIF reloaded successfully")
 
     def _create_right_section(self) -> QWidget:
         """Create the right section containing buttons."""
@@ -235,6 +196,8 @@ class BottomTitleBar(QFrame):
             }}
         """
         )
+        # a linha do topo tem prioridade sobre o QFrame herdado do rodapé
+        self.top_line.setStyleSheet(f"background-color: {accent_color};")
 
         if self.title_label:
             self.title_label.setStyleSheet(f"color: {accent_color}; font-size: 14pt;")

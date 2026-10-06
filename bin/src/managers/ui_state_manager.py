@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
 
 from utils.helpers import get_base_path
 from utils.paths import Paths
+from ui.theme import cabecalho_secao, cor_secundaria
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +36,8 @@ class UIStateManager:
 
         # Queue UI elements
         self.queue_widget = None
+        self.queue_label = None
+        self.fila_vazia_label = None
         self.queue_list_widget = None
         self.queue_move_up_button = None
         self.queue_move_down_button = None
@@ -221,34 +224,77 @@ class UIStateManager:
         ):
             self.switch_to_download_gif()
 
-        bottom_bar = getattr(self.main_window, "bottom_titlebar", None)
-        if bottom_bar is not None and hasattr(bottom_bar, "reload_navi_gif"):
-            bottom_bar.reload_navi_gif()
-
     def setup_queue_panel(self):
         """Setup the download queue panel"""
         self.queue_widget = QWidget()
         queue_layout = QVBoxLayout(self.queue_widget)
-        queue_layout.setContentsMargins(0, 0, 5, 0)
+        # sem recuo: o recuo lateral e o gap de baixo já vêm da seção de baixo
+        queue_layout.setContentsMargins(0, 0, 0, 0)
+        queue_layout.setSpacing(6)
 
-        # Queue label
-        queue_label = QLabel("Fila de download")
-        queue_label.setStyleSheet(f"color: {self.main_window.accent_color};")
-        queue_layout.addWidget(queue_label)
+        # mesmo formato do cabeçalho de log: título e linha embaixo
+        self.queue_label = QLabel("Fila de download")
+        self.queue_label.setStyleSheet(cabecalho_secao(self.main_window.accent_color))
+        queue_layout.addWidget(self.queue_label)
+
+        queue_line = QFrame()
+        queue_line.setFixedHeight(1)
+        queue_line.setStyleSheet(
+            f"background-color: {self.main_window.accent_color}; border: none;"
+        )
+        queue_layout.addWidget(queue_line)
+
+        # mesmo respiro do log entre a linha e o conteúdo
+        queue_layout.addSpacing(8)
+
+        # lista e botões no mesmo recuo dos títulos e do log
+        conteudo = QWidget()
+        conteudo_layout = QVBoxLayout(conteudo)
+        conteudo_layout.setContentsMargins(0, 0, 0, 0)
+        conteudo_layout.setSpacing(6)
+
+        self.fila_vazia_label = QLabel("Nenhum download na fila")
+        self.fila_vazia_label.setStyleSheet(
+            f"color: {cor_secundaria(self.settings.value('background_color', '#000000'))};"
+        )
+        conteudo_layout.addWidget(self.fila_vazia_label)
 
         # Queue list
         self.queue_list_widget = QListWidget()
         self.queue_list_widget.setToolTip(
             "Fila de download atual. Selecione um item para movê-lo."
         )
-        queue_layout.addWidget(self.queue_list_widget)
+        # a lista absorve o espaço que sobra, os botões ficam no fim
+        conteudo_layout.addWidget(self.queue_list_widget, 1)
 
         # Queue buttons
-        self._setup_queue_buttons(queue_layout)
+        self._setup_queue_buttons(conteudo_layout)
+
+        queue_layout.addWidget(conteudo, 1)
+
+        modelo = self.queue_list_widget.model()
+        modelo.rowsInserted.connect(self._atualiza_fila_vazia)
+        modelo.rowsRemoved.connect(self._atualiza_fila_vazia)
+        # o clear() da lista vira reset, não remove linha por linha
+        modelo.modelReset.connect(self._atualiza_fila_vazia)
+        self._atualiza_fila_vazia()
+
+    def _atualiza_fila_vazia(self, *args):
+        """Aviso de fila vazia e botões seguem a quantidade de itens."""
+        vazio = self.queue_list_widget.count() == 0
+        self.fila_vazia_label.setVisible(vazio)
+        for botao in (
+            self.queue_move_up_button,
+            self.queue_move_down_button,
+            self.queue_remove_button,
+        ):
+            botao.setEnabled(not vazio)
 
     def _setup_queue_buttons(self, parent_layout):
         """Setup queue control buttons"""
         queue_button_layout = QHBoxLayout()
+        # folga entre os botões; na janela mínima com 5 visíveis ainda cabe
+        queue_button_layout.setSpacing(10)
 
         self.queue_move_up_button = QPushButton("Mover para cima")
         self.queue_move_up_button.clicked.connect(
@@ -341,11 +387,11 @@ class UIStateManager:
         # Drop text label
         self.main_window.drop_text_label.setStyleSheet(accent_style)
 
-        # Queue label
-        if hasattr(self, "queue_widget") and self.queue_widget:
-            queue_label = self.queue_widget.findChild(QLabel)
-            if queue_label:
-                queue_label.setStyleSheet(accent_style)
+        # Cabeçalho da fila (mesmo estilo do cabeçalho de log)
+        if getattr(self, "queue_label", None):
+            self.queue_label.setStyleSheet(
+                cabecalho_secao(self.main_window.accent_color)
+            )
 
         # Progress bar
         self.main_window.update_progress_bar_style()
@@ -371,6 +417,9 @@ class UIStateManager:
                 self.main_window.drop_text_label.setText(
                     "Fila ociosa. Pronto para o próximo."
                 )
+        # a fila muda a reserva de espaço, o log se reencaixa
+        if hasattr(self.main_window, "_agenda_ajuste_log"):
+            self.main_window._agenda_ajuste_log()
 
     def _show_main_gif(self):
         """Show the main GIF animation"""

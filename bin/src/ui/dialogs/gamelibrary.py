@@ -318,18 +318,24 @@ class GameLibraryDialog(QDialog):
 
         self.scan_button = QPushButton("Escanear bibliotecas")
         self.scan_button.clicked.connect(self._scan_for_games)
+        self.scan_button.setMinimumHeight(34)
         top_layout.addWidget(self.scan_button)
 
         # Search bar
         self.search_edit = QLineEdit()
         self.search_edit.setPlaceholderText("Buscar jogos...")
         self.search_edit.textChanged.connect(self._on_search_text_changed)
-        top_layout.addWidget(self.search_edit)
+        self.search_edit.setMinimumHeight(34)
+        self.search_edit.setStyleSheet("QLineEdit { padding: 6px 10px; }")
+        top_layout.addWidget(self.search_edit, 1)
 
-        top_layout.addStretch()
+        layout.addLayout(top_layout)
+
+        # --- Sort --- linha própria senão a de cima aperta
+        sort_layout = QHBoxLayout()
 
         sort_label = QLabel("Ordenar por:")
-        top_layout.addWidget(sort_label)
+        sort_layout.addWidget(sort_label)
 
         self.sort_combo = QComboBox()
         self.sort_combo.addItem("Instalados recentemente", "recently_installed")
@@ -346,9 +352,10 @@ class GameLibraryDialog(QDialog):
                 self.sort_combo.setCurrentIndex(index)
 
         self.sort_combo.currentIndexChanged.connect(self._on_sort_changed)
-        top_layout.addWidget(self.sort_combo)
+        sort_layout.addWidget(self.sort_combo)
+        sort_layout.addStretch()
 
-        layout.addLayout(top_layout)
+        layout.addLayout(sort_layout)
 
         # --- Loading State ---
         self.loading_widget = QWidget()
@@ -374,8 +381,17 @@ class GameLibraryDialog(QDialog):
         layout.addWidget(self.games_list)
 
         # --- Footer ---
+        footer_layout = QHBoxLayout()
         self.info_label = QLabel("Encontrados 0 jogos Steam instalados")
-        layout.addWidget(self.info_label)
+        self.info_label.setWordWrap(True)
+        footer_layout.addWidget(self.info_label, 1)
+
+        close_button = QPushButton("Fechar")
+        close_button.setFixedWidth(110)
+        close_button.clicked.connect(self.reject)
+        footer_layout.addWidget(close_button)
+
+        layout.addLayout(footer_layout)
 
     def _connect_signals(self) -> None:
         """Connect GameManager and local signals."""
