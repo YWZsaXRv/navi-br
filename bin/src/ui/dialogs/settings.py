@@ -69,7 +69,7 @@ class MorrenusStatsWidget(QWidget):
         # Row 1: Username
         row1 = QHBoxLayout()
         row1.setSpacing(10)
-        self.username_label = QLabel("User: --")
+        self.username_label = QLabel("Usuário: --")
         self.username_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         row1.addWidget(self.username_label)
         main_layout.addLayout(row1)
@@ -78,7 +78,7 @@ class MorrenusStatsWidget(QWidget):
         self.daily_usage_bar = QProgressBar()
         self.daily_usage_bar.setRange(0, 100)
         self.daily_usage_bar.setValue(0)
-        self.daily_usage_bar.setFormat("Daily: --")
+        self.daily_usage_bar.setFormat("Diário: --")
         self.daily_usage_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         accent_color = self.settings.value("accent_color", "#C06C84")
@@ -103,7 +103,7 @@ class MorrenusStatsWidget(QWidget):
         row2 = QHBoxLayout()
         row2.setSpacing(10)
 
-        self.expiration_label = QLabel("Expires: --")
+        self.expiration_label = QLabel("Expira em: --")
         self.expiration_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         row2.addWidget(self.expiration_label)
 
@@ -118,7 +118,7 @@ class MorrenusStatsWidget(QWidget):
         main_layout.addLayout(row2)
 
         # Refresh button
-        self.refresh_button = QPushButton("Refresh")
+        self.refresh_button = QPushButton("Atualizar")
         self.refresh_button.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
         )
@@ -128,12 +128,12 @@ class MorrenusStatsWidget(QWidget):
     def refresh_stats(self) -> None:
         """Fetch and display latest stats from the API."""
         self.refresh_button.setEnabled(False)
-        self.refresh_button.setText("Loading...")
+        self.refresh_button.setText("Carregando...")
 
         stats = morrenus_api.get_user_stats()
 
         self.refresh_button.setEnabled(True)
-        self.refresh_button.setText("Refresh")
+        self.refresh_button.setText("Atualizar")
 
         if stats.get("error"):
             self._display_error_state()
@@ -142,16 +142,16 @@ class MorrenusStatsWidget(QWidget):
 
     def _display_error_state(self) -> None:
         """Update UI to show error state."""
-        self.username_label.setText("User: Error")
+        self.username_label.setText("Usuário: erro")
         self.total_calls_label.setText("Total: --")
-        self.daily_usage_bar.setFormat("Daily: Error")
+        self.daily_usage_bar.setFormat("Diário: erro")
         self.daily_usage_bar.setValue(0)
-        self.expiration_label.setText("Expires: --")
-        self.status_label.setText("Status: Error")
+        self.expiration_label.setText("Expira em: --")
+        self.status_label.setText("Status: erro")
 
     def _display_stats(self, stats: dict) -> None:
         """Update UI with fetched statistics."""
-        self.username_label.setText(f"User: {stats.get('username', 'Unknown')}")
+        self.username_label.setText(f"Usuário: {stats.get('username', 'desconhecido')}")
         self.total_calls_label.setText(f"Total: {stats.get('api_key_usage_count', 0)}")
 
         daily_usage = MorrenusStatsWidget._parse_int(stats.get("daily_usage", 0))
@@ -161,11 +161,11 @@ class MorrenusStatsWidget(QWidget):
 
         self.daily_usage_bar.setRange(0, daily_limit)
         self.daily_usage_bar.setValue(daily_usage)
-        self.daily_usage_bar.setFormat(f"Daily: {daily_usage}/{daily_limit}")
+        self.daily_usage_bar.setFormat(f"Diário: {daily_usage}/{daily_limit}")
 
         self._update_expiration_label(stats.get("api_key_expires_at", ""))
 
-        status = "Active" if stats.get("can_make_requests", False) else "Blocked"
+        status = "Ativo" if stats.get("can_make_requests", False) else "Bloqueado"
         self.status_label.setText(f"Status: {status}")
 
     @staticmethod
@@ -179,14 +179,14 @@ class MorrenusStatsWidget(QWidget):
     def _update_expiration_label(self, expires_at: str) -> None:
         """Format and update the expiration label."""
         if not expires_at:
-            self.expiration_label.setText("Expires: Never")
+            self.expiration_label.setText("Expira em: nunca")
             return
 
         try:
             dt = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
-            self.expiration_label.setText(f"Expires: {dt.strftime('%d/%m/%Y')}")
+            self.expiration_label.setText(f"Expira em: {dt.strftime('%d/%m/%Y')}")
         except ValueError:
-            self.expiration_label.setText(f"Expires: {expires_at[:10]}")
+            self.expiration_label.setText(f"Expira em: {expires_at[:10]}")
 
 
 class SettingsDialog(QDialog):
@@ -323,7 +323,7 @@ class SettingsDialog(QDialog):
         current_key = self.settings.value(setting_key, "", type=str)
         api_key_input.setText(current_key)
 
-        toggle_btn = QPushButton("Show")
+        toggle_btn = QPushButton("Mostrar")
         toggle_btn.clicked.connect(
             lambda: SettingsDialog._toggle_api_key_visibility(api_key_input, toggle_btn)
         )
@@ -335,7 +335,7 @@ class SettingsDialog(QDialog):
         accent_color = self.settings.value("accent_color", "#C06C84")
         if help_url:
             help_label = QLabel(
-                f'<a href="{help_url}" style="color: {accent_color};">Get API key</a>'
+                f'<a href="{help_url}" style="color: {accent_color};">Obter chave API</a>'
             )
             help_label.setOpenExternalLinks(True)
             layout.addWidget(help_label)
@@ -353,10 +353,10 @@ class SettingsDialog(QDialog):
         """Toggle API key visibility."""
         if input_field.echoMode() == QLineEdit.EchoMode.Password:
             input_field.setEchoMode(QLineEdit.EchoMode.Normal)
-            toggle_btn.setText("Hide")
+            toggle_btn.setText("Ocultar")
         else:
             input_field.setEchoMode(QLineEdit.EchoMode.Password)
-            toggle_btn.setText("Show")
+            toggle_btn.setText("Mostrar")
 
     def _create_downloads_tab(self) -> None:
         """Create the Downloads settings tab."""
@@ -365,17 +365,13 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Download Settings Group
-        dl_group = QGroupBox("Configurações de Download")
+        dl_group = QGroupBox("Configurações de download")
         dl_layout = QVBoxLayout()
 
-        library_tooltip = "Detectar bibliotecas Steam e permitir escolher onde instalar jogos."
-        if sys.platform == "linux":
-            library_tooltip += (
-                " No Linux, isso também habilita integração SLSsteam para essas instalações."
-            )
+        library_tooltip = "Detectar bibliotecas Steam para escolher onde instalar cada jogo."
 
         self.library_mode_checkbox = create_checkbox_setting(
-            "Limitar Downloads às Bibliotecas Steam",
+            "Limitar downloads às bibliotecas Steam",
             "library_mode",
             False,
             self,
@@ -400,11 +396,11 @@ class SettingsDialog(QDialog):
         pp_layout = QVBoxLayout()
 
         self.achievements_checkbox = create_checkbox_setting(
-            "Gerar Conquistas Steam",
+            "Gerar conquistas Steam",
             "generate_achievements",
             False,
             self,
-            "Gerar arquivos de conquista para seus jogos após downloads.",
+            "Gerar arquivos de conquista para seus jogos após os downloads.",
         )
         pp_layout.addWidget(self.achievements_checkbox)
 
@@ -487,7 +483,7 @@ class SettingsDialog(QDialog):
             wrapper_name = "SLSsteam"
             self.sls_mode_checkbox = None
             linux_hint = QLabel(
-                "SLSsteam é habilitado automaticamente para instalações em bibliotecas Steam no Linux."
+                "SLSsteam é habilitado automaticamente para instalações em bibliotecas Steam."
             )
             linux_hint.setWordWrap(True)
             int_layout.addWidget(linux_hint)
@@ -504,7 +500,7 @@ class SettingsDialog(QDialog):
             int_layout.addWidget(self.sls_mode_checkbox)
 
         self.sls_config_management_checkbox = create_checkbox_setting(
-            f"{wrapper_name} Gerenciamento de Config",
+            f"Gerenciar configurações do {wrapper_name}",
             "sls_config_management",
             True,
             self,
@@ -520,7 +516,7 @@ class SettingsDialog(QDialog):
         settings_layout = QVBoxLayout()
 
         self.prompt_steam_restart_checkbox = create_checkbox_setting(
-            "Perguntar Reiniciar Steam",
+            "Perguntar para reiniciar o Steam",
             "prompt_steam_restart",
             True,
             self,
@@ -529,7 +525,7 @@ class SettingsDialog(QDialog):
         settings_layout.addWidget(self.prompt_steam_restart_checkbox)
 
         self.block_steam_updates_checkbox = create_checkbox_setting(
-            "Bloquear Atualizações Steam",
+            "Bloquear atualizações do Steam",
             "block_steam_updates",
             SettingsDialog._is_steam_updates_blocked(),
             self,
@@ -555,7 +551,7 @@ class SettingsDialog(QDialog):
 
         SettingsDialog._add_tool_button(
             tools_layout,
-            "Configurar Conquistas",
+            "Configurar conquistas",
             "Iniciar SLScheevo para configurar credenciais de conquista.",
             self.run_slscheevo,
         )
@@ -567,9 +563,9 @@ class SettingsDialog(QDialog):
             self.run_steamless_manually,
         )
 
-        self.download_slssteam_button = QPushButton("Abrir instalador SLSsteam")
+        self.download_slssteam_button = QPushButton("Ir ao repositório do h3adcr-b no GitHub")
         self.download_slssteam_button.setToolTip(
-            "Abrir página recomendada do instalador SLSsteam (GitHub)."
+            "Instalador auxiliar do SLSsteam (h3adcr-b)."
         )
         self.download_slssteam_button.clicked.connect(self.download_slssteam)
 
@@ -625,7 +621,7 @@ class SettingsDialog(QDialog):
         layout.setContentsMargins(15, 15, 15, 15)
 
         # Color Group
-        color_group = QGroupBox("Configurações de Cor")
+        color_group = QGroupBox("Configurações de cor")
         color_layout = QVBoxLayout()
 
         # Accent
@@ -635,7 +631,7 @@ class SettingsDialog(QDialog):
             f"background-color: {self._user_accent_color};"
         )
         self.accent_reset_button = QPushButton("Redefinir")
-        acc_layout.addWidget(QLabel("Cor de Destaque:"))
+        acc_layout.addWidget(QLabel("Cor de destaque:"))
         acc_layout.addWidget(self.accent_color_button)
         acc_layout.addWidget(self.accent_reset_button)
         acc_layout.addStretch()
@@ -650,7 +646,7 @@ class SettingsDialog(QDialog):
             f"background-color: {self._user_background_color};"
         )
         self.bg_reset_button = QPushButton("Redefinir")
-        bg_layout.addWidget(QLabel("Cor de Fundo:"))
+        bg_layout.addWidget(QLabel("Cor de fundo:"))
         bg_layout.addWidget(self.bg_color_button)
         bg_layout.addWidget(self.bg_reset_button)
         bg_layout.addStretch()
@@ -671,7 +667,7 @@ class SettingsDialog(QDialog):
         layout.addWidget(color_group)
 
         # Font Group
-        font_group = QGroupBox("Configurações de Fonte")
+        font_group = QGroupBox("Configurações de fonte")
         font_layout = QVBoxLayout()
         font_children, self.font_button, self.font_reset_button = create_font_setting(
             self
@@ -683,10 +679,10 @@ class SettingsDialog(QDialog):
         layout.addWidget(font_group)
 
         # Display Group
-        disp_group = QGroupBox("Configurações de Exibição")
+        disp_group = QGroupBox("Configurações de exibição")
         disp_layout = QVBoxLayout()
 
-        self.titlebar_position_checkbox = QCheckBox("Mover Barra de Título para Topo")
+        self.titlebar_position_checkbox = QCheckBox("Mover barra de título para o topo")
         is_top = self.settings.value("titlebar_position", "bottom", type=str) == "top"
         self.titlebar_position_checkbox.setChecked(is_top)
         self.titlebar_position_checkbox.setToolTip("Mover a barra de título para o topo.")
@@ -699,7 +695,7 @@ class SettingsDialog(QDialog):
         )
 
         self.gif_display_checkbox = create_checkbox_setting(
-            "Mostrar Exibição de GIF",
+            "Mostrar exibição de GIF",
             "gif_display_enabled",
             True,
             self,
@@ -713,11 +709,11 @@ class SettingsDialog(QDialog):
 
         # Custom GIFs
         gif_layout = QHBoxLayout()
-        custom_gifs_btn = QPushButton("GIFs Personalizados")
+        custom_gifs_btn = QPushButton("GIFs personalizados")
         custom_gifs_btn.clicked.connect(self.open_custom_gifs_dialog)
         gif_layout.addWidget(custom_gifs_btn)
 
-        clear_cache_btn = QPushButton("Limpar Cache de GIF")
+        clear_cache_btn = QPushButton("Limpar cache de GIF")
         clear_cache_btn.clicked.connect(self.clear_gif_cache)
         clear_cache_btn.setToolTip("Regenerar todos os GIFs.")
         gif_layout.addWidget(clear_cache_btn)
@@ -785,8 +781,8 @@ class SettingsDialog(QDialog):
     def _show_color_warning() -> None:
         QMessageBox.warning(
             None,
-            "Invalid Color",
-            "This color is too dark and will make the interface unusable.",
+            "Cor inválida",
+            "Esta cor é muito escura e deixará a interface inutilizável.",
         )
 
     # Font Handlers
@@ -809,9 +805,9 @@ class SettingsDialog(QDialog):
             size = self.current_font.pointSize()
             text = f"{fam} {size}pt"
             if self.current_font.bold():
-                text += " Bold"
+                text += " negrito"
             if self.current_font.italic():
-                text += " Italic"
+                text += " itálico"
             self.font_button.setText(text)
             self.font_button.setFont(self.current_font)
 
@@ -888,8 +884,8 @@ class SettingsDialog(QDialog):
             if SettingsDialog._is_too_close(QColor(u_accent), QColor(u_bg)):
                 QMessageBox.warning(
                     self,
-                    "Invalid Color",
-                    "Background too similar to accent color.",
+                    "Cor inválida",
+                    "O fundo é muito parecido com a cor de destaque.",
                 )
                 return False
 
@@ -1012,29 +1008,29 @@ class SettingsDialog(QDialog):
         green = "color: #7FC97F; font-size: 11px;"
 
         if mis:
-            lbl.setText("Your Steam client is not compatible.")
+            lbl.setText("Seu cliente Steam não é compatível.")
             lbl.setStyleSheet(pink)
         elif err and fnd:
-            lbl.setText("Could not verify compatibility.")
+            lbl.setText("Não foi possível verificar a compatibilidade.")
             lbl.setStyleSheet(pink)
         elif not fnd:
-            lbl.setText("Steam client not found.")
+            lbl.setText("Cliente Steam não encontrado.")
             lbl.setStyleSheet(pink)
         elif mis is False:
-            lbl.setText("Your Steam client is compatible.")
+            lbl.setText("Seu cliente Steam é compatível.")
             lbl.setStyleSheet(green)
         lbl.setVisible(True)
 
     @staticmethod
     def _format_status_text(status: dict) -> str:
         if status.get("error"):
-            return "Status unknown (error checking)"
+            return "Status desconhecido (erro na verificação)"
         ver = status.get("latest_version", "Unknown")
         if not status.get("installed", False):
-            return f"Not installed • Latest: {ver}"
+            return f"Não instalado • Mais recente: {ver}"
         if status.get("update_available", False):
-            return f"Update available • Latest: {ver}"
-        return f"Up to date • Version: {status.get('installed_version', '?')}"
+            return f"Atualização disponível • Mais recente: {ver}"
+        return f"Atualizado • Versão: {status.get('installed_version', '?')}"
 
     def download_slssteam(self):
         """Open external recommended SLSsteam installer page instead of installing."""
@@ -1076,15 +1072,15 @@ class SettingsDialog(QDialog):
         else:
             QMessageBox.critical(
                 self,
-                "Error",
-                f"Failed to open external installer page. Please visit:\n{url}",
+                "Erro",
+                f"Não foi possível abrir a página do instalador externo. Visite:\n{url}",
             )
 
     def run_slscheevo(self) -> None:
         """Launch SLScheevo."""
         path = get_slscheevo_path()
         if not os.path.exists(path):
-            QMessageBox.critical(self, "Error", f"SLScheevo missing: {path}")
+            QMessageBox.critical(self, "Erro", f"SLScheevo não encontrado: {path}")
             return
 
         save = get_slscheevo_save_path()
@@ -1142,10 +1138,10 @@ class SettingsDialog(QDialog):
 
         # Fallback dialog
         msg_box = QMessageBox()
-        msg_box.setWindowTitle("Terminal Not Found")
+        msg_box.setWindowTitle("Terminal não encontrado")
         msg_box.setText(
-            "Could not automatically launch a terminal.\n"
-            "Please open a terminal and run:\n"
+            "Não foi possível abrir um terminal automaticamente.\n"
+            "Abra um terminal e execute:\n"
         )
         msg_box.setInformativeText(" ".join(cmd))
         msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
@@ -1154,7 +1150,7 @@ class SettingsDialog(QDialog):
 
     def run_steamless_manually(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
-            self, "Select Executable", os.path.expanduser("~"), "*.exe"
+            self, "Selecionar executável", os.path.expanduser("~"), "*.exe"
         )
         if path and self.main_window:
             # noinspection PyUnresolvedReferences
@@ -1170,8 +1166,8 @@ class SettingsDialog(QDialog):
         if (
             QMessageBox.question(
                 self,
-                "Clear Cache",
-                "Regenerate all GIFs?",
+                "Limpar cache",
+                "Regenerar todos os GIFs?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             == QMessageBox.StandardButton.Yes

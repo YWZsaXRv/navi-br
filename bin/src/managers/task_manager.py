@@ -120,7 +120,7 @@ class TaskManager(QObject):
             self.main_window.progress_bar.setVisible(True)
             self.main_window.progress_bar.setRange(0, 0)
             self.main_window.drop_text_label.setText(
-                f"Processing: {os.path.basename(zip_path)}"
+                f"Processando: {os.path.basename(zip_path)}"
             )
 
         self.zip_task = ProcessZipTask()
@@ -142,8 +142,8 @@ class TaskManager(QObject):
         else:
             QMessageBox.warning(
                 self.main_window,
-                "No Depots Found",
-                "Zip file processed, but no downloadable depots were found.",
+                "Nenhum depot encontrado",
+                "O ZIP foi processado, mas nenhum depot para download foi encontrado.",
             )
             self.job_finished()
 
@@ -271,7 +271,7 @@ class TaskManager(QObject):
         self._slscheevo_ran = False
         self._slscheevo_error = False
         self._last_ddm_status = "in_progress"
-        self._last_ddm_status_text = "Downloading..."
+        self._last_ddm_status_text = "Baixando..."
         self._last_slscheevo_status = "not_run"
         self._last_slscheevo_status_text = "N/A"
         self._last_steamless_status = "not_run"
@@ -280,7 +280,7 @@ class TaskManager(QObject):
         self.main_window.ui_state.switch_to_download_gif()
         self._update_status_button_color()
         self.main_window.drop_text_label.setText(
-            f"Downloading: {self.game_data.get('game_name', '')}"
+            f"Baixando: {self.game_data.get('game_name', '')}"
         )
 
         self.main_window.progress_bar.setVisible(True)
@@ -305,7 +305,7 @@ class TaskManager(QObject):
 
         self._start_speed_monitor()
         self.is_download_paused = False
-        self.main_window.ui_state.pause_button.setText("Pause")
+        self.main_window.ui_state.pause_button.setText("Pausar")
         self.main_window.ui_state.pause_button.setVisible(True)
         self.main_window.ui_state.cancel_button.setVisible(True)
 
@@ -492,7 +492,7 @@ class TaskManager(QObject):
             if "steamless" not in self._job_steps_completed:
                 self._job_steps_completed.add("steamless")
                 self.main_window.drop_text_label.setText(
-                    f"Running Steamless: {self.game_data.get('game_name', '')}"
+                    f"Executando Steamless: {self.game_data.get('game_name', '')}"
                 )
                 self._start_steamless_processing()
                 return
@@ -504,7 +504,7 @@ class TaskManager(QObject):
             if "achievements" not in self._job_steps_completed:
                 self._job_steps_completed.add("achievements")
                 self.main_window.drop_text_label.setText(
-                    f"Generating Achievements: {self.game_data.get('game_name', '')}"
+                    f"Gerando conquistas: {self.game_data.get('game_name', '')}"
                 )
                 self._start_achievement_generation()
                 return
@@ -963,7 +963,7 @@ class TaskManager(QObject):
 
         _, error_value, _ = error_info
         QMessageBox.critical(
-            self.main_window, "Error", f"An error occurred: {error_value}"
+            self.main_window, "Erro", f"Ocorreu um erro: {error_value}"
         )
         if not self.is_cancelling:
             self.job_finished()
@@ -1096,8 +1096,8 @@ class TaskManager(QObject):
 
         reply = QMessageBox.question(
             self.main_window,
-            "Cancel Job",
-            f"Are you sure you want to cancel the download for '{
+            "Cancelar tarefa",
+            f"Tem certeza que deseja cancelar o download de '{
                 os.path.basename(self.current_job)
             }'?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
@@ -1156,16 +1156,16 @@ class TaskManager(QObject):
     def _confirm_delete_on_cancel(self, existing_install: bool) -> bool:
         if existing_install:
             message = (
-                "Existing installation detected. Delete files for this canceled job?"
+                "Instalação existente detectada. Excluir os arquivos desta tarefa cancelada?"
             )
             default_button = QMessageBox.StandardButton.No
         else:
-            message = "Delete partially downloaded files for this job?"
+            message = "Excluir os arquivos parcialmente baixados desta tarefa?"
             default_button = QMessageBox.StandardButton.Yes
 
         reply = QMessageBox.question(
             self.main_window,
-            "Cancel Download",
+            "Cancelar download",
             message,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             default_button,
@@ -1259,7 +1259,7 @@ class TaskManager(QObject):
     def _on_slssteam_download_complete(self, message):
         logger.info(f"SLSsteam download completed: {message}")
         QMessageBox.information(
-            self.main_window, "SLSsteam Installation Complete", message
+            self.main_window, "Instalação do SLSsteam concluída", message
         )
         self.slssteam_download_task = None
         self.slssteam_download_runner = None
@@ -1268,8 +1268,8 @@ class TaskManager(QObject):
         logger.error("SLSsteam download failed")
         QMessageBox.critical(
             self.main_window,
-            "Error",
-            "Failed to download SLSsteam. Check internet connection.",
+            "Erro",
+            "Falha ao baixar o SLSsteam. Verifique a conexão com a internet.",
         )
         self.slssteam_download_task = None
         self.slssteam_download_runner = None
@@ -1294,23 +1294,23 @@ class TaskManager(QObject):
         if self.is_processing:
             if self.download_task or self.zip_task:
                 ddm_status = "in_progress"
-                ddm_status_text = "Downloading..."
+                ddm_status_text = "Baixando..."
                 slscheevo_status = self._last_slscheevo_status
                 slscheevo_status_text = self._last_slscheevo_status_text
                 steamless_status = self._last_steamless_status
                 steamless_status_text = self._last_steamless_status_text
             elif self.steamless_task:
                 ddm_status = "ok"
-                ddm_status_text = "Completed"
+                ddm_status_text = "Concluído"
                 slscheevo_status = self._last_slscheevo_status
                 slscheevo_status_text = self._last_slscheevo_status_text
                 steamless_status = "in_progress"
-                steamless_status_text = "Running..."
+                steamless_status_text = "Executando..."
             elif self.achievement_task:
                 ddm_status = "ok"
-                ddm_status_text = "Completed"
+                ddm_status_text = "Concluído"
                 slscheevo_status = "in_progress"
-                slscheevo_status_text = "Generating achievements..."
+                slscheevo_status_text = "Gerando conquistas..."
                 steamless_status = self._last_steamless_status
                 steamless_status_text = self._last_steamless_status_text
             else:
@@ -1339,22 +1339,22 @@ class TaskManager(QObject):
 
     def _get_steamless_status_text(self):
         if self._last_steamless_success is None:
-            return "Ready"
+            return "Pronto"
         elif self._last_steamless_success:
-            return "Success"
+            return "Sucesso"
         else:
-            return "Completed (no DRM found)"
+            return "Concluído (nenhum DRM encontrado)"
 
     def _update_status_for_job(self, ddm_ok=True, slscheevo_ok=None, steamless_ok=None):
         self._last_ddm_status = "ok" if ddm_ok else "error"
-        self._last_ddm_status_text = "Completed" if ddm_ok else "Failed"
+        self._last_ddm_status_text = "Concluído" if ddm_ok else "Falhou"
 
         if slscheevo_ok is None:
             self._last_slscheevo_status = "not_run"
             self._last_slscheevo_status_text = "N/A"
         else:
             self._last_slscheevo_status = "ok" if slscheevo_ok else "error"
-            self._last_slscheevo_status_text = "Completed" if slscheevo_ok else "Failed"
+            self._last_slscheevo_status_text = "Concluído" if slscheevo_ok else "Falhou"
 
         if steamless_ok is None:
             self._last_steamless_status = "not_run"

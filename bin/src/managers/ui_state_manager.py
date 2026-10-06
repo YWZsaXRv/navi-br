@@ -232,7 +232,7 @@ class UIStateManager:
         queue_layout.setContentsMargins(0, 0, 5, 0)
 
         # Queue label
-        queue_label = QLabel("Fila de Download")
+        queue_label = QLabel("Fila de download")
         queue_label.setStyleSheet(f"color: {self.main_window.accent_color};")
         queue_layout.addWidget(queue_label)
 
@@ -250,13 +250,13 @@ class UIStateManager:
         """Setup queue control buttons"""
         queue_button_layout = QHBoxLayout()
 
-        self.queue_move_up_button = QPushButton("Mover para Cima")
+        self.queue_move_up_button = QPushButton("Mover para cima")
         self.queue_move_up_button.clicked.connect(
             self.main_window.job_queue.move_item_up
         )
         queue_button_layout.addWidget(self.queue_move_up_button)
 
-        self.queue_move_down_button = QPushButton("Mover para Baixo")
+        self.queue_move_down_button = QPushButton("Mover para baixo")
         self.queue_move_down_button.clicked.connect(
             self.main_window.job_queue.move_item_down
         )
@@ -362,7 +362,7 @@ class UIStateManager:
         if not is_processing and not has_jobs:
             if self.queue_widget:
                 self.queue_widget.setVisible(False)
-            self.main_window.drop_text_label.setText("Arraste e Solte ZIP aqui")
+            self.main_window.drop_text_label.setText("Solte o ZIP aqui")
             self._show_main_gif()
         else:
             if self.queue_widget:

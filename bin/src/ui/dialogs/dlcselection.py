@@ -22,9 +22,9 @@ class DlcSelectionDialog(QDialog):
         super().__init__(parent)
         # Platform-specific title
         if sys.platform == "linux":
-            title = "Selecionar DLC para Wrapper SLSsteam"
+            title = "Selecionar DLC para o wrapper SLSsteam"
         else:
-            title = "Selecionar DLC para Wrapper GreenLuma"
+            title = "Selecionar DLC para o wrapper GreenLuma"
         self.setWindowTitle(title)
         self.dlcs = dlcs
         self.setMinimumWidth(600)

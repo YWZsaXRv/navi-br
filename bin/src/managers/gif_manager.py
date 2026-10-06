@@ -32,7 +32,7 @@ class ProgressDialog(QDialog):
     def __init__(self, parent=None):
         # Don't rely on main window - use QApplication.activeWindow() or None
         super().__init__(parent)
-        self.setWindowTitle("Processing GIFs")
+        self.setWindowTitle("Processando GIFs")
         self.setModal(True)
         self.setMinimumWidth(400)
 
@@ -48,7 +48,7 @@ class ProgressDialog(QDialog):
 
         layout = QVBoxLayout()
 
-        self.label = QLabel("Preparing to process GIFs...")
+        self.label = QLabel("Preparando para processar os GIFs...")
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.label)
 
@@ -59,7 +59,7 @@ class ProgressDialog(QDialog):
         self.details_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.details_label)
 
-        self.cancel_button = QPushButton("Cancel")
+        self.cancel_button = QPushButton("Cancelar")
         self.cancel_button.clicked.connect(self.reject)
         layout.addWidget(self.cancel_button)
 
@@ -69,7 +69,7 @@ class ProgressDialog(QDialog):
         """Update progress bar and labels"""
         self.progress_bar.setMaximum(total)
         self.progress_bar.setValue(current)
-        self.label.setText(f"Processing GIFs: {current}/{total}")
+        self.label.setText(f"Processando GIFs: {current}/{total}")
         if status:
             self.details_label.setText(status)
 

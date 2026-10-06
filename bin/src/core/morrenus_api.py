@@ -20,11 +20,11 @@ MAX_SEARCH_LIMIT = 100
 
 # Error messages for specific HTTP status codes
 API_ERROR_MESSAGES = {
-    401: "Invalid or missing API key. Please check your credentials in Settings.",
-    403: "Access denied. Your account may be blocked or the App ID is not accessible.",
-    404: "Game not found in library. The App ID may be incorrect or not available.",
-    429: "Daily API limit exceeded. Please try again later.",
-    500: "Server error. The manifest may be corrupted or temporarily unavailable.",
+    401: "Chave da API inválida ou ausente. Verifique suas credenciais em Configurações.",
+    403: "Acesso negado. Sua conta pode estar bloqueada ou o App ID não está acessível.",
+    404: "Jogo não encontrado na biblioteca. O App ID pode estar incorreto ou indisponível.",
+    429: "Limite diário da API excedido. Tente novamente mais tarde.",
+    500: "Erro no servidor. O manifest pode estar corrompido ou temporariamente indisponível.",
 }
 
 
@@ -102,7 +102,7 @@ def _make_json_request(
     """
     headers = _get_headers()
     if not headers:
-        return {"error": "API Key is not set. Please set it in Settings."}
+        return {"error": "A chave da API não está definida. Configure-a em Configurações."}
 
     url = f"{BASE_URL}{endpoint}"
 
@@ -211,7 +211,7 @@ def download_manifest(app_id: str) -> Tuple[Optional[str], Optional[str]]:
     """
     headers = _get_headers()
     if not headers:
-        return None, "API Key is not set. Please set it in Settings."
+        return None, "A chave da API não está definida. Configure-a em Configurações."
 
     url = f"{BASE_URL}/manifest/{app_id}"
     manifests_dir = Path(get_base_path()) / "morrenus_manifests"

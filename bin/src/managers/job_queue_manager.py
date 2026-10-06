@@ -35,8 +35,8 @@ class JobQueueManager(QObject):
             logger.error(f"Failed to add job: file {file_path} does not exist.")
             QMessageBox.critical(
                 self.main_window,
-                "Error",
-                f"Could not add job: File not found at {file_path}",
+                "Erro",
+                f"Não foi possível adicionar à fila: arquivo não encontrado em {file_path}",
             )
             return
 
@@ -139,8 +139,8 @@ class JobQueueManager(QObject):
             elif self.jobs_completed_count > 0:
                 QMessageBox.information(
                     self.main_window,
-                    "Queue Finished",
-                    f"All {self.jobs_completed_count} job(s) have finished successfully!",
+                    "Fila concluída",
+                    f"Os {self.jobs_completed_count} job(s) foram finalizados com sucesso!",
                 )
 
             self.jobs_completed_count = 0
@@ -193,8 +193,8 @@ class JobQueueManager(QObject):
         """Prompt user to restart Steam (Run via QTimer on Main Thread)"""
         reply = QMessageBox.question(
             self.main_window,
-            "Restart Steam",
-            "Steam-integrated changes were created. Would you like to restart Steam now to apply them?",
+            "Reiniciar o Steam",
+            "Alterações integradas ao Steam foram criadas. Deseja reiniciar o Steam agora para aplicá-las?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )

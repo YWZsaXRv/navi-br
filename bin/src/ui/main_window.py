@@ -381,7 +381,7 @@ class MainWindow(QMainWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
 
-        self.drop_text_label = ScaledFontLabel("Arraste e Solte ZIP aqui")
+        self.drop_text_label = ScaledFontLabel("Solte o ZIP aqui")
         self.drop_text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.drop_text_label.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding

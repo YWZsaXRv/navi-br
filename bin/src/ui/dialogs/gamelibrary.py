@@ -104,7 +104,7 @@ logger = logging.getLogger(__name__)
 
 def format_game_display_name(game_data: dict) -> str:
     """nome de exibicao do jogo, incluindo o marcador do navi-br."""
-    name = game_data.get("game_name", "Unknown")
+    name = game_data.get("game_name", "Desconhecido")
     if game_data.get("is_accela_install"):
         return f"{name} [{DISPLAY_NAME}]"
     return name
@@ -136,7 +136,7 @@ class GameItemWidget(QWidget):
         self.image_label.setFixedSize(230, 108)  # Standard Steam Header Ratio
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        name = self.game_data.get("game_name", "Unknown")
+        name = self.game_data.get("game_name", "Desconhecido")
         display_name = format_game_display_name(self.game_data)
         self.image_label.setText(name[:2].upper())
 
@@ -161,7 +161,7 @@ class GameItemWidget(QWidget):
         info_layout.addWidget(name_label)
 
         # Size
-        size_label = QLabel(f"Size: {size_str}")
+        size_label = QLabel(f"Tamanho: {size_str}")
         size_label.setStyleSheet(f"color: {self.accent_color};")
         info_layout.addWidget(size_label)
 
@@ -176,12 +176,12 @@ class GameItemWidget(QWidget):
     def apply_status(self, update_status: str) -> None:
         """Sets the status label text and color."""
         status_map = {
-            "update_available": ("New version available", self.accent_color),
-            "up_to_date": ("Up to date", "#00FF00"),
-            "checking": ("Checking for updates...", "#FFA500"),
+            "update_available": ("Nova versão disponível", self.accent_color),
+            "up_to_date": ("Atualizado", "#00FF00"),
+            "checking": ("Verificando atualizações...", "#FFA500"),
         }
         text, color = status_map.get(
-            update_status, ("Unable to check updates", "#AAAAAA")
+            update_status, ("Não foi possível verificar atualizações", "#AAAAAA")
         )
         self.status_label.setText(text)
         self.status_label.setStyleSheet(f"color: {color}; font-style: italic;")
@@ -259,7 +259,7 @@ class GameLibraryDialog(QDialog):
 
     def _setup_window(self) -> None:
         """Configure main window properties and styles."""
-        self.setWindowTitle("Game Library")
+        self.setWindowTitle("Biblioteca de jogos")
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
         self.resize(750, 500)
@@ -317,7 +317,7 @@ class GameLibraryDialog(QDialog):
         # --- Top Bar ---
         top_layout = QHBoxLayout()
 
-        self.scan_button = QPushButton("Escanear Bibliotecas")
+        self.scan_button = QPushButton("Escanear bibliotecas")
         self.scan_button.clicked.connect(self._scan_for_games)
         top_layout.addWidget(self.scan_button)
 
@@ -333,11 +333,11 @@ class GameLibraryDialog(QDialog):
         top_layout.addWidget(sort_label)
 
         self.sort_combo = QComboBox()
-        self.sort_combo.addItem("Instalados Recentemente", "recently_installed")
+        self.sort_combo.addItem("Instalados recentemente", "recently_installed")
         self.sort_combo.addItem("Nome (A-Z)", "name_asc")
         self.sort_combo.addItem("Nome (Z-A)", "name_desc")
-        self.sort_combo.addItem("Tamanho (Menor)", "size_asc")
-        self.sort_combo.addItem("Tamanho (Maior)", "size_desc")
+        self.sort_combo.addItem("Tamanho (menor)", "size_asc")
+        self.sort_combo.addItem("Tamanho (maior)", "size_desc")
         self.sort_combo.addItem("AppID", "appid")
 
         if self.settings:
@@ -429,7 +429,7 @@ class GameLibraryDialog(QDialog):
 
     def _on_scan_complete(self, count: int) -> None:
         self.scan_button.setEnabled(True)
-        self.scan_button.setText("Escanear Bibliotecas")
+        self.scan_button.setText("Escanear bibliotecas")
 
         if count > 0:
             self._checking_updates = True
@@ -664,13 +664,13 @@ class GameLibraryDialog(QDialog):
             return
 
         self.info_label.setText(
-            f"Found {len(self._pending_games)} Steam game(s) "
-            f"({self._pending_accela_count} {DISPLAY_NAME}-managed) - "
-            f"Total Size: {GameLibraryDialog._format_size(self._pending_total_size)}"
+            f"Encontrados {len(self._pending_games)} jogo(s) Steam "
+            f"({self._pending_accela_count} gerenciados pelo {DISPLAY_NAME}) - "
+            f"tamanho total: {GameLibraryDialog._format_size(self._pending_total_size)}"
         )
         if self._search_text:
             self.info_label.setText(
-                self.info_label.text() + f" (filtered by '{self._search_text}')"
+                self.info_label.text() + f" (filtrado por '{self._search_text}')"
             )
         self._hide_loading_state()
         self._loading_games = False
@@ -866,7 +866,7 @@ class GameLibraryDialog(QDialog):
     def _show_game_details_dialog(self, game_data: dict) -> None:
         """Show detailed game info in a tabbed dialog."""
         self._details_dialog = QDialog(self)
-        self._details_dialog.setWindowTitle("Detalhes do Jogo")
+        self._details_dialog.setWindowTitle("Detalhes do jogo")
         self._details_dialog.setMinimumWidth(500)
         self._details_dialog.setModal(True)
 
@@ -913,10 +913,10 @@ class GameLibraryDialog(QDialog):
         layout.addWidget(name_lbl)
 
         status_text = {
-            "update_available": "New version available",
-            "up_to_date": "Up to date",
-            "checking": "Checking for updates...",
-        }.get(game_data.get("update_status"), "Unknown")
+            "update_available": "Nova versão disponível",
+            "up_to_date": "Atualizado",
+            "checking": "Verificando atualizações...",
+        }.get(game_data.get("update_status"), "Desconhecido")
 
         status_lbl = QLabel(status_text)
         status_lbl.setStyleSheet(f"color: {self.accent_color}; font-style: italic;")
@@ -931,10 +931,10 @@ class GameLibraryDialog(QDialog):
             return label
 
         form.addRow(_lbl("App ID:"), _lbl(str(game_data.get("appid"))))
-        form.addRow(_lbl("Source:"), _lbl(str(game_data.get("source", "Steam"))))
+        form.addRow(_lbl("Origem:"), _lbl(str(game_data.get("source", "Steam"))))
         size = GameLibraryDialog._format_size(game_data.get("size_on_disk", 0))
-        form.addRow(_lbl("Size:"), _lbl(size))
-        form.addRow(_lbl("Path:"), _lbl(str(game_data.get("install_path"))))
+        form.addRow(_lbl("Tamanho:"), _lbl(size))
+        form.addRow(_lbl("Caminho:"), _lbl(str(game_data.get("install_path"))))
         layout.addLayout(form)
 
         # Linux FakeAppID
@@ -944,7 +944,7 @@ class GameLibraryDialog(QDialog):
         # Validate/Update Button
         validate_btn = QPushButton()
         is_update = game_data.get("update_status") == "update_available"
-        validate_btn.setText("Download Update" if is_update else "Validate Files")
+        validate_btn.setText("Baixar atualização" if is_update else "Verificar arquivos")
         validate_btn.clicked.connect(
             lambda: self._fetch_game_manifest(game_data, dialog)
         )
@@ -952,7 +952,7 @@ class GameLibraryDialog(QDialog):
 
         # Footer Actions
         btn_layout = QHBoxLayout()
-        open_btn = QPushButton("Abrir Pasta")
+        open_btn = QPushButton("Abrir pasta")
         open_btn.clicked.connect(
             lambda: GameLibraryDialog._open_folder(game_data.get("install_path"))
         )
@@ -964,7 +964,7 @@ class GameLibraryDialog(QDialog):
 
         layout.addStretch()
         layout.addLayout(btn_layout)
-        tab_widget.addTab(tab, "Visão Geral")
+        tab_widget.addTab(tab, "Visão geral")
 
     def _add_fake_appid_controls(self, layout, game_data) -> None:
         """Helper to add Linux FakeAppID UI controls."""
@@ -972,9 +972,9 @@ class GameLibraryDialog(QDialog):
             return
 
         hbox = QHBoxLayout()
-        checkbox = QCheckBox("Add to SLSonline as:")
+        checkbox = QCheckBox("Adicionar ao SLSonline como:")
         checkbox.setStyleSheet(f"color: {self.accent_color};")
-        checkbox.setToolTip("Add to FakeAppIds in SLSsteam config.yaml")
+        checkbox.setToolTip("Adicionar a FakeAppIds no config.yaml do SLSsteam")
         hbox.addWidget(checkbox)
 
         hbox.addStretch()
@@ -985,7 +985,7 @@ class GameLibraryDialog(QDialog):
         inp.setValidator(QIntValidator())
         hbox.addWidget(inp)
 
-        save_btn = QPushButton("Save")
+        save_btn = QPushButton("Salvar")
         save_btn.setFixedWidth(70)
         hbox.addWidget(save_btn)
 
@@ -1011,7 +1011,7 @@ class GameLibraryDialog(QDialog):
         # Connect logic
         def _toggle(state):
             fake_id = inp.text().strip() or "480"
-            name = game_data.get("game_name", "Unknown")
+            name = game_data.get("game_name", "Desconhecido")
             if state == Qt.CheckState.Checked.value:
                 # Ensure clean slate
                 current_in_config = get_fake_appid(config, appid)
@@ -1029,14 +1029,14 @@ class GameLibraryDialog(QDialog):
         def _update_fake_id():
             if checkbox.isChecked():
                 fake_id = inp.text().strip() or "480"
-                name = game_data.get("game_name", "Unknown")
+                name = game_data.get("game_name", "Desconhecido")
 
                 current_fake_id = get_fake_appid(config, appid)
                 if current_fake_id:
                     remove_fake_app_id(config, appid, current_fake_id)
 
                 add_fake_app_id(config, appid, name, fake_id)
-                QMessageBox.information(self, "Success", "AppID updated successfully.")
+                QMessageBox.information(self, "Sucesso", "AppID atualizado com sucesso.")
 
         checkbox.stateChanged.connect(_toggle)
         save_btn.clicked.connect(_update_fake_id)
@@ -1052,14 +1052,14 @@ class GameLibraryDialog(QDialog):
 
         opts = {}
         if platform.system() == "Linux":
-            opts["compat"] = QCheckBox("Remover Dados Proton/Wine")
-            opts["saves"] = QCheckBox("Remover Saves na Nuvem")
+            opts["compat"] = QCheckBox("Remover dados do Proton/Wine")
+            opts["saves"] = QCheckBox("Remover saves da nuvem")
             opts["compat"].setStyleSheet(f"color: {self.accent_color};")
             opts["saves"].setStyleSheet(f"color: {self.accent_color};")
             layout.addWidget(opts["compat"])
             layout.addWidget(opts["saves"])
 
-        btn = QPushButton("Desinstalar Jogo")
+        btn = QPushButton("Desinstalar jogo")
         btn.clicked.connect(lambda: self._uninstall_game(game_data, dialog, opts))
         layout.addWidget(btn)
         layout.addStretch()
@@ -1082,7 +1082,7 @@ class GameLibraryDialog(QDialog):
         layout.addWidget(sl_btn)
 
         # ACF Fix
-        fix_btn = QPushButton("Corrigir Instalação (Remover .acf)")
+        fix_btn = QPushButton("Corrigir instalação (remover .acf)")
         fix_btn.clicked.connect(lambda: self._fix_game_install(game_data))
         layout.addWidget(fix_btn)
 
@@ -1092,10 +1092,10 @@ class GameLibraryDialog(QDialog):
         app_id = str(game_data.get("appid", "0"))
 
         if app_id in ("0", "N/A", "unknown"):
-            QMessageBox.warning(self, "Error", "Invalid App ID.")
+            QMessageBox.warning(self, "Erro", "App ID inválido.")
             return
 
-        name = game_data.get("game_name", "Unknown")
+        name = game_data.get("game_name", "Desconhecido")
         status = game_data.get("update_status")
 
         # Determine if we can use local cache
@@ -1115,17 +1115,17 @@ class GameLibraryDialog(QDialog):
     def _handle_download_manifest(self, app_id, name, game_data, dialog):
         """Logic separated to flatten nesting in fetch_game_manifest."""
         if not self._confirm_action(
-            "Confirm Download",
-            f"Download manifest for '{name}'?\nThis will use your API quota.",
+            "Confirmar download",
+            f"Baixar o manifest de '{name}'?\nIsso usará sua cota da API.",
         ):
             return
 
         if not morrenus_api:
-            QMessageBox.critical(self, "Error", "API module missing.")
+            QMessageBox.critical(self, "Erro", "Módulo da API não encontrado.")
             return
 
         self._download_progress_dialog = QProgressDialog(
-            f"Downloading {name}...", "Cancel", 0, 0, self
+            f"Baixando {name}...", "Cancelar", 0, 0, self
         )
         self._download_progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
         self._download_progress_dialog.show()
@@ -1158,7 +1158,7 @@ class GameLibraryDialog(QDialog):
             if self._details_dialog:
                 self._submit_job(fpath, game_data, self._details_dialog)
         else:
-            QMessageBox.critical(self, "Error", f"Failed: {error}")
+            QMessageBox.critical(self, "Erro", f"Falhou: {error}")
 
     def _submit_job(self, filepath: str, game_data: dict, dialog: QDialog) -> None:
         """Submit the job to the main window queue."""
@@ -1199,7 +1199,7 @@ class GameLibraryDialog(QDialog):
             return
 
         msg = self.game_manager.get_uninstall_confirmation_message(game_data)
-        if not self._confirm_action("Confirm Uninstall", msg):
+        if not self._confirm_action("Confirmar desinstalação", msg):
             return
 
         # Extract boolean states from checkboxes
@@ -1207,7 +1207,7 @@ class GameLibraryDialog(QDialog):
         c_saves = opts.get("saves").isChecked() if "saves" in opts else False
 
         self._uninstall_progress_dialog = QProgressDialog(
-            "Uninstalling game...", None, 0, 0, self
+            "Desinstalando o jogo...", None, 0, 0, self
         )
         self._uninstall_progress_dialog.setWindowModality(Qt.WindowModality.WindowModal)
         self._uninstall_progress_dialog.show()
@@ -1234,11 +1234,11 @@ class GameLibraryDialog(QDialog):
             self._uninstall_progress_dialog = None
 
         if success:
-            QMessageBox.information(self, "Success", "Game uninstalled.")
+            QMessageBox.information(self, "Sucesso", "Jogo desinstalado.")
             if self._details_dialog:
                 self._details_dialog.accept()
         else:
-            QMessageBox.critical(self, "Error", f"Failed: {error}")
+            QMessageBox.critical(self, "Erro", f"Falhou: {error}")
 
     def _fix_game_install(self, game_data: dict) -> None:
         path = game_data.get("library_path")
@@ -1249,16 +1249,16 @@ class GameLibraryDialog(QDialog):
 
         acf = os.path.join(path, "steamapps", f"appmanifest_{appid}.acf")
         if not os.path.exists(acf):
-            QMessageBox.warning(self, "Error", "Manifest file not found.")
+            QMessageBox.warning(self, "Erro", "Arquivo de manifest não encontrado.")
             return
 
         if not self._confirm_action(
-            "Confirm", "Remove manifest file? Steam will re-verify files."
+            "Confirmar", "Remover o arquivo de manifest? O Steam vai reverificar os arquivos."
         ):
             return
 
         os.remove(acf)
-        QMessageBox.information(self, "Done", "Manifest removed.")
+        QMessageBox.information(self, "Concluído", "Manifest removido.")
         if sys.platform == "linux":
             slssteam_api_send(f"install|{appid}|0")
 

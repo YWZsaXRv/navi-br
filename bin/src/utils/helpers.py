@@ -629,9 +629,9 @@ def create_font_setting(
     """Helper function to create a font chooser setting."""
     layout = QHBoxLayout()
 
-    label = QLabel("Font:")
+    label = QLabel("Fonte:")
 
-    font_button = QPushButton("Choose Font")
+    font_button = QPushButton("Escolher fonte")
 
     if parent_widget and hasattr(parent_widget, "settings"):
         # Load current font settings
@@ -658,18 +658,18 @@ def create_font_setting(
             font = parent_widget.current_font
             font_text = f"{font.family()} {font.pointSize()}pt"
             if font.bold() and font.italic():
-                font_text += " Bold Italic"
+                font_text += " negrito itálico"
             elif font.bold():
-                font_text += " Bold"
+                font_text += " negrito"
             elif font.italic():
-                font_text += " Italic"
+                font_text += " itálico"
             font_button.setText(font_text)
             font_button.setFont(font)
 
         update_font_text()
         parent_widget.update_font_button_text = update_font_text
 
-    reset_button = QPushButton("Reset")
+    reset_button = QPushButton("Redefinir")
 
     layout.addWidget(label)
     layout.addWidget(font_button)

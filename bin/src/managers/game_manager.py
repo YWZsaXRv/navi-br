@@ -796,7 +796,7 @@ class GameManager(QObject):
         Build a confirmation message for uninstalling a game.
         Returns a string with the confirmation message.
         """
-        game_name = game_data.get("game_name", "Unknown")
+        game_name = game_data.get("game_name", "Desconhecido")
         install_path = game_data.get("install_path")
         appid = game_data.get("appid", "0")
 
@@ -805,24 +805,24 @@ class GameManager(QObject):
 
         from core.steam_helpers import find_steam_install, get_steam_libraries
 
-        confirm_msg = f"Are you sure you want to uninstall '{game_name}'?\n\n"
+        confirm_msg = f"Tem certeza que deseja desinstalar '{game_name}'?\n\n"
         is_accela_install = game_data.get("is_accela_install", False)
 
         # Warn if appid is unknown
         if not appid or appid in ("0", "N/A", "unknown"):
-            confirm_msg += "⚠️ WARNING: AppID is unknown for this game.\n"
+            confirm_msg += "⚠️ ATENÇÃO: o AppID deste jogo é desconhecido.\n"
             if platform.system() == "Linux":
-                confirm_msg += "Compatdata and saves WILL NOT be removed.\n"
+                confirm_msg += "Compatdata e saves NÃO serão removidos.\n"
             elif platform.system() == "Windows" and is_accela_install:
-                confirm_msg += "GreenLuma AppList files WILL NOT be removed.\n"
+                confirm_msg += "Os arquivos do AppList do GreenLuma NÃO serão removidos.\n"
             confirm_msg += "\n"
 
-        confirm_msg += "This will permanently delete:\n"
-        confirm_msg += f"• Game folder: {install_path}\n"
+        confirm_msg += "Isso excluirá permanentemente:\n"
+        confirm_msg += f"• Pasta do jogo: {install_path}\n"
 
         # Only show ACF removal if appid is valid
         if appid and appid not in ("0", "N/A", "unknown"):
-            confirm_msg += f"• Steam app manifest ({appid}.acf)\n"
+            confirm_msg += f"• Manifest do app do Steam ({appid}.acf)\n"
 
         # Check for additional items that would be removed
         if (
@@ -841,7 +841,7 @@ class GameManager(QObject):
                 # Check if compatdata exists
                 if os.path.exists(compatdata_path):
                     confirm_msg += (
-                        f"• Proton/Wine compatibility data: {compatdata_path}\n"
+                        f"• Dados de compatibilidade do Proton/Wine: {compatdata_path}\n"
                     )
 
                 # Check if userdata exists
@@ -859,7 +859,7 @@ class GameManager(QObject):
                         pass
 
                     if has_saves:
-                        confirm_msg += "• Steam Cloud saves from userdata folders\n"
+                        confirm_msg += "• Saves da Steam Cloud nas pastas de userdata\n"
         elif (
             platform.system() == "Windows"
             and is_accela_install
@@ -869,7 +869,7 @@ class GameManager(QObject):
             wrapper_mode_enabled = is_greenluma_wrapper_mode_enabled()
             if not wrapper_mode_enabled:
                 confirm_msg += (
-                    "• GreenLuma AppList cleanup skipped (Wrapper Mode is disabled)\n"
+                    "• Limpeza do AppList do GreenLuma ignorada (Modo Wrapper desativado)\n"
                 )
             else:
                 steam_path = find_steam_install()
@@ -898,18 +898,18 @@ class GameManager(QObject):
 
                             if found_appid_files:
                                 confirm_msg += (
-                                    "• GreenLuma AppList main file(s): "
+                                    "• Arquivo(s) principal(is) do AppList do GreenLuma: "
                                     f"{', '.join(found_appid_files)}\n"
                                 )
                             if found_dlc_files:
                                 confirm_msg += (
-                                    "• GreenLuma AppList DLC file(s): "
+                                    "• Arquivo(s) de DLC do AppList do GreenLuma: "
                                     f"{', '.join(found_dlc_files)}\n"
                                 )
                         except OSError:
                             pass
 
-        confirm_msg += "\nThis action cannot be undone!"
+        confirm_msg += "\nEsta ação não pode ser desfeita!"
         return confirm_msg
 
     def uninstall_game(
@@ -924,7 +924,7 @@ class GameManager(QObject):
         Uninstall a game by removing its folder, ACF file, and optionally compatdata/saves.
         Returns (success: bool, error_message: str)
         """
-        game_name = game_data.get("game_name", "Unknown")
+        game_name = game_data.get("game_name", "Desconhecido")
         install_path = game_data.get("install_path")
         library_path = game_data.get("library_path")
         appid = game_data.get("appid", "0")

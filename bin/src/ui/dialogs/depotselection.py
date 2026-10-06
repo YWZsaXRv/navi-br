@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class DepotSelectionDialog(QDialog):
     def __init__(self, app_id, game_name, depots, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Selecionar Depots para Baixar")
+        self.setWindowTitle("Selecionar depots para baixar")
         self.depots = depots
         self.game_name = game_name
         self.resize(485, 520)

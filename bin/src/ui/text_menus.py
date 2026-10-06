@@ -141,7 +141,7 @@ class CheckboxSelectionMenu(BaseTextMenu):
 
         self._append_confirm_button(items, self._on_confirm_pressed)
 
-        instructions = "↑/↓: Navigate  Space: Toggle  A: All  D: None  Q: Cancel"
+        instructions = "↑/↓: Navegar  Espaço: Marcar  A: Todos  D: Nenhum  Q: Cancelar"
         self._build_list_layout(items, instructions)
 
     def _on_confirm_pressed(self, _btn: urwid.Button) -> None:
@@ -200,14 +200,14 @@ class DepotSelectionMenu(CheckboxSelectionMenu):
         _header_url: Optional[str] = None,
     ):
         subtitle = f"AppID: {app_id}"
-        super().__init__(f"Select Depots to Download - {game_name}", subtitle)
+        super().__init__(f"Selecionar depots para baixar - {game_name}", subtitle)
         self.items_map = depots
         self.selected_depots = self.selected_items
 
         # Auto-skip when only one depot is available
         if len(self.items_map) == 1:
             depot_id = list(self.items_map.keys())[0]
-            depot_desc = self.items_map[depot_id].get("desc", "Unknown")
+            depot_desc = self.items_map[depot_id].get("desc", "Desconhecido")
             self.selected_depots.clear()
             self.selected_depots.add(depot_id)
             self.result = [depot_id]
@@ -243,7 +243,7 @@ class DepotSelectionMenu(CheckboxSelectionMenu):
 
         self._append_confirm_button(items, self._on_confirm_pressed)
 
-        instructions = "↑/↓: Navigate  Space: Toggle  A: All  D: None  Q: Cancel"
+        instructions = "↑/↓: Navegar  Espaço: Marcar  A: Todos  D: Nenhum  Q: Cancelar"
         self._build_list_layout(items, instructions)
 
     @staticmethod
@@ -302,9 +302,9 @@ class DlcSelectionMenu(CheckboxSelectionMenu):
 
     def __init__(self, dlcs: Dict[str, str]):
         title = (
-            "Select DLC for GreenLuma Wrapper"
+            "Selecionar DLC para o wrapper GreenLuma"
             if sys.platform == "win32"
-            else "Select DLC for SLSsteam Wrapper"
+            else "Selecionar DLC para o wrapper SLSsteam"
         )
         super().__init__(title)
         self.items_map = dlcs
@@ -317,7 +317,7 @@ class SteamLibraryMenu(BaseTextMenu):
     """Text-based Steam library selection menu using urwid.RadioButton."""
 
     def __init__(self, library_paths: List[str]):
-        super().__init__("Select Steam Library")
+        super().__init__("Selecionar biblioteca Steam")
         self.library_paths = library_paths
         self.radio_buttons = {}
         self._radio_group = []
@@ -338,7 +338,7 @@ class SteamLibraryMenu(BaseTextMenu):
         # Add confirm button at the end
         self._append_confirm_button(items, self._on_confirm_pressed)
 
-        instructions = "↑/↓: Navigate  Enter: Confirm  Q: Cancel"
+        instructions = "↑/↓: Navegar  Enter: Confirmar  Q: Cancelar"
         self._build_list_layout(items, instructions)
 
     def _on_confirm_pressed(self, _btn: urwid.Button) -> None:
@@ -374,7 +374,7 @@ class DestinationPathMenu(BaseTextMenu):
     """Text-based destination path selection."""
 
     def __init__(self, default_path: Optional[str] = None):
-        super().__init__("Select Destination Folder")
+        super().__init__("Selecionar pasta de destino")
         self.default_path = default_path or os.path.expanduser("~")
         self.current_path = self.default_path
         self.edit: Optional[urwid.Edit] = None
@@ -382,18 +382,18 @@ class DestinationPathMenu(BaseTextMenu):
     def _build_menu(self) -> None:
         """Build the path selection menu."""
         # Current path display
-        path_label = urwid.Text(("title", "Current Path:"))
+        path_label = urwid.Text(("title", "Caminho atual:"))
         path_display = urwid.Text(("default", f"  {self.current_path}"))
 
         # Navigation options
-        nav_options = urwid.Text(("info", "\nOptions:"))
-        opt1 = urwid.Text("  [Enter] - Use current path")
-        opt2 = urwid.Text("  [Type]  - Enter new path")
-        opt3 = urwid.Text("  [H]     - Go to home directory (~)")
-        opt4 = urwid.Text("  [Q]     - Cancel")
+        nav_options = urwid.Text(("info", "\nOpções:"))
+        opt1 = urwid.Text("  [Enter]     - Usar o caminho atual")
+        opt2 = urwid.Text("  [Digitar]    - Informar novo caminho")
+        opt3 = urwid.Text("  [H]          - Ir para o diretório inicial (~)")
+        opt4 = urwid.Text("  [Q]          - Cancelar")
 
         # Edit widget for path input
-        edit_label = urwid.Text(("title", "\nEnter path:"))
+        edit_label = urwid.Text(("title", "\nInforme o caminho:"))
         self.edit = urwid.Edit("", self.current_path)
 
         # Create pile

@@ -78,7 +78,7 @@ class CreditsDialog(QDialog):
         credits_layout.addWidget(credits_group)
 
         # --- Special Thanks ---
-        special_thanks_group = QGroupBox("Agradecimentos Especiais")
+        special_thanks_group = QGroupBox("Agradecimentos especiais")
         special_thanks_layout = QVBoxLayout()
 
         tools_label = QLabel(

@@ -31,7 +31,7 @@ class StatusDialog(QDialog):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.parent_window = parent
-        self.setWindowTitle("Status da Última Tarefa de Download")
+        self.setWindowTitle("Status da última tarefa de download")
         self.resize(450, 180)
         self.setMinimumSize(400, 150)
 
@@ -61,12 +61,12 @@ class StatusDialog(QDialog):
 
         # Set defaults first
         self.ddm_status = accent_color
-        self.ddm_status_text = "Not run"
+        self.ddm_status_text = "Não executado"
         self.slscheevo_status = accent_color
-        self.slscheevo_status_text = "Not run"
+        self.slscheevo_status_text = "Não executado"
         self.steamless_status = accent_color
-        self.steamless_status_text = "Not run"
-        self.last_game_name = "No game installed"
+        self.steamless_status_text = "Não executado"
+        self.last_game_name = "Nenhum jogo instalado"
 
         if not self.parent_window or not hasattr(self.parent_window, "task_manager"):
             return
@@ -95,7 +95,7 @@ class StatusDialog(QDialog):
         )
         self.steamless_status_text = status["steamless_status_text"]
 
-        self.last_game_name = task_manager.last_installed_game or "No game installed"
+        self.last_game_name = task_manager.last_installed_game or "Nenhum jogo instalado"
 
     def _setup_ui(self) -> None:
         """Orchestrate UI creation."""
@@ -107,7 +107,7 @@ class StatusDialog(QDialog):
 
     def _create_header(self) -> None:
         """Create the title and game name label."""
-        title = ScaledFontLabel("Last Download Task Status")
+        title = ScaledFontLabel("Status da última tarefa de download")
         title.setStyleSheet("font-size: 14pt;")
         self.layout.addWidget(title)
 
@@ -127,19 +127,19 @@ class StatusDialog(QDialog):
         # Rows
         status_layout.addLayout(
             self._create_status_row(
-                " Download Manager", self.ddm_status, self.ddm_status_text
+                " Gerenciador de download", self.ddm_status, self.ddm_status_text
             )
         )
         status_layout.addLayout(
             self._create_status_row(
-                " Achievements",
+                " Conquistas",
                 self.slscheevo_status,
                 self.slscheevo_status_text,
             )
         )
         status_layout.addLayout(
             self._create_status_row(
-                " DRM Removal",
+                " Remoção de DRM",
                 self.steamless_status,
                 self.steamless_status_text,
             )

@@ -128,7 +128,7 @@ class FetchManifestDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_window = parent
-        self.setWindowTitle("Fetch Manifest from Morrenus API")
+        self.setWindowTitle("Baixar manifest da API Morrenus")
         self.setMinimumWidth(600)
         self.setMinimumHeight(500)
 
@@ -179,7 +179,7 @@ class FetchManifestDialog(QDialog):
             "border-radius: 6px; background-color: #95a5a6;"
         )  # Gray
 
-        self.api_status_text = QLabel("Checking...")
+        self.api_status_text = QLabel("Verificando...")
 
         # Group Dot + Text
         conn_layout = QHBoxLayout()
@@ -191,10 +191,10 @@ class FetchManifestDialog(QDialog):
         container.addStretch(1)
 
         # User Info
-        self.username_label = QLabel("User: --")
+        self.username_label = QLabel("Usuário: --")
         container.addWidget(self.username_label)
 
-        self.usage_label = QLabel("Daily: --")
+        self.usage_label = QLabel("Diário: --")
         container.addWidget(self.usage_label)
 
         parent_layout.addWidget(status_widget)
@@ -241,13 +241,13 @@ class FetchManifestDialog(QDialog):
         # Update User Stats
         stats = result.get("stats", {})
         if stats.get("error"):
-            self.username_label.setText("User: Error")
-            self.usage_label.setText("Daily: --")
+            self.username_label.setText("Usuário: erro")
+            self.usage_label.setText("Diário: --")
         else:
-            self.username_label.setText(f"User: {stats.get('username', 'Unknown')}")
+            self.username_label.setText(f"Usuário: {stats.get('username', 'desconhecido')}")
             usage = stats.get("daily_usage", 0)
             limit = stats.get("daily_limit", 0)
-            self.usage_label.setText(f"Daily: {usage}/{limit}")
+            self.usage_label.setText(f"Diário: {usage}/{limit}")
 
     def _on_api_status_error(self, error_info):
         """Handle errors during status check silently."""
@@ -532,7 +532,7 @@ class FetchManifestDialog(QDialog):
             return
 
         self._toggle_inputs(False)
-        self.status_label.setText(f"Downloading manifest for App ID {app_id}...")
+        self.status_label.setText(f"Baixando o manifest do App ID {app_id}...")
 
         worker = self.task_runner.run(morrenus_api.download_manifest, app_id)
         worker.finished.connect(self.on_download_finished)

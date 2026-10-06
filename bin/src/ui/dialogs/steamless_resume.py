@@ -28,7 +28,7 @@ class SteamlessResumeDialog(QDialog):
         parent: Optional[QWidget] = None,
     ):
         super().__init__(parent)
-        self.setWindowTitle("Steamless Concluído")
+        self.setWindowTitle("Steamless concluído")
         self.setMinimumWidth(400)
         self.setMinimumHeight(300)
         self.setModal(True)
@@ -65,12 +65,12 @@ class SteamlessResumeDialog(QDialog):
         settings = get_settings()
         accent_color = settings.value("accent_color", "#C06C84")
 
-        title = ScaledFontLabel("Steamless Processing Complete")
+        title = ScaledFontLabel("Processamento do Steamless concluído")
         title.setStyleSheet(f"font-size: 16pt; color: {accent_color};")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(title)
 
-        game_label = ScaledLabel(f"Game: {game_name}")
+        game_label = ScaledLabel(f"Jogo: {game_name}")
         game_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.layout.addWidget(game_label)
 
@@ -89,11 +89,11 @@ class SteamlessResumeDialog(QDialog):
         stats_layout = QVBoxLayout()
         stats_layout.setSpacing(10)
 
-        found_label = ScaledLabel(f"Found {exe_count} executable(s)")
+        found_label = ScaledLabel(f"Encontrados {exe_count} executável(eis)")
         found_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         stats_layout.addWidget(found_label)
 
-        processed_label = ScaledLabel(f"Processed: {processed_count} executable(s)")
+        processed_label = ScaledLabel(f"Processados: {processed_count} executável(eis)")
         processed_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         stats_layout.addWidget(processed_label)
 
@@ -105,15 +105,15 @@ class SteamlessResumeDialog(QDialog):
     ) -> Tuple[str, str]:
         """Determine status text and color based on results."""
         if success and processed_count > 0:
-            return "Completed Successfully", "#00FF00"
+            return "Concluído com sucesso", "#00FF00"
 
         if processed_count > 0:
-            return "All DRM Removed", "#00FF00"
+            return "Todo o DRM removido", "#00FF00"
 
         if exe_count > 0 and processed_count == 0:
-            return "No DRM Found", "#888888"
+            return "Nenhum DRM encontrado", "#888888"
 
-        return "No Executables Processed", "#FF6B6B"
+        return "Nenhum executável processado", "#FF6B6B"
 
     def _create_status_message(
         self, exe_count: int, processed_count: int, success: bool

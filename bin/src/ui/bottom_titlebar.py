@@ -178,37 +178,37 @@ class BottomTitleBar(QFrame):
 
         self.status_button = self._create_colored_circle_button(
             getattr(parent, "open_status_dialog", None),
-            "Download Status",
+            "Status do download",
         )
         layout.addWidget(self.status_button)
 
         self.search_button = self._create_svg_button(
-            SEARCH_SVG, getattr(parent, "open_fetch_dialog", None), "Download Game"
+            SEARCH_SVG, getattr(parent, "open_fetch_dialog", None), "Baixar jogo"
         )
         layout.addWidget(self.search_button)
 
         self.game_library_button = self._create_svg_button(
-            BOOK_SVG, getattr(parent, "open_game_library", None), "Game Library"
+            BOOK_SVG, getattr(parent, "open_game_library", None), "Biblioteca de jogos"
         )
         layout.addWidget(self.game_library_button)
 
         self.settings_button = self._create_svg_button(
-            GEAR_SVG, getattr(parent, "open_settings", None), "Settings"
+            GEAR_SVG, getattr(parent, "open_settings", None), "Configurações"
         )
         layout.addWidget(self.settings_button)
 
         self.minimize_button = self._create_svg_button(
-            MINIMIZE, self._minimize_window, "Minimize"
+            MINIMIZE, self._minimize_window, "Minimizar"
         )
         layout.addWidget(self.minimize_button)
 
         self.maximize_button = self._create_svg_button(
-            MAXIMIZE, self._maximize_window, "Maximize"
+            MAXIMIZE, self._maximize_window, "Maximizar"
         )
         layout.addWidget(self.maximize_button)
 
         self.close_button = self._create_svg_button(
-            POWER_SVG, self._close_window, "Close"
+            POWER_SVG, self._close_window, "Fechar"
         )
         layout.addWidget(self.close_button)
 
