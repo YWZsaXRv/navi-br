@@ -31,7 +31,7 @@ from PyQt6.QtWidgets import (
 
 from core import morrenus_api
 from ui.dialogs.custom_gifs import CustomGifsDialog
-from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
 from ui.theme import cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
@@ -250,6 +250,7 @@ class SettingsDialog(QDialog):
 
         logger.debug("Opening SettingsDialog.")
         self._setup_ui()
+        aplicar_barra_titulo(self)
 
     def _setup_ui(self) -> None:
         """Initialize the UI layout."""

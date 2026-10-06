@@ -1,4 +1,8 @@
-from PyQt6.QtWidgets import QDialogButtonBox
+from PyQt6.QtCore import QEvent, QObject, Qt
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLayout, QVBoxLayout
+
+from ui.bottom_titlebar import ALTURA_BARRA, BottomTitleBar
+from ui.frameless import Alcas
 
 
 def create_standard_buttons(on_accept, on_reject):
@@ -10,3 +14,69 @@ def create_standard_buttons(on_accept, on_reject):
     buttons.accepted.connect(on_accept)
     buttons.rejected.connect(on_reject)
     return buttons
+
+
+def aplicar_barra_titulo(dialogo: QDialog) -> None:
+    """troca a moldura nativa pela barra win95 e devolve o resize nas bordas."""
+    dialogo.setWindowFlag(Qt.WindowType.FramelessWindowHint, True)
+
+    # status e steamless guardam o layout no atributo `layout` e escondem o método
+    layout = getattr(dialogo, "layout", None)
+    if not isinstance(layout, QLayout):
+        layout = dialogo.layout()
+
+    if isinstance(layout, QVBoxLayout):
+        # a barra fica fora do layout, de ponta a ponta; o conteúdo só desce
+        margens = layout.contentsMargins()
+        layout.setContentsMargins(
+            margens.left(),
+            margens.top() + ALTURA_BARRA,
+            margens.right(),
+            margens.bottom(),
+        )
+
+    barra = BottomTitleBar(
+        dialogo,
+        com_acoes=False,
+        com_versao=False,
+        com_minimizar=False,
+        com_maximizar=False,
+    )
+    barra.setGeometry(0, 0, dialogo.width(), ALTURA_BARRA)
+    barra.show()
+    dialogo.barra_titulo = barra
+
+    # tudo no mesmo tamanho: cola no topo da mãe e parece uma janela só
+    pai = dialogo.parentWidget()
+    destino = pai.geometry().topLeft() if pai is not None else None
+    if destino is not None:
+        dialogo.move(destino)
+
+    # sem moldura nativa não sobra resize: as alças em volta repõem
+    dialogo.alcas = Alcas(dialogo)
+    dialogo.acompanha_barra = _AcompanhaBarra(barra, dialogo, destino)
+
+
+class _AcompanhaBarra(QObject):
+    """barra colada no topo e janela em cima da mãe, em qualquer largura."""
+
+    def __init__(self, barra: BottomTitleBar, janela: QDialog, destino):
+        super().__init__(janela)
+        self.barra = barra
+        self.janela = janela
+        self.destino = destino
+        self._encaixes = 0
+        janela.installEventFilter(self)
+
+    def eventFilter(self, obj, event) -> bool:
+        if obj is self.janela:
+            tipo = event.type()
+            if tipo == QEvent.Type.Resize:
+                self.barra.setGeometry(0, 0, self.janela.width(), ALTURA_BARRA)
+            elif tipo == QEvent.Type.Move and self._encaixes < 3:
+                # depois do show o wm recoloca a flutuante uns pixels pra baixo e
+                # aparece a barra da janela de trás; devolve na hora
+                if self.destino is not None and self.janela.pos() != self.destino:
+                    self._encaixes += 1
+                    self.janela.move(self.destino)
+        return super().eventFilter(obj, event)

@@ -77,12 +77,25 @@ class TituloElidido(QLabel):
 class BottomTitleBar(QFrame):
     """barra de título win95/98, no topo ou na base conforme a config."""
 
-    def __init__(self, parent: QWidget):
+    def __init__(
+        self,
+        parent: QWidget,
+        com_acoes: bool = True,
+        com_versao: bool = True,
+        com_minimizar: bool = True,
+        com_maximizar: bool = True,
+    ):
         super().__init__(parent)
         self.parent_window = parent
         self.setObjectName("barra_titulo")
         self.setFixedHeight(ALTURA_BARRA)
         self.no_previous_state = True
+
+        # diálogo leva só o que fecha: sem as ações da janela principal
+        self._com_acoes = com_acoes
+        self._com_versao = com_versao
+        self._com_minimizar = com_minimizar
+        self._com_maximizar = com_maximizar
 
         self.icone_label: Optional[QLabel] = None
         self.title_label: Optional[TituloElidido] = None
@@ -129,23 +142,52 @@ class BottomTitleBar(QFrame):
 
         layout.addSpacing(3)
 
-        self.title_label = TituloElidido(DISPLAY_NAME)
+        self.title_label = TituloElidido(
+            self.parent_window.windowTitle() or DISPLAY_NAME
+        )
         self.title_label.setObjectName("titulo")
         layout.addWidget(self.title_label)
 
+        if self._com_versao:
+            layout.addSpacing(4)
+            self.version_label = ClickableLabel(
+                app_version,
+                self.parent_window,
+                getattr(self.parent_window, "open_credits_dialog", None),
+            )
+            self.version_label.setObjectName("versao")
+            self.version_label.setToolTip("Ver créditos")
+            layout.addWidget(self.version_label)
+
         layout.addSpacing(4)
 
-        self.version_label = ClickableLabel(
-            app_version,
-            self.parent_window,
-            getattr(self.parent_window, "open_credits_dialog", None),
+        if self._com_acoes:
+            self._cria_acoes(layout)
+
+        # o stretch isola os controles da janela na ponta direita, como no win95
+        layout.addStretch(1)
+        layout.addSpacing(4)
+
+        if self._com_minimizar:
+            self.minimize_button = self._create_control_button(
+                "minimizar", self._minimize_window, "Minimizar"
+            )
+            layout.addWidget(self.minimize_button)
+
+        if self._com_maximizar:
+            self.maximize_button = self._create_control_button(
+                "maximizar", self._maximize_window, "Maximizar"
+            )
+            layout.addWidget(self.maximize_button)
+
+        self.close_button = self._create_control_button(
+            "fechar", self._close_window, "Fechar"
         )
-        self.version_label.setObjectName("versao")
-        self.version_label.setToolTip("Ver créditos")
-        layout.addWidget(self.version_label)
+        layout.addWidget(self.close_button)
 
-        layout.addSpacing(4)
+        outer.addLayout(layout, 1)
 
+    def _cria_acoes(self, layout: QHBoxLayout) -> None:
         parent = self.parent_window
 
         self.status_button = self._create_colored_circle_button(
@@ -168,27 +210,6 @@ class BottomTitleBar(QFrame):
             GEAR_SVG, getattr(parent, "open_settings", None), "Configurações"
         )
         layout.addWidget(self.settings_button)
-
-        # o stretch isola os controles da janela na ponta direita, como no win95
-        layout.addStretch(1)
-        layout.addSpacing(4)
-
-        self.minimize_button = self._create_control_button(
-            "minimizar", self._minimize_window, "Minimizar"
-        )
-        layout.addWidget(self.minimize_button)
-
-        self.maximize_button = self._create_control_button(
-            "maximizar", self._maximize_window, "Maximizar"
-        )
-        layout.addWidget(self.maximize_button)
-
-        self.close_button = self._create_control_button(
-            "fechar", self._close_window, "Fechar"
-        )
-        layout.addWidget(self.close_button)
-
-        outer.addLayout(layout, 1)
 
     def _carrega_icone(self) -> None:
         caminho = Paths.resource("logo/icon.ico")
@@ -391,6 +412,9 @@ class BottomTitleBar(QFrame):
             button.setToolTip(tooltip)
             button.setObjectName("acao")
             button.setFixedSize(TAMANHO_BOTAO, TAMANHO_BOTAO)
+            # enter no campo de busca não pode clicar aqui e fechar a janela
+            button.setAutoDefault(False)
+            button.setDefault(False)
 
             pixmap = self._build_svg_pixmap(svg_data, QColor(self._cor_icone))
             button.setIcon(QIcon(pixmap))
@@ -451,6 +475,8 @@ class BottomTitleBar(QFrame):
         button = QPushButton()
         button.setToolTip(tooltip)
         button.setFixedSize(TAMANHO_BOTAO, TAMANHO_BOTAO)
+        button.setAutoDefault(False)
+        button.setDefault(False)
         button.setIcon(QIcon(self._glifo(glifo)))
         button.setIconSize(QSize(GLIFO, GLIFO))
 
@@ -465,6 +491,8 @@ class BottomTitleBar(QFrame):
     ) -> QPushButton:
         button = QPushButton()
         button.setFixedSize(TAMANHO_BOTAO, TAMANHO_BOTAO)
+        button.setAutoDefault(False)
+        button.setDefault(False)
 
         if tooltip_text:
             button.setToolTip(tooltip_text)
@@ -534,7 +562,7 @@ class BottomTitleBar(QFrame):
         event.accept()
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.MouseButton.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton and self._com_maximizar:
             self._maximize_window()
             event.accept()
             return

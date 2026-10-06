@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,7 @@ class SteamLibraryDialog(QDialog):
 
         logger.debug(f"Opening SteamLibraryDialog with {len(library_paths)} libraries.")
         self._setup_ui(library_paths)
+        aplicar_barra_titulo(self)
 
     def _setup_ui(self, library_paths: List[str]) -> None:
         """Initialize the layout and widgets."""

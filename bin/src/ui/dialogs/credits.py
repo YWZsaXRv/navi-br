@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo
 from ui.theme import cor_secundaria
 from ui.window_defaults import aplicar
 from utils.settings import get_settings
@@ -55,6 +56,7 @@ class CreditsDialog(QDialog):
         close_button.clicked.connect(self.reject)
         footer.addWidget(close_button)
         self.main_layout.addLayout(footer)
+        aplicar_barra_titulo(self)
 
     def _create_credits_content(self):
         """Create the credits content"""

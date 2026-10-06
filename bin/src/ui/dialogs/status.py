@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
 )
 
 from components.custom_widgets import ScaledFontLabel, ScaledLabel
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo
 from ui.window_defaults import aplicar
 from utils.logger import open_log_directory
 from utils.settings import get_settings
@@ -48,6 +49,7 @@ class StatusDialog(QDialog):
         self._setup_ui()
 
         logger.debug("StatusDialog initialized.")
+        aplicar_barra_titulo(self)
 
     def _gather_status(self) -> None:
         """Gather status from task_manager."""

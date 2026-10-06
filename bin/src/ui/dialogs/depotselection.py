@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
 )
 
 from utils.image_fetcher import ImageFetcher
-from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -180,6 +180,7 @@ class DepotSelectionDialog(QDialog):
         content_widget.addWidget(buttons)
 
         layout.addLayout(content_widget)
+        aplicar_barra_titulo(self)
 
     def on_depot_item_clicked(self, item):
         modifiers = QApplication.keyboardModifiers()

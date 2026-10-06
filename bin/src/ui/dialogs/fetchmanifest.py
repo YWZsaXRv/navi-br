@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
 )
 
 from core import morrenus_api
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo
 from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
 from utils.image_fetcher import ImageFetcher
@@ -143,6 +144,7 @@ class FetchManifestDialog(QDialog):
         logger.debug("FetchManifestDialog initialized.")
 
         self._request_api_status_update()
+        aplicar_barra_titulo(self)
 
     def _init_ui(self):
         layout = QVBoxLayout(self)

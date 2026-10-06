@@ -18,7 +18,7 @@ from PyQt6.QtGui import QPixmap
 
 from utils.settings import get_settings
 from utils.helpers import get_base_path, create_checkbox_setting
-from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
 from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
 
@@ -334,6 +334,7 @@ class CustomGifsDialog(QDialog):
         self.next_download_label = None
 
         self.setup_ui()
+        aplicar_barra_titulo(self)
 
     def setup_ui(self):
         """Setup the dialog UI"""

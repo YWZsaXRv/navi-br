@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
 )
 
 from components.custom_widgets import ScaledFontLabel, ScaledLabel
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo
 from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
 from utils.settings import get_settings
@@ -45,6 +46,7 @@ class SteamlessResumeDialog(QDialog):
             f"SteamlessResumeDialog initialized: {game_name}, "
             f"{exe_count} found, {processed_count} processed"
         )
+        aplicar_barra_titulo(self)
 
     def _setup_ui(
         self,

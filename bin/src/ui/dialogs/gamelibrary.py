@@ -97,6 +97,7 @@ except ImportError:
         return False
 
 
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo
 from ui.theme import claro, cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
@@ -263,6 +264,7 @@ class GameLibraryDialog(QDialog):
         self._setup_window()
         self._setup_ui()
         self._connect_signals()
+        aplicar_barra_titulo(self)
 
     def _setup_window(self) -> None:
         """Configure main window properties and styles."""

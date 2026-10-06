@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -69,6 +69,7 @@ class DlcSelectionDialog(QDialog):
 
         buttons = create_standard_buttons(self.accept, self.reject)
         layout.addWidget(buttons)
+        aplicar_barra_titulo(self)
 
     def on_dlc_item_clicked(self, item):
         modifiers = QApplication.keyboardModifiers()
