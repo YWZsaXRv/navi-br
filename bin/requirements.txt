@@ -10,4 +10,3 @@ PyYAML
 gevent
 vdf
 urwid>=2.1.0
-pyopengl

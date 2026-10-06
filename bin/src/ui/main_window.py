@@ -32,7 +32,6 @@ from managers.job_queue_manager import JobQueueManager
 from managers.task_manager import TaskManager
 from managers.ui_state_manager import UIStateManager
 from ui.bottom_titlebar import BottomTitleBar
-from ui.crt_overlay import CRTOverlay
 from ui.dialogs.credits import CreditsDialog
 from ui.dialogs.fetchmanifest import FetchManifestDialog
 from ui.dialogs.gamelibrary import GameLibraryDialog
@@ -92,7 +91,6 @@ class MainWindow(QMainWindow):
         self.alcas = Alcas(self)
         if self.ui_state:
             self.ui_state.apply_style_settings()
-        self.crt_overlay = CRTOverlay(self, self.settings)
         self._setup_key_sequence_detector()
         self._setup_exit_shortcut()
 
@@ -222,8 +220,6 @@ class MainWindow(QMainWindow):
         super().resizeEvent(event)
         if self.alcas:
             self.alcas.atualizar()
-        if hasattr(self, "crt_overlay"):
-            self.crt_overlay.setGeometry(0, 0, self.width(), self.height())
         if getattr(self, "log_output", None):
             # o layout da seção de baixo ainda não rodou, refaz no próximo turno
             self._agenda_ajuste_log()
