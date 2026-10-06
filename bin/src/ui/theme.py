@@ -45,6 +45,29 @@ def sulco(background: Union[str, QColor]) -> str:
     return bg.darker(200).name() if claro(bg) else "#222222"
 
 
+def _mistura(base: QColor, alvo: QColor, fator: float) -> QColor:
+    return QColor(
+        int(base.red() + (alvo.red() - base.red()) * fator),
+        int(base.green() + (alvo.green() - base.green()) * fator),
+        int(base.blue() + (alvo.blue() - base.blue()) * fator),
+    )
+
+
+def gradiente_titulo(accent: Union[str, QColor]) -> Tuple[QColor, QColor]:
+    """par início/fim do gradiente da barra de título, como no win98."""
+    cor = accent if isinstance(accent, QColor) else QColor(accent)
+    branco = QColor("#FFFFFF")
+    if claro(cor):
+        # acento claro: escurece o início senão texto branco não assenta
+        return cor.darker(140), _mistura(cor, branco, 0.45)
+    return cor, _mistura(cor, branco, 0.58)
+
+
+def texto_sobre(cor: Union[str, QColor]) -> str:
+    """preto ou branco conforme a luminância da cor de trás."""
+    return "#202020" if claro(cor) else "#FFFFFF"
+
+
 def normal_palette_colors(
     background_color: QColor, accent_color: QColor
 ) -> Dict[QPalette.ColorRole, QColor]:
