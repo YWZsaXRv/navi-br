@@ -538,6 +538,7 @@ class MainWindow(QMainWindow):
                 border-radius: 5px;
                 text-align: center;
                 color: #FFFFFF;
+                background-color: {sulco(self.background_color or "#000000")};
             }}
             QProgressBar::chunk {{
                 background-color: {self.accent_color};

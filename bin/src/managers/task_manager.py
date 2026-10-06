@@ -25,6 +25,7 @@ from core.tasks.monitor_speed_task import SpeedMonitorTask
 from core.tasks.process_zip_task import ProcessZipTask
 from core.tasks.steamless_task import SteamlessTask
 
+from ui.theme import cores_status
 from utils.helpers import get_base_path
 from utils.steam_manifest import get_game_directory, write_acf_file
 from utils.wrapper_metadata import persist_selected_dlcs
@@ -101,10 +102,12 @@ class TaskManager(QObject):
 
         self._delete_files_on_cancel: Optional[bool] = None
 
-        # Status colors
-        self.STATUS_OK = "#00FF00"
-        self.STATUS_IN_PROGRESS = "#FFA500"
-        self.STATUS_ERROR = "#FF0000"
+        # Status colors (deriva do fundo: verde/laranja/vermelho puros somem
+        # sobre o prata)
+        cores = cores_status(self.settings.value("background_color", "#000000"))
+        self.STATUS_OK = cores["ok"]
+        self.STATUS_IN_PROGRESS = cores["andamento"]
+        self.STATUS_ERROR = cores["erro"]
 
     @property
     def last_installed_game(self):

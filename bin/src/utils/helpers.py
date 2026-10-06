@@ -20,7 +20,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from ui.theme import cor_secundaria
 from utils.brand import APP_ID
+from utils.settings import get_settings
 from utils.paths import Paths
 
 logger = logging.getLogger(__name__)
@@ -580,8 +582,11 @@ class CheckboxSetting(QWidget):
         if tooltip:
             # Use tooltip both as hover tooltip and as visible explanatory label
             self.checkbox.setToolTip(tooltip)
+            fundo = get_settings().value("background_color", "#000000")
             self.explanation_label = QLabel(tooltip)
-            self.explanation_label.setStyleSheet("color: #888888; font-size: 11px;")
+            self.explanation_label.setStyleSheet(
+                f"color: {cor_secundaria(fundo)}; font-size: 11px;"
+            )
             self.explanation_label.setWordWrap(True)
             # Add checkbox and then an indented explanation label using an inner HBoxLayout
             self._layout.addWidget(self.checkbox)

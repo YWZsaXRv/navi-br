@@ -20,8 +20,10 @@ from PyQt6.QtWidgets import (
 )
 
 from core import morrenus_api
+from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
 from utils.image_fetcher import ImageFetcher
+from utils.settings import get_settings
 from utils.task_runner import TaskRunner
 
 logger = logging.getLogger(__name__)
@@ -130,6 +132,7 @@ class FetchManifestDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_window = parent
+        self.background_color = get_settings().value("background_color", "#000000")
         self.setWindowTitle("Baixar manifest da API Morrenus")
         aplicar(self, parent)
 
@@ -186,7 +189,7 @@ class FetchManifestDialog(QDialog):
         self.api_status_dot = QLabel()
         self.api_status_dot.setFixedSize(12, 12)
         self.api_status_dot.setStyleSheet(
-            "border-radius: 6px; background-color: #95a5a6;"
+            f"border-radius: 6px; background-color: {cor_secundaria(self.background_color)};"
         )  # Gray
 
         self.api_status_text = QLabel("Verificando...")
@@ -239,12 +242,14 @@ class FetchManifestDialog(QDialog):
         # Update Connection Status
         if is_healthy:
             self.api_status_dot.setStyleSheet(
-                "border-radius: 6px; background-color: #2ecc71;"
+                f"border-radius: 6px; background-color: "
+                f"{cores_status(self.background_color)['ok']};"
             )  # Green
             self.api_status_text.setText("Online")
         else:
             self.api_status_dot.setStyleSheet(
-                "border-radius: 6px; background-color: #e74c3c;"
+                f"border-radius: 6px; background-color: "
+                f"{cores_status(self.background_color)['erro']};"
             )  # Red
             self.api_status_text.setText("Offline")
 
@@ -263,7 +268,8 @@ class FetchManifestDialog(QDialog):
         """Handle errors during status check silently."""
         logger.error(f"Status check failed: {error_info}")
         self.api_status_dot.setStyleSheet(
-            "border-radius: 6px; background-color: #e74c3c;"
+            f"border-radius: 6px; background-color: "
+            f"{cores_status(self.background_color)['erro']};"
         )
         self.api_status_text.setText("Offline")
 

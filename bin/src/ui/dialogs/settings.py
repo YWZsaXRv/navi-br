@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
 from core import morrenus_api
 from ui.dialogs.custom_gifs import CustomGifsDialog
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.theme import cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
 from utils.helpers import (
@@ -83,14 +84,15 @@ class MorrenusStatsWidget(QWidget):
         self.daily_usage_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         accent_color = self.settings.value("accent_color", "#C06C84")
+        fundo = self.settings.value("background_color", "#000000")
         self.daily_usage_bar.setStyleSheet(
             f"""
             QProgressBar {{
-                border: 1px solid #444;
+                border: 1px solid {accent_color};
                 border-radius: 0px;
                 text-align: center;
-                color: #fff;
-                background-color: #222;
+                color: #FFFFFF;
+                background-color: {sulco(fundo)};
                 height: 20px;
             }}
             QProgressBar::chunk {{
@@ -270,7 +272,7 @@ class SettingsDialog(QDialog):
             }}
             QTabBar::tab {{
                 background: {bg_color};
-                color: #888888;
+                color: {cor_secundaria(bg_color)};
                 padding: 8px 16px;
                 border: none;
             }}
@@ -279,7 +281,7 @@ class SettingsDialog(QDialog):
                 border-bottom: 2px solid {self.accent_color};
             }}
             QTabBar::tab:!selected {{
-                color: #888888;
+                color: {cor_secundaria(bg_color)};
             }}
         """
         )
@@ -340,7 +342,10 @@ class SettingsDialog(QDialog):
             layout.addWidget(help_label)
         elif help_text:
             help_label = QLabel(help_text)
-            help_label.setStyleSheet("color: #888888; font-size: 11px;")
+            help_label.setStyleSheet(
+                f"color: {cor_secundaria(self.settings.value('background_color', '#000000'))};"
+                " font-size: 11px;"
+            )
             layout.addWidget(help_label)
 
         return layout, api_key_input
@@ -581,7 +586,8 @@ class SettingsDialog(QDialog):
 
             self.slssteam_hash_warning_label = QLabel()
             self.slssteam_hash_warning_label.setStyleSheet(
-                "color: #C06C84; font-size: 11px;"
+                f"color: {cores_status(self.settings.value('background_color', '#000000'))['erro']};"
+                " font-size: 11px;"
             )
             self.slssteam_hash_warning_label.setWordWrap(True)
             self.slssteam_hash_warning_label.setMaximumWidth(300)
@@ -609,7 +615,10 @@ class SettingsDialog(QDialog):
     def _add_tool_explanation(layout: QVBoxLayout, text: str) -> None:
         """Helper to add explanation label."""
         lbl = QLabel(text)
-        lbl.setStyleSheet("color: #888888; font-size: 11px;")
+        lbl.setStyleSheet(
+            f"color: {cor_secundaria(get_settings().value('background_color', '#000000'))};"
+            " font-size: 11px;"
+        )
         lbl.setWordWrap(True)
         layout.addWidget(lbl)
 
@@ -725,7 +734,10 @@ class SettingsDialog(QDialog):
     def _add_checkbox_explanation(layout: QVBoxLayout, text: str) -> None:
         """Add indented explanation text for checkboxes."""
         lbl = QLabel(text)
-        lbl.setStyleSheet("color: #888888; font-size: 11px;")
+        lbl.setStyleSheet(
+            f"color: {cor_secundaria(get_settings().value('background_color', '#000000'))};"
+            " font-size: 11px;"
+        )
         lbl.setWordWrap(True)
         h_layout = QHBoxLayout()
         h_layout.setContentsMargins(0, 0, 0, 0)
@@ -1003,8 +1015,9 @@ class SettingsDialog(QDialog):
         mis = status.get("steamclient_mismatch")
         fnd = status.get("steamclient_found")
         err = status.get("steamclient_error")
-        pink = "color: #C06C84; font-size: 11px;"
-        green = "color: #7FC97F; font-size: 11px;"
+        cores = cores_status(self.settings.value("background_color", "#000000"))
+        pink = f"color: {cores['erro']}; font-size: 11px;"
+        green = f"color: {cores['ok']}; font-size: 11px;"
 
         if mis:
             lbl.setText("Seu cliente Steam não é compatível.")

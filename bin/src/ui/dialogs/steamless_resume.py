@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
 )
 
 from components.custom_widgets import ScaledFontLabel, ScaledLabel
+from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
 from utils.settings import get_settings
 
@@ -99,21 +100,23 @@ class SteamlessResumeDialog(QDialog):
 
         self.layout.addLayout(stats_layout)
 
-    @staticmethod
     def _get_status_style(
-        exe_count: int, processed_count: int, success: bool
+        self, exe_count: int, processed_count: int, success: bool
     ) -> Tuple[str, str]:
         """Determine status text and color based on results."""
+        fundo = get_settings().value("background_color", "#000000")
+        cores = cores_status(fundo)
+
         if success and processed_count > 0:
-            return "Concluído com sucesso", "#00FF00"
+            return "Concluído com sucesso", cores["ok"]
 
         if processed_count > 0:
-            return "Todo o DRM removido", "#00FF00"
+            return "Todo o DRM removido", cores["ok"]
 
         if exe_count > 0 and processed_count == 0:
-            return "Nenhum DRM encontrado", "#888888"
+            return "Nenhum DRM encontrado", cor_secundaria(fundo)
 
-        return "Nenhum executável processado", "#FF6B6B"
+        return "Nenhum executável processado", cores["erro"]
 
     def _create_status_message(
         self, exe_count: int, processed_count: int, success: bool

@@ -88,8 +88,14 @@ def apply_palette(app: QApplication, accent: str, background: str) -> None:
     background_color = QColor(background)
     accent_color = QColor(accent)
 
-    disabled_bg = background_color.darker(200)
-    disabled_text = QColor(100, 100, 100)
+    # desabilitado perde o negrito e o traco cinza, mas mantem a face normal:
+    # face escura com texto escuro deixava a letra invisivel
+    if claro(background_color):
+        disabled_bg = background_color
+        disabled_text = QColor("#4A4A4A")
+    else:
+        disabled_bg = background_color.darker(200)
+        disabled_text = QColor(100, 100, 100)
 
     # Apply normal colors
     for role, color in normal_palette_colors(background_color, accent_color).items():
@@ -117,23 +123,36 @@ def _apply_stylesheet(
     if bg_effect == QColor("#000000"):
         bg_effect = QColor("#282828")
 
-    accent_light = accent_color.lighter(120).name()
-    bg_light = bg_color.lighter(120).name()
-
-    gradient_border = (
-        f"border-top: 2px solid {accent_light};\n"
-        f"border-bottom: 2px solid {accent_light};\n"
-        f"border-left: 2px solid qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        f"stop:0 {accent_light}, stop:0.5 {bg_light}, stop:1 {accent_light});\n"
-        f"border-right: 2px solid qlineargradient(x1:0, y1:0, x2:0, y2:1, "
-        f"stop:0 {accent_light}, stop:0.5 {bg_light}, stop:1 {accent_light});"
+    fundo_hover = bg_color.darker(108) if claro(bg_color) else bg_effect
+    fundo_press = bg_color.darker(120) if claro(bg_color) else bg_effect.darker(115)
+    texto_hover = (
+        accent_color.name()
+        if claro(bg_color)
+        else accent_color.lighter(150).name()
     )
 
-    gradient_border_full = (
-        f"border-top: 2px solid {accent_light};\n"
-        f"border-bottom: 2px solid {accent_light};\n"
-        f"border-left: 2px solid {accent_light};\n"
-        f"border-right: 2px solid {accent_light};"
+    # item da lista: hover sobe um degrau; selecao usa o acento como fundo
+    item_hover = bg_color.darker(108) if claro(bg_color) else bg_effect.lighter(120)
+    selecao_bg = accent_color if claro(bg_color) else bg_effect.lighter(150)
+    selecao_fg = bg_color if claro(bg_color) else accent_color
+
+    # relevo win95: branco em cima/esquerda, cinza embaixo/direita. no fundo
+    # escuro o acento assume, sem o brilho branco que grita no prata
+    realce = QColor("#FFFFFF") if claro(bg_color) else accent_color.lighter(140)
+    sombra = QColor("#808080") if claro(bg_color) else accent_color.darker(140)
+
+    borda_relevo = (
+        f"border-top: 2px solid {realce.name()};\n"
+        f"border-left: 2px solid {realce.name()};\n"
+        f"border-bottom: 2px solid {sombra.name()};\n"
+        f"border-right: 2px solid {sombra.name()};"
+    )
+
+    borda_afundada = (
+        f"border-top: 2px solid {sombra.name()};\n"
+        f"border-left: 2px solid {sombra.name()};\n"
+        f"border-bottom: 2px solid {realce.name()};\n"
+        f"border-right: 2px solid {realce.name()};"
     )
 
     style_sheet = f"""
@@ -145,7 +164,7 @@ def _apply_stylesheet(
         }}
 
         QLineEdit:hover {{
-            background-color: {bg_color.name()};
+            background-color: {fundo_hover.name()};
             color: {accent_color.name()};
         }}
 
@@ -160,15 +179,11 @@ def _apply_stylesheet(
             width: 12px;
             height: 12px;
             background: {bg_color.name()};
-            {gradient_border}
+            {borda_relevo}
         }}
 
         QCheckBox::indicator:checked {{
             background: {accent_color.name()};
-        }}
-
-        QCheckBox::indicator:hover {{
-            {gradient_border_full}
         }}
 
         QDialog {{
@@ -192,13 +207,13 @@ def _apply_stylesheet(
         }}
 
         QListWidget::item:hover {{
-            background-color: {bg_effect.lighter(120).name()};
+            background-color: {item_hover.name()};
             color: {accent_color.name()};
         }}
 
         QListWidget::item:selected {{
-            background-color: {bg_effect.lighter(150).name()};
-            color: {accent_color.name()};
+            background-color: {selecao_bg.name()};
+            color: {selecao_fg.name()};
         }}
 
         QListWidget::item:checked {{
@@ -213,7 +228,7 @@ def _apply_stylesheet(
         }}
 
         QListWidget::indicator {{
-            {gradient_border}
+            {borda_relevo}
             border-radius: 4px;
         }}
 
@@ -225,22 +240,23 @@ def _apply_stylesheet(
             background-color: {accent_color.name()};
         }}
 
-        QListWidget::indicator:hover {{
-            {gradient_border_full}
-        }}
-
         QPushButton {{
             background-color: {bg_color.name()};
             color: {accent_color.name()};
             padding: 6px 6px;
-            {gradient_border}
+            {borda_relevo}
             font-weight: bold;
         }}
 
         QPushButton:hover {{
-            background-color: {bg_effect.name()};
-            color: {accent_color.lighter(150).name()};
-            {gradient_border_full}
+            background-color: {fundo_hover.name()};
+            color: {texto_hover};
+        }}
+
+        QPushButton:pressed {{
+            background-color: {fundo_press.name()};
+            color: {accent_color.name()};
+            {borda_afundada}
         }}
 
         QPushButton:disabled {{

@@ -19,7 +19,13 @@ from PyQt6.QtGui import QPixmap
 from utils.settings import get_settings
 from utils.helpers import get_base_path, create_checkbox_setting
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
+
+
+def _fundo() -> str:
+    """fundo da paleta atual, base para derivar as cores de apoio"""
+    return get_settings().value("background_color", "#000000")
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +47,9 @@ class CustomGifItem(QWidget):
 
         # Current file display
         self.current_file_label = QLabel("Nenhum arquivo personalizado")
-        self.current_file_label.setStyleSheet("color: #888888; font-style: italic;")
+        self.current_file_label.setStyleSheet(
+                f"color: {cor_secundaria(_fundo())}; font-style: italic;"
+            )
 
         # View button
         self.view_button = QPushButton("Visualizar")
@@ -98,7 +106,9 @@ class CustomGifItem(QWidget):
         if os.path.exists(custom_path):
             self.original_file_path = custom_path
             self.current_file_label.setText("Personalizado Aplicado")
-            self.current_file_label.setStyleSheet("color: #4CAF50;")
+            self.current_file_label.setStyleSheet(
+                f"color: {cores_status(_fundo())['ok']};"
+            )
             self.remove_button.setEnabled(True)
             self.view_button.setEnabled(True)
             self.upload_button.setText("Substituir")
@@ -159,7 +169,9 @@ class CustomGifItem(QWidget):
             filename = os.path.basename(file_path)
             display_filename = CustomGifItem.truncate_filename(filename)
             self.current_file_label.setText(f"Temporário: {display_filename}")
-            self.current_file_label.setStyleSheet("color: #FF9800;")
+            self.current_file_label.setStyleSheet(
+                f"color: {cores_status(_fundo())['andamento']};"
+            )
             self.remove_button.setEnabled(True)
             self.view_button.setEnabled(True)
             self.upload_button.setText("Substituir")
@@ -191,7 +203,9 @@ class CustomGifItem(QWidget):
                 logger.error(f"Failed to remove custom file for {self.gif_name}: {e}")
 
         self.current_file_label.setText("Nenhum arquivo personalizado")
-        self.current_file_label.setStyleSheet("color: #888888; font-style: italic;")
+        self.current_file_label.setStyleSheet(
+                f"color: {cor_secundaria(_fundo())}; font-style: italic;"
+            )
         self.remove_button.setEnabled(False)
         self.view_button.setEnabled(False)
         self.upload_button.setText("Enviar")
@@ -280,7 +294,9 @@ class CustomGifItem(QWidget):
             self.temp_file_path = None
 
             self.current_file_label.setText("Personalizado Aplicado")
-            self.current_file_label.setStyleSheet("color: #4CAF50;")
+            self.current_file_label.setStyleSheet(
+                f"color: {cores_status(_fundo())['ok']};"
+            )
             self.view_button.setEnabled(True)
             logger.info(f"Applied custom GIF for {self.gif_name}: {permanent_path}")
             return True
@@ -333,7 +349,9 @@ class CustomGifsDialog(QDialog):
         desc_label = QLabel(
             f"Enviar GIFs personalizados para substituir os padrões.\nGIFs personalizados são salvos em:\n{get_base_path() / 'gifs' / 'custom'}"
         )
-        desc_label.setStyleSheet("color: #888888; margin-bottom: 20px;")
+        desc_label.setStyleSheet(
+                f"color: {cor_secundaria(_fundo())}; margin-bottom: 20px;"
+            )
         desc_label.setWordWrap(True)
         layout.addWidget(desc_label)
 

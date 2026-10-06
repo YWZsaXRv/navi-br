@@ -24,11 +24,6 @@ logger = logging.getLogger(__name__)
 class StatusDialog(QDialog):
     """Dialog showing the status of tools for the last installed game."""
 
-    # Status colors
-    STATUS_OK = "#00FF00"
-    STATUS_IN_PROGRESS = "#FFA500"
-    STATUS_ERROR = "#FF0000"
-
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.parent_window = parent

@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from ui.theme import cor_secundaria
 from ui.window_defaults import aplicar
 from utils.settings import get_settings
 
@@ -26,6 +27,7 @@ class CreditsDialog(QDialog):
         self.main_layout.setContentsMargins(24, 24, 24, 24)
         self.main_layout.setSpacing(16)
         self.accent_color = self.settings.value("accent_color", "#C06C84")
+        self.background_color = self.settings.value("background_color", "#000000")
 
         logger.debug("Opening CreditsDialog.")
 
@@ -104,7 +106,10 @@ class CreditsDialog(QDialog):
             "• steam[client] (solsticegamestudios)\n"
             "• Morrenus API"
         )
-        tools_label.setStyleSheet("font-size: 11px; color: #CCCCCC; margin-left: 15px;")
+        tools_label.setStyleSheet(
+            f"font-size: 11px; color: {cor_secundaria(self.background_color)};"
+            " margin-left: 15px;"
+        )
         special_thanks_layout.addWidget(tools_label)
 
         special_thanks_group.setLayout(special_thanks_layout)

@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from PyQt6.QtCore import QSize, Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QIntValidator, QPixmap
+from PyQt6.QtGui import QColor, QIntValidator, QPixmap
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -97,6 +97,7 @@ except ImportError:
         return False
 
 
+from ui.theme import claro, cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
 
@@ -176,13 +177,18 @@ class GameItemWidget(QWidget):
 
     def apply_status(self, update_status: str) -> None:
         """Sets the status label text and color."""
+        status = cores_status(self.background_color)
         status_map = {
             "update_available": ("Nova versão disponível", self.accent_color),
-            "up_to_date": ("Atualizado", "#00FF00"),
-            "checking": ("Verificando atualizações...", "#FFA500"),
+            "up_to_date": ("Atualizado", status["ok"]),
+            "checking": ("Verificando atualizações...", status["andamento"]),
         }
         text, color = status_map.get(
-            update_status, ("Não foi possível verificar atualizações", "#AAAAAA")
+            update_status,
+            (
+                "Não foi possível verificar atualizações",
+                cor_secundaria(self.background_color),
+            ),
         )
         self.status_label.setText(text)
         self.status_label.setStyleSheet(f"color: {color}; font-style: italic;")
@@ -263,6 +269,15 @@ class GameLibraryDialog(QDialog):
         self.setWindowTitle("Biblioteca de jogos")
         aplicar(self, self.main_window)
 
+        # a folha foi escrita para o tema escuro: no fundo claro os cinzos
+        # fixos viram sujeira, então tudo deriva do par fundo/accent
+        fundo = QColor(self.background_color)
+        fundo_claro = claro(fundo)
+        linha_lista = fundo.darker(135).name() if fundo_claro else "#333333"
+        selecao = self.accent_color if fundo_claro else "#1A1A1A"
+        selecao_txt = self.background_color if fundo_claro else self.accent_color
+        trilha = sulco(self.background_color)
+
         self.setStyleSheet(
             f"""
             QDialog {{ background-color: {self.background_color}; color: {self.accent_color}; }}
@@ -273,11 +288,12 @@ class GameLibraryDialog(QDialog):
                 border-radius: 4px; 
             }}
             QListWidget::item {{ 
-                border-bottom: 1px solid #333; 
+                border-bottom: 1px solid {linha_lista}; 
                 color: {self.accent_color};
             }}
             QListWidget::item:selected {{ 
-                background-color: #1A1A1A; 
+                background-color: {selecao}; 
+                color: {selecao_txt};
             }}
             
             QLabel {{ color: {self.accent_color}; }}
@@ -292,14 +308,15 @@ class GameLibraryDialog(QDialog):
             QComboBox QAbstractItemView {{
                 background-color: {self.background_color};
                 color: {self.accent_color};
-                selection-background-color: #222;
+                selection-background-color: {selecao};
+                selection-color: {selecao_txt};
                 border: none;
             }}
             QProgressBar {{
-                background-color: #111;
-                border: 1px solid #333;
+                background-color: {trilha};
+                border: 1px solid {self.accent_color};
                 border-radius: 4px;
-                color: {self.accent_color};
+                color: #FFFFFF;
                 text-align: center;
             }}
             QProgressBar::chunk {{
@@ -892,7 +909,7 @@ class GameLibraryDialog(QDialog):
             QTabWidget::pane {{ border: none; background-color: {self.background_color}; }}
             QTabBar::tab {{ 
                 background: {self.background_color}; 
-                color: #888; 
+                color: {cor_secundaria(self.background_color)}; 
                 padding: 8px 16px; 
             }}
             QTabBar::tab:selected {{ 
