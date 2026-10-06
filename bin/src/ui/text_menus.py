@@ -86,7 +86,7 @@ class BaseTextMenu:
         on_press,
     ) -> None:
         confirm_btn = urwid.Button(
-            "  âœ“ Confirm Selection  ",
+            "  ✓ Confirmar seleção  ",
             on_press=on_press,
         )
         items.append(urwid.AttrMap(confirm_btn, "footer", "selected"))
