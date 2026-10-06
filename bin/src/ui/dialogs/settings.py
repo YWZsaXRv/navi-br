@@ -31,7 +31,7 @@ from PyQt6.QtWidgets import (
 
 from core import morrenus_api
 from ui.dialogs.custom_gifs import CustomGifsDialog
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
 from ui.theme import cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
@@ -297,7 +297,7 @@ class SettingsDialog(QDialog):
 
     def _create_dialog_buttons(self) -> None:
         """Create standard Ok/Cancel buttons."""
-        buttons = create_standard_buttons(self.accept, self.reject)
+        buttons = create_accept_button(self.accept)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         self.main_layout.addWidget(buttons)

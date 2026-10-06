@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -55,7 +55,7 @@ class SteamLibraryDialog(QDialog):
         if self.list_widget.count() > 0:
             self.list_widget.setCurrentRow(0)
 
-        buttons = create_standard_buttons(self.accept, self.reject)
+        buttons = create_accept_button(self.accept)
         layout.addWidget(buttons)
 
     def accept(self) -> None:

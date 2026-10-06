@@ -405,11 +405,6 @@ class GameLibraryDialog(QDialog):
         self.info_label.setWordWrap(True)
         footer_layout.addWidget(self.info_label, 1)
 
-        close_button = QPushButton("Fechar")
-        close_button.setFixedWidth(110)
-        close_button.clicked.connect(self.reject)
-        footer_layout.addWidget(close_button)
-
         layout.addLayout(footer_layout)
 
     def _connect_signals(self) -> None:

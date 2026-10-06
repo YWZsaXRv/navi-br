@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
 )
 
 from utils.image_fetcher import ImageFetcher
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -176,7 +176,7 @@ class DepotSelectionDialog(QDialog):
         button_layout.addWidget(deselect_all_button)
         content_widget.addLayout(button_layout)
 
-        buttons = create_standard_buttons(self.accept, self.reject)
+        buttons = create_accept_button(self.accept)
         content_widget.addWidget(buttons)
 
         layout.addLayout(content_widget)

@@ -4,7 +4,6 @@ from typing import Optional
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QDialog,
-    QDialogButtonBox,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -146,18 +145,12 @@ class StatusDialog(QDialog):
         self.layout.addWidget(status_group)
 
     def _create_footer_buttons(self) -> None:
-        """Create the open logs button and OK button."""
+        """só os logs: fechar é o x da barra."""
         button_layout = QHBoxLayout()
 
         logs_button = QPushButton("Abrir Logs")
         logs_button.clicked.connect(open_log_directory)
         button_layout.addWidget(logs_button)
-
-        button_layout.addStretch()
-
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
-        buttons.accepted.connect(self.accept)
-        button_layout.addWidget(buttons)
 
         self.layout.addLayout(button_layout)
 

@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class DlcSelectionDialog(QDialog):
         button_layout.addWidget(deselect_all_button)
         layout.addLayout(button_layout)
 
-        buttons = create_standard_buttons(self.accept, self.reject)
+        buttons = create_accept_button(self.accept)
         layout.addWidget(buttons)
         aplicar_barra_titulo(self)
 

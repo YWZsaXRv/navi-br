@@ -3,7 +3,6 @@ import logging
 from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
-    QPushButton,
     QVBoxLayout,
     QGroupBox,
     QLabel,
@@ -47,15 +46,6 @@ class CreditsDialog(QDialog):
         self._create_credits_content()
 
         self.main_layout.addStretch()
-
-        # rodapé com o fechar alinhado na direita
-        footer = QHBoxLayout()
-        footer.addStretch()
-        close_button = QPushButton("Fechar")
-        close_button.setFixedWidth(110)
-        close_button.clicked.connect(self.reject)
-        footer.addWidget(close_button)
-        self.main_layout.addLayout(footer)
         aplicar_barra_titulo(self)
 
     def _create_credits_content(self):

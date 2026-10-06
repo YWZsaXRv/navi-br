@@ -18,7 +18,7 @@ from PyQt6.QtGui import QPixmap
 
 from utils.settings import get_settings
 from utils.helpers import get_base_path, create_checkbox_setting
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_standard_buttons
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
 from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
 
@@ -393,7 +393,7 @@ class CustomGifsDialog(QDialog):
         layout.addWidget(scroll)
 
         # Dialog buttons
-        buttons = create_standard_buttons(self.accept, self.reject)
+        buttons = create_accept_button(self.accept)
         layout.addWidget(buttons)
 
     def create_gif_items(self):
