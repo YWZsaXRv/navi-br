@@ -2,7 +2,7 @@ import atexit
 import logging
 import sys
 from collections import deque
-from typing import Dict, Optional
+from typing import Optional
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import (
@@ -10,7 +10,6 @@ from PyQt6.QtGui import (
     QDropEvent,
     QIcon,
     QKeySequence,
-    QMouseEvent,
     QShortcut,
 )
 from PyQt6.QtWidgets import (
@@ -40,6 +39,7 @@ from ui.dialogs.gamelibrary import GameLibraryDialog
 from ui.dialogs.lain import LainMinigameDialog
 from ui.dialogs.settings import SettingsDialog
 from ui.dialogs.status import StatusDialog
+from ui.frameless import Alcas
 from ui.theme import cabecalho_secao, sulco
 from ui.window_defaults import ALTURA, GAP, LARGURA, RECUO_LATERAL
 from utils.brand import DISPLAY_NAME
@@ -50,87 +50,12 @@ from utils.settings import get_settings
 logger = logging.getLogger(__name__)
 
 
-class ResizeHandle(QWidget):
-    """Transparent widget used to resize the frameless window."""
-
-    def __init__(self, edge_name: str, main_window: "MainWindow"):
-        super().__init__(main_window)
-        self.edge_name = edge_name
-        self.main_window = main_window
-        self.resizing = False
-        self.resize_start_pos = None
-        self.resize_start_geom = None
-        self.setStyleSheet("background: transparent;")
-
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        if event.button() != Qt.MouseButton.LeftButton:
-            return
-
-        window = self.main_window.windowHandle()
-        edge = self._get_qt_edge()
-
-        # Try system resize first (Wayland/Windows native)
-        if window and window.isExposed() and window.startSystemResize(edge):
-            event.accept()
-            return
-
-        # Fallback for X11/other
-        self.resizing = True
-        self.resize_start_pos = event.globalPosition().toPoint()
-        self.resize_start_geom = self.main_window.geometry()
-        self.grabMouse()
-        event.accept()
-
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        if not self.resizing:
-            return
-
-        delta = event.globalPosition().toPoint() - self.resize_start_pos
-        geom = self.resize_start_geom
-        x, y, w, h = geom.x(), geom.y(), geom.width(), geom.height()
-
-        if "right" in self.edge_name:
-            w += delta.x()
-        if "bottom" in self.edge_name:
-            h += delta.y()
-        if "left" in self.edge_name:
-            x += delta.x()
-            w -= delta.x()
-        if "top" in self.edge_name:
-            y += delta.y()
-            h -= delta.y()
-
-        w = max(w, self.main_window.minimumWidth())
-        h = max(h, self.main_window.minimumHeight())
-
-        self.main_window.setGeometry(x, y, w, h)
-
-    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if self.resizing:
-            self.releaseMouse()
-            self.resizing = False
-        event.accept()
-
-    def _get_qt_edge(self) -> Qt.Edge:
-        edge_map = {
-            "left": Qt.Edge.LeftEdge,
-            "right": Qt.Edge.RightEdge,
-            "top": Qt.Edge.TopEdge,
-            "bottom": Qt.Edge.BottomEdge,
-            "top_left": Qt.Edge.LeftEdge,
-            "top_right": Qt.Edge.RightEdge,
-            "bottom_left": Qt.Edge.LeftEdge,
-            "bottom_right": Qt.Edge.RightEdge,
-        }
-        return edge_map.get(self.edge_name, Qt.Edge.RightEdge)
-
-
 class MainWindow(QMainWindow):
     """Main application window."""
 
     def __init__(self):
         super().__init__()
-        self.resize_handles: Dict[str, ResizeHandle] = {}
+        self.alcas: Optional[Alcas] = None
         self.key_sequence = deque(maxlen=4)
         self.target_sequence = ["l", "a", "i", "n"]
         self.settings = None
@@ -164,7 +89,7 @@ class MainWindow(QMainWindow):
         self._setup_window_properties()
         self._initialize_managers()
         self._setup_ui()
-        self._setup_resize_handles()
+        self.alcas = Alcas(self)
         if self.ui_state:
             self.ui_state.apply_style_settings()
         self.crt_overlay = CRTOverlay(self, self.settings)
@@ -292,69 +217,11 @@ class MainWindow(QMainWindow):
 
         self.setAcceptDrops(True)
 
-    def _setup_resize_handles(self) -> None:
-        """Setup invisible resize handles for all edges and corners."""
-        edges = [
-            "top_left",
-            "top_right",
-            "bottom_left",
-            "bottom_right",
-            "left",
-            "right",
-            "top",
-            "bottom",
-        ]
-
-        for name in edges:
-            handle = ResizeHandle(name, self)
-            handle.setCursor(MainWindow._get_cursor_for_edge(name))
-            self.resize_handles[name] = handle
-
-        self._update_resize_handles_geometry()
-
-    @staticmethod
-    def _get_cursor_for_edge(edge: str) -> Qt.CursorShape:
-        """Get appropriate cursor for each resize edge."""
-        cursors = {
-            "left": Qt.CursorShape.SizeHorCursor,
-            "right": Qt.CursorShape.SizeHorCursor,
-            "top": Qt.CursorShape.SizeVerCursor,
-            "bottom": Qt.CursorShape.SizeVerCursor,
-            "top_left": Qt.CursorShape.SizeFDiagCursor,
-            "top_right": Qt.CursorShape.SizeBDiagCursor,
-            "bottom_left": Qt.CursorShape.SizeBDiagCursor,
-            "bottom_right": Qt.CursorShape.SizeFDiagCursor,
-        }
-        return cursors.get(edge, Qt.CursorShape.ArrowCursor)
-
-    def _update_resize_handles_geometry(self) -> None:
-        """Calculate and set geometry for all resize handles."""
-        if not self.resize_handles:
-            return
-
-        w, h = self.width(), self.height()
-        hw = 6  # Handle width
-
-        # Define geometry calculations for each handle type
-        geometries = {
-            "top_left": (0, 0, hw, hw),
-            "top_right": (w - hw, 0, hw, hw),
-            "bottom_left": (0, h - hw, hw, hw),
-            "bottom_right": (w - hw, h - hw, hw, hw),
-            "left": (0, hw, hw, h - 2 * hw),
-            "right": (w - hw, hw, hw, h - 2 * hw),
-            "top": (hw, 0, w - 2 * hw, hw),
-            "bottom": (hw, h - hw, w - 2 * hw, hw),
-        }
-
-        for name, (x, y, width, height) in geometries.items():
-            if name in self.resize_handles:
-                self.resize_handles[name].setGeometry(x, y, width, height)
-
     def resizeEvent(self, event) -> None:
         """Update resize handle positions when window is resized."""
         super().resizeEvent(event)
-        self._update_resize_handles_geometry()
+        if self.alcas:
+            self.alcas.atualizar()
         if hasattr(self, "crt_overlay"):
             self.crt_overlay.setGeometry(0, 0, self.width(), self.height())
         if getattr(self, "log_output", None):
