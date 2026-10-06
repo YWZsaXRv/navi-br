@@ -12,7 +12,6 @@ from PyQt6.QtGui import (
     QPen,
     QPixmap,
 )
-from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import (
     QFrame,
     QHBoxLayout,
@@ -31,6 +30,7 @@ from .assets import (
     BOOK_SVG,
     GEAR_SVG,
     SEARCH_SVG,
+    svg_para_pixmap,
 )
 
 logger = logging.getLogger(__name__)
@@ -375,21 +375,7 @@ class BottomTitleBar(QFrame):
 
     @staticmethod
     def _build_svg_pixmap(svg_data: str, color: QColor) -> QPixmap:
-        renderer = QSvgRenderer(svg_data.encode("utf-8"))
-        icon_size = QSize(TAMANHO_BOTAO, TAMANHO_BOTAO)
-
-        pixmap = QPixmap(icon_size)
-        pixmap.fill(Qt.GlobalColor.transparent)
-        painter = QPainter(pixmap)
-
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        renderer.render(painter)
-
-        painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
-        painter.fillRect(pixmap.rect(), color)
-        painter.end()
-
-        return pixmap
+        return svg_para_pixmap(svg_data, color, TAMANHO_BOTAO)
 
     def _update_svg_button_color(
         self, button: QPushButton, svg_data: str, color: str

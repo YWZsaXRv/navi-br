@@ -1,3 +1,7 @@
+from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtGui import QColor, QPainter, QPixmap
+from PyQt6.QtSvg import QSvgRenderer
+
 DEPOT_BLACKLIST = [
     228981,
     228982,
@@ -75,6 +79,39 @@ BOOK_SVG = r"""
   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
 </svg>
 """
+
+DROP_SVG = r"""
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="5" y="26" width="38" height="17" stroke-dasharray="7 5"/>
+  <path d="M24 7v22"/>
+  <path d="M15 21l9 9 9-9"/>
+</svg>
+"""
+
+# mesma forma com a caixa marcada, pro estado de arraste
+DROP_SVG_HOVER = r"""
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none" stroke="#000000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="5" y="26" width="38" height="17" fill="#000000" fill-opacity="0.3" stroke-dasharray="7 5"/>
+  <path d="M24 7v22"/>
+  <path d="M15 21l9 9 9-9"/>
+</svg>
+"""
+
+
+def svg_para_pixmap(svg: str, cor: QColor, lado: int) -> QPixmap:
+    """renderiza o svg num quadrado e tinta tudo na cor dada."""
+    renderer = QSvgRenderer(svg.encode("utf-8"))
+    pixmap = QPixmap(lado, lado)
+    pixmap.fill(Qt.GlobalColor.transparent)
+
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    renderer.render(painter, QRectF(0, 0, lado, lado))
+    painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)
+    painter.fillRect(pixmap.rect(), cor)
+    painter.end()
+    return pixmap
+
 
 """
 

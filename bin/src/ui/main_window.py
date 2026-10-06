@@ -6,7 +6,9 @@ from typing import Optional
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import (
+    QColor,
     QDragEnterEvent,
+    QDragLeaveEvent,
     QDropEvent,
     QIcon,
     QKeySequence,
@@ -31,6 +33,7 @@ from managers.gif_manager import GIFManager
 from managers.job_queue_manager import JobQueueManager
 from managers.task_manager import TaskManager
 from managers.ui_state_manager import UIStateManager
+from ui.assets import DROP_SVG, DROP_SVG_HOVER, svg_para_pixmap
 from ui.bottom_titlebar import BottomTitleBar
 from ui.dialogs.credits import CreditsDialog
 from ui.dialogs.fetchmanifest import FetchManifestDialog
@@ -77,6 +80,10 @@ class MainWindow(QMainWindow):
         self.drop_zone_layout = None
         self.drop_zone_gif = None
         self.drop_text_label = None
+        self.drop_icon = None
+        self.lado_icone_drop = 0
+        self.drop_destacado = False
+        self.texto_drop_antes = None
         self.progress_container = None
         self.progress_layout = None
         self.progress_bar = None
@@ -220,6 +227,7 @@ class MainWindow(QMainWindow):
         super().resizeEvent(event)
         if self.alcas:
             self.alcas.atualizar()
+        self._ajusta_icone_drop()
         if getattr(self, "log_output", None):
             # o layout da seção de baixo ainda não rodou, refaz no próximo turno
             self._agenda_ajuste_log()
@@ -261,7 +269,7 @@ class MainWindow(QMainWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
 
-        self.drop_text_label = ScaledFontLabel("Solte o ZIP aqui")
+        self.drop_text_label = ScaledFontLabel("Arraste o ZIP aqui")
         self.drop_text_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.drop_text_label.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
@@ -271,7 +279,54 @@ class MainWindow(QMainWindow):
 
         self.drop_zone_layout.addWidget(self.drop_zone_gif, 9)
         self.drop_zone_layout.addWidget(self.drop_text_label, 1)
+        self.drop_zone_layout.addSpacing(12)
+
+        self.drop_icon = QLabel()
+        self.drop_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.drop_zone_layout.addWidget(
+            self.drop_icon, 0, Qt.AlignmentFlag.AlignCenter
+        )
+        self._ajusta_icone_drop()
         self.main_layout.addWidget(self.drop_zone_container, 10)
+
+    def _ajusta_icone_drop(self) -> None:
+        """ícone cresce com a janela: 32 no piso, 96 no teto."""
+        if self.drop_icon is None:
+            return
+        lado = max(32, min(96, self.width() // 8))
+        if lado == self.lado_icone_drop:
+            return
+        self.lado_icone_drop = lado
+        self.drop_icon.setFixedSize(lado, lado)
+        self._pinta_icone_drop()
+
+    def _pinta_icone_drop(self) -> None:
+        """normal, ou com a caixa marcada enquanto o zip está por cima."""
+        if self.drop_icon is None or not self.lado_icone_drop:
+            return
+        svg = DROP_SVG_HOVER if self.drop_destacado else DROP_SVG
+        self.drop_icon.setPixmap(
+            svg_para_pixmap(svg, QColor(self.accent_color), self.lado_icone_drop)
+        )
+
+    def _destaque_drop(self, ativo: bool) -> None:
+        """destaque enquanto o zip está arrastando por cima."""
+        if self.drop_text_label is None:
+            return
+        if ativo:
+            if self.drop_destacado:
+                return
+            self.drop_destacado = True
+            self.texto_drop_antes = self.drop_text_label.text()
+            self.drop_text_label.setText("Solte agora")
+        else:
+            if not self.drop_destacado:
+                return
+            self.drop_destacado = False
+            if self.texto_drop_antes:
+                self.drop_text_label.setText(self.texto_drop_antes)
+            self.texto_drop_antes = None
+        self._pinta_icone_drop()
 
     def _create_progress_section(self) -> None:
         """Create the progress bar and speed label."""
@@ -442,9 +497,15 @@ class MainWindow(QMainWindow):
         )
 
         if has_zip:
+            self._destaque_drop(True)
             event.acceptProposedAction()
 
+    def dragLeaveEvent(self, event: QDragLeaveEvent) -> None:
+        self._destaque_drop(False)
+        super().dragLeaveEvent(event)
+
     def dropEvent(self, event: QDropEvent) -> None:
+        self._destaque_drop(False)
         urls = event.mimeData().urls()
         new_jobs = [
             url.toLocalFile()

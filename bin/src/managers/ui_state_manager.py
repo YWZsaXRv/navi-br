@@ -387,6 +387,9 @@ class UIStateManager:
         # Drop text label
         self.main_window.drop_text_label.setStyleSheet(accent_style)
 
+        # ícone do drop é tinta do acento
+        self.main_window._pinta_icone_drop()
+
         # Cabeçalho da fila (mesmo estilo do cabeçalho de log)
         if getattr(self, "queue_label", None):
             self.queue_label.setStyleSheet(
@@ -408,7 +411,7 @@ class UIStateManager:
         if not is_processing and not has_jobs:
             if self.queue_widget:
                 self.queue_widget.setVisible(False)
-            self.main_window.drop_text_label.setText("Solte o ZIP aqui")
+            self.main_window.drop_text_label.setText("Arraste o ZIP aqui")
             self._show_main_gif()
         else:
             if self.queue_widget:
