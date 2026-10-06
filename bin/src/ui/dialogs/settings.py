@@ -467,7 +467,7 @@ class SettingsDialog(QDialog):
     def _on_tab_changed(self, index: int) -> None:
         """Handle tab change events."""
         if (
-            self.tab_widget.tabText(index) == "Integrations"
+            self.tab_widget.tabText(index) == "Integrações"
             and not self.morrenus_tab_initialized
         ):
             self.morrenus_tab_initialized = True
