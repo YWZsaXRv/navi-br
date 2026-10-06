@@ -211,7 +211,7 @@ class MainWindow(QMainWindow):
         )
 
         if self.titlebar_position == "top":
-            self.bottom_titlebar = BottomTitleBar(self)
+            self.bottom_titlebar = BottomTitleBar(self, marca_central=True)
             self.layout.addWidget(self.bottom_titlebar)
 
         self._create_main_content()
@@ -219,7 +219,7 @@ class MainWindow(QMainWindow):
         self.update_gif_display()
 
         if self.titlebar_position != "top":
-            self.bottom_titlebar = BottomTitleBar(self)
+            self.bottom_titlebar = BottomTitleBar(self, marca_central=True)
             self.layout.addWidget(self.bottom_titlebar)
 
         self.setAcceptDrops(True)

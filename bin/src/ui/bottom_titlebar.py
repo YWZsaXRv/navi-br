@@ -17,6 +17,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSizePolicy,
+    QSpacerItem,
     QVBoxLayout,
     QWidget,
 )
@@ -84,6 +86,7 @@ class BottomTitleBar(QFrame):
         com_versao: bool = True,
         com_minimizar: bool = True,
         com_maximizar: bool = True,
+        marca_central: bool = False,
     ):
         super().__init__(parent)
         self.parent_window = parent
@@ -96,6 +99,12 @@ class BottomTitleBar(QFrame):
         self._com_versao = com_versao
         self._com_minimizar = com_minimizar
         self._com_maximizar = com_maximizar
+        # só a janela principal centraliza a marca entre as duas pontas
+        self._marca_central = marca_central
+        self._grupo_esq: Optional[QWidget] = None
+        self._grupo_dir: Optional[QWidget] = None
+        self._larg_esq = 0
+        self._larg_dir = 0
 
         self.icone_label: Optional[QLabel] = None
         self.title_label: Optional[TituloElidido] = None
@@ -134,6 +143,59 @@ class BottomTitleBar(QFrame):
         layout.setContentsMargins(3, 2, 3, 2)
         layout.setSpacing(2)
 
+        if self._marca_central:
+            # janela principal: ações coladas na esquerda, marca no meio,
+            # versão e controles da janela na direita
+            self._grupo_esq = QWidget()
+            esq = QHBoxLayout(self._grupo_esq)
+            esq.setContentsMargins(0, 0, 0, 0)
+            esq.setSpacing(2)
+            if self._com_acoes:
+                self._cria_acoes(esq)
+            layout.addWidget(self._grupo_esq)
+
+            layout.addStretch(1)
+            self._esp_centro_esq = QSpacerItem(0, 0)
+            layout.addItem(self._esp_centro_esq)
+
+            self._cria_marca(layout)
+
+            self._esp_centro_dir = QSpacerItem(0, 0)
+            layout.addItem(self._esp_centro_dir)
+            layout.addStretch(1)
+
+            self._grupo_dir = QWidget()
+            dirita = QHBoxLayout(self._grupo_dir)
+            dirita.setContentsMargins(0, 0, 0, 0)
+            dirita.setSpacing(2)
+            if self._com_versao:
+                dirita.addSpacing(4)
+                self._cria_versao(dirita)
+                dirita.addSpacing(4)
+            self._cria_controles(dirita)
+            layout.addWidget(self._grupo_dir)
+        else:
+            self._cria_marca(layout)
+
+            if self._com_versao:
+                layout.addSpacing(4)
+                self._cria_versao(layout)
+
+            layout.addSpacing(4)
+
+            if self._com_acoes:
+                self._cria_acoes(layout)
+
+            # o stretch isola os controles da janela na ponta direita, como no win95
+            layout.addStretch(1)
+            layout.addSpacing(4)
+            self._cria_controles(layout)
+
+        self._layout_meio = layout
+        outer.addLayout(layout, 1)
+        self._ajusta_compensacao()
+
+    def _cria_marca(self, layout: QHBoxLayout) -> None:
         self.icone_label = QLabel()
         self.icone_label.setFixedSize(TAMANHO_BOTAO, TAMANHO_BOTAO)
         self.icone_label.setObjectName("icone")
@@ -148,26 +210,17 @@ class BottomTitleBar(QFrame):
         self.title_label.setObjectName("titulo")
         layout.addWidget(self.title_label)
 
-        if self._com_versao:
-            layout.addSpacing(4)
-            self.version_label = ClickableLabel(
-                app_version,
-                self.parent_window,
-                getattr(self.parent_window, "open_credits_dialog", None),
-            )
-            self.version_label.setObjectName("versao")
-            self.version_label.setToolTip("Ver créditos")
-            layout.addWidget(self.version_label)
+    def _cria_versao(self, layout: QHBoxLayout) -> None:
+        self.version_label = ClickableLabel(
+            app_version,
+            self.parent_window,
+            getattr(self.parent_window, "open_credits_dialog", None),
+        )
+        self.version_label.setObjectName("versao")
+        self.version_label.setToolTip("Ver créditos")
+        layout.addWidget(self.version_label)
 
-        layout.addSpacing(4)
-
-        if self._com_acoes:
-            self._cria_acoes(layout)
-
-        # o stretch isola os controles da janela na ponta direita, como no win95
-        layout.addStretch(1)
-        layout.addSpacing(4)
-
+    def _cria_controles(self, layout: QHBoxLayout) -> None:
         if self._com_minimizar:
             self.minimize_button = self._create_control_button(
                 "minimizar", self._minimize_window, "Minimizar"
@@ -185,7 +238,30 @@ class BottomTitleBar(QFrame):
         )
         layout.addWidget(self.close_button)
 
-        outer.addLayout(layout, 1)
+    def _ajusta_compensacao(self) -> None:
+        """a marca só fica no meio se as pontas tiverem a mesma largura."""
+        if not self._marca_central:
+            return
+        esq = self._grupo_esq.sizeHint().width()
+        dirita = self._grupo_dir.sizeHint().width()
+        novo_esq = max(0, dirita - esq)
+        novo_dir = max(0, esq - dirita)
+        if novo_esq == self._larg_esq and novo_dir == self._larg_dir:
+            return
+        self._larg_esq = novo_esq
+        self._larg_dir = novo_dir
+        politica = (QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+        self._esp_centro_esq.changeSize(novo_esq, 0, *politica)
+        self._esp_centro_dir.changeSize(novo_dir, 0, *politica)
+        self._layout_meio.invalidate()
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        self._ajusta_compensacao()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._ajusta_compensacao()
 
     def _cria_acoes(self, layout: QHBoxLayout) -> None:
         parent = self.parent_window
