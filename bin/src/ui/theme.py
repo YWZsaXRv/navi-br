@@ -16,6 +16,35 @@ from utils.paths import Paths
 logger = logging.getLogger(__name__)
 
 
+def cabecalho_secao(accent: str) -> str:
+    """Estilo dos cabeçalhos de seção da janela principal (Logs, Fila)."""
+    return f"color: {accent}; font-size: 12px; font-weight: bold;"
+
+
+def claro(background: Union[str, QColor]) -> bool:
+    """True quando o fundo é claro (win95: aí o texto/borda precisa ser escuro)."""
+    bg = background if isinstance(background, QColor) else QColor(background)
+    return bg.lightness() > 128
+
+
+def cor_secundaria(background: Union[str, QColor]) -> str:
+    """Cinza de apoio legível sobre o fundo indicado."""
+    return "#4A4A4A" if claro(background) else "#888888"
+
+
+def cores_status(background: Union[str, QColor]) -> Dict[str, str]:
+    """Cores de status legíveis sobre o fundo indicado (ok, andamento, erro)."""
+    if claro(background):
+        return {"ok": "#005900", "andamento": "#7F3500", "erro": "#990000"}
+    return {"ok": "#00FF00", "andamento": "#FFA500", "erro": "#FF0000"}
+
+
+def sulco(background: Union[str, QColor]) -> str:
+    """Trilha da barra de progresso: escura o bastante para o texto branco."""
+    bg = background if isinstance(background, QColor) else QColor(background)
+    return bg.darker(200).name() if claro(bg) else "#222222"
+
+
 def normal_palette_colors(
     background_color: QColor, accent_color: QColor
 ) -> Dict[QPalette.ColorRole, QColor]:
