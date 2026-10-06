@@ -280,7 +280,6 @@ class TaskManager(QObject):
         self._last_steamless_status = "not_run"
         self._last_steamless_status_text = "N/A"
 
-        self.main_window.ui_state.switch_to_download_gif()
         self._update_status_button_color()
         self.main_window.drop_text_label.setText(
             f"Baixando: {self.game_data.get('game_name', '')}"
@@ -1005,7 +1004,6 @@ class TaskManager(QObject):
             steamless_ok=steamless_ok,
         )
 
-        self.main_window.ui_state.show_main_gif()
         self.main_window.progress_bar.setVisible(False)
         self.main_window.speed_label.setVisible(False)
         self.game_data = None

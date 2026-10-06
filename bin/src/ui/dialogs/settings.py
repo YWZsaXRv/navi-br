@@ -31,7 +31,6 @@ from PyQt6.QtWidgets import (
 )
 
 from core import morrenus_api
-from ui.dialogs.custom_gifs import CustomGifsDialog
 from ui.dialogs.dialog_helpers import (
     aplicar_barra_titulo,
     create_accept_button,
@@ -225,7 +224,6 @@ class SettingsDialog(QDialog):
         self.bg_color_button = None
         self.bg_reset_button = None
         self.titlebar_position_checkbox = None
-        self.gif_display_checkbox = None
         self.ignore_color_warnings_checkbox = None
         self.current_font = QFont()
         self.morrenus_stats_widget = None
@@ -248,9 +246,6 @@ class SettingsDialog(QDialog):
         )
         self._original_titlebar_position = self.settings.value(
             "titlebar_position", "bottom", type=str
-        )
-        self._original_gif_display_enabled = self.settings.value(
-            "gif_display_enabled", True, type=bool
         )
 
         logger.debug("Opening SettingsDialog.")
@@ -708,30 +703,8 @@ class SettingsDialog(QDialog):
             disp_layout, "Mover a barra de título para o topo da janela."
         )
 
-        self.gif_display_checkbox = create_checkbox_setting(
-            "Mostrar exibição de GIF",
-            "gif_display_enabled",
-            True,
-            self,
-            "Mostrar GIF animado na janela principal.",
-        )
-        self.gif_display_checkbox.stateChanged.connect(self.on_gif_display_changed)
-        disp_layout.addWidget(self.gif_display_checkbox)
-
         disp_group.setLayout(disp_layout)
         layout.addWidget(disp_group)
-
-        # Custom GIFs
-        gif_layout = QHBoxLayout()
-        custom_gifs_btn = QPushButton("GIFs personalizados")
-        custom_gifs_btn.clicked.connect(self.open_custom_gifs_dialog)
-        gif_layout.addWidget(custom_gifs_btn)
-
-        clear_cache_btn = QPushButton("Limpar cache de GIF")
-        clear_cache_btn.clicked.connect(self.clear_gif_cache)
-        clear_cache_btn.setToolTip("Regenerar todos os GIFs.")
-        gif_layout.addWidget(clear_cache_btn)
-        layout.addLayout(gif_layout)
 
         layout.addStretch()
         self.tab_widget.addTab(tab, "Estilo")
@@ -820,7 +793,7 @@ class SettingsDialog(QDialog):
             self.update_font_button_text()
 
     def reset_font(self) -> None:
-        default = QFont("Noto Sans", 10)
+        default = QFont("W95FA", 10)
         default.setBold(False)
         default.setItalic(False)
         self.current_font = default
@@ -845,13 +818,6 @@ class SettingsDialog(QDialog):
         if self.main_window and hasattr(self.main_window, "reposition_titlebar"):
             # noinspection PyUnresolvedReferences
             self.main_window.reposition_titlebar(pos)
-
-    def on_gif_display_changed(self, state: int) -> None:
-        enabled = state == 2
-        self.settings.setValue("gif_display_enabled", enabled)
-        if self.main_window and hasattr(self.main_window, "update_gif_display"):
-            # noinspection PyUnresolvedReferences
-            self.main_window.update_gif_display(enabled)
 
     def accept(self) -> None:
         """Save all settings and close."""
@@ -947,9 +913,6 @@ class SettingsDialog(QDialog):
             # noinspection PyUnresolvedReferences
             self.main_window.reposition_titlebar(self._original_titlebar_position)
 
-        self.settings.setValue(
-            "gif_display_enabled", self._original_gif_display_enabled
-        )
         super().reject()
 
     @staticmethod
@@ -1184,27 +1147,5 @@ class SettingsDialog(QDialog):
         if path and self.main_window:
             # noinspection PyUnresolvedReferences
             self.main_window.task_manager.run_steamless_manually(path)
-
-    def open_custom_gifs_dialog(self) -> None:
-        try:
-            CustomGifsDialog(self.main_window).exec()
-        except Exception as e:
-            logger.error(f"Error opening GIF dialog: {e}")
-
-    def clear_gif_cache(self) -> None:
-        if (
-            QMessageBox.question(
-                self,
-                "Limpar cache",
-                "Regenerar todos os GIFs?",
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            )
-            == QMessageBox.StandardButton.Yes
-        ):
-            if self.main_window:
-                # noinspection PyUnresolvedReferences
-                self.main_window.gif_manager.regenerate_anyway = True
-                # noinspection PyUnresolvedReferences
-                self.main_window.ui_state.update_gifs()
 
 

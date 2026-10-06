@@ -25,12 +25,10 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
-    QHBoxLayout,
 )
 
-from components.custom_widgets import ScaledFontLabel, ScaledLabel
+from components.custom_widgets import ScaledFontLabel
 from managers.game_manager import GameManager
-from managers.gif_manager import GIFManager
 from managers.job_queue_manager import JobQueueManager
 from managers.task_manager import TaskManager
 from managers.ui_state_manager import UIStateManager
@@ -66,7 +64,6 @@ class MainWindow(QMainWindow):
         self.accent_color = None
         self.background_color = None
         self.task_manager = None
-        self.gif_manager = None
         self.ui_state = None
         self.job_queue = None
         self.game_manager = None
@@ -80,7 +77,6 @@ class MainWindow(QMainWindow):
         self.main_layout = None
         self.drop_zone_container = None
         self.drop_zone_layout = None
-        self.drop_zone_gif = None
         self.drop_text_label = None
         self.drop_icon = None
         self.drop_hint = None
@@ -193,7 +189,6 @@ class MainWindow(QMainWindow):
         self.background_color = self.settings.value("background_color", "#000000")
 
         self.task_manager = TaskManager(self)
-        self.gif_manager = GIFManager(self)
         self.ui_state = UIStateManager(self)
         self.job_queue = JobQueueManager(self)
         self.game_manager = GameManager(self)
@@ -219,7 +214,6 @@ class MainWindow(QMainWindow):
 
         self._create_main_content()
         self._create_bottom_section()
-        self.update_gif_display()
 
         if self.titlebar_position != "top":
             self.bottom_titlebar = BottomTitleBar(self, marca_central=True)
@@ -275,14 +269,6 @@ class MainWindow(QMainWindow):
 
         # o respiro de cima e de baixo centraliza o bloco sozinho
         self.drop_zone_layout.addStretch(1)
-
-        self.drop_zone_gif = ScaledLabel()
-        self.drop_zone_gif.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.drop_zone_gif.setMinimumHeight(150)
-        self.drop_zone_gif.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
-        )
-        self.drop_zone_layout.addWidget(self.drop_zone_gif, 9)
 
         self.drop_text_label = ScaledFontLabel(
             "Arraste o ZIP aqui", escala_por="largura"
@@ -519,28 +505,6 @@ class MainWindow(QMainWindow):
         barra = self.log_output.verticalScrollBar()
         if barra.maximum() - barra.value() < 4:
             barra.setValue(barra.maximum())
-
-    def update_gif_display(self, enabled: Optional[bool] = None) -> None:
-        """Update GIF display visibility and adjust window layout."""
-        if enabled is None:
-            enabled = self.settings.value("gif_display_enabled", True, type=bool)
-
-        if enabled:
-            if self.height() < 400:
-                self.resize(self.width(), max(400, self.height()))
-            self.main_layout.setStretchFactor(self.drop_zone_gif, 9)
-            self.drop_zone_gif.setVisible(True)
-            self.layout.setStretchFactor(self.main_container, 3)
-            self.layout.setStretchFactor(self.bottom_widget, 1)
-        else:
-            self.main_layout.setStretchFactor(self.drop_zone_gif, 0)
-            self.drop_zone_gif.setVisible(False)
-            # sem gif a área de arrastar vira o miolo da janela
-            self.layout.setStretchFactor(self.main_container, 3)
-            self.layout.setStretchFactor(self.bottom_widget, 1)
-
-        self.update()
-        logger.info(f"GIF display updated: {'enabled' if enabled else 'disabled'}")
 
     def update_progress_bar_style(self) -> None:
         self._update_progress_bar_style()

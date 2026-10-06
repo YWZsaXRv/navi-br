@@ -372,7 +372,7 @@ def apply_font(
     Otherwise, falls back to a font bundled in res/.
     """
     default_font_file = "W95F.otf"
-    embutidas = {"Noto Sans": "NotoSans-Bold.ttf", "W95FA": "W95F.otf"}
+    embutidas = {"W95FA": "W95F.otf"}
 
     # Case 1: Specific font file provided
     if font_file:
