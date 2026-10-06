@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
 )
 
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class SteamLibraryDialog(QDialog):
     def __init__(self, library_paths: List[str], parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setWindowTitle("Selecionar biblioteca Steam")
-        self.setMinimumWidth(500)
+        aplicar(self, parent)
 
         self.selected_path: Optional[str] = None
         self.list_widget: Optional[QListWidget] = None

@@ -97,6 +97,7 @@ except ImportError:
         return False
 
 
+from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
 
 logger = logging.getLogger(__name__)
@@ -260,9 +261,7 @@ class GameLibraryDialog(QDialog):
     def _setup_window(self) -> None:
         """Configure main window properties and styles."""
         self.setWindowTitle("Biblioteca de jogos")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(400)
-        self.resize(750, 500)
+        aplicar(self, self.main_window)
 
         self.setStyleSheet(
             f"""

@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (
 )
 
 from core import morrenus_api
+from ui.window_defaults import aplicar
 from utils.image_fetcher import ImageFetcher
 from utils.task_runner import TaskRunner
 
@@ -129,8 +130,7 @@ class FetchManifestDialog(QDialog):
         super().__init__(parent)
         self.parent_window = parent
         self.setWindowTitle("Baixar manifest da API Morrenus")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(500)
+        aplicar(self, parent)
 
         self.task_runner = TaskRunner()
         self._active_image_fetchers = {}

@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from ui.window_defaults import aplicar
 from utils.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -18,8 +19,7 @@ class CreditsDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Créditos")
-        self.setMinimumWidth(400)
-        self.setMinimumHeight(250)
+        aplicar(self, parent)
         self.settings = get_settings()
         self.main_layout = QVBoxLayout(self)
         self.accent_color = self.settings.value("accent_color", "#C06C84")

@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
 )
 
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,7 @@ class DlcSelectionDialog(QDialog):
             title = "Selecionar DLC para o wrapper GreenLuma"
         self.setWindowTitle(title)
         self.dlcs = dlcs
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(400)
+        aplicar(self, parent)
         layout = QVBoxLayout(self)
 
         self.anchor_row = -1

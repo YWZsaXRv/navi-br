@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
 from core import morrenus_api
 from ui.dialogs.custom_gifs import CustomGifsDialog
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
 from utils.helpers import (
     create_checkbox_setting,
@@ -195,9 +196,7 @@ class SettingsDialog(QDialog):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setWindowTitle("Configurações")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(700)
-        self.resize(600, 700)
+        aplicar(self, parent)
         self.settings = get_settings()
         self.main_window = parent
         self.accent_color = self.settings.value("accent_color", "#C06C84")

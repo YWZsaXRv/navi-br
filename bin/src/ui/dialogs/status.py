@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
 )
 
 from components.custom_widgets import ScaledFontLabel, ScaledLabel
+from ui.window_defaults import aplicar
 from utils.logger import open_log_directory
 from utils.settings import get_settings
 
@@ -32,8 +33,7 @@ class StatusDialog(QDialog):
         super().__init__(parent)
         self.parent_window = parent
         self.setWindowTitle("Status da última tarefa de download")
-        self.resize(450, 180)
-        self.setMinimumSize(400, 150)
+        aplicar(self, parent)
 
         # UI State placeholders
         self.ddm_status: str = ""

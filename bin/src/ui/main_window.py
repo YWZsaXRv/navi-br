@@ -14,6 +14,7 @@ from PyQt6.QtGui import (
     QShortcut,
 )
 from PyQt6.QtWidgets import (
+    QFrame,
     QLabel,
     QMainWindow,
     QMessageBox,
@@ -39,6 +40,8 @@ from ui.dialogs.gamelibrary import GameLibraryDialog
 from ui.dialogs.lain import LainMinigameDialog
 from ui.dialogs.settings import SettingsDialog
 from ui.dialogs.status import StatusDialog
+from ui.theme import cabecalho_secao, sulco
+from ui.window_defaults import ALTURA, GAP, LARGURA, RECUO_LATERAL
 from utils.brand import DISPLAY_NAME
 from utils.logger import qt_log_handler
 from utils.paths import Paths
@@ -171,8 +174,14 @@ class MainWindow(QMainWindow):
     def _setup_window_properties(self) -> None:
         """Configure basic window properties."""
         self.setWindowTitle(DISPLAY_NAME)
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setGeometry(100, 100, 800, 600)
+        flags = Qt.WindowType.FramelessWindowHint
+        if sys.platform == "linux":
+            # no i3 só janela de diálogo flutua, senão ela abre tiled e come
+            # a workspace inteira
+            flags |= Qt.WindowType.Dialog
+        self.setWindowFlags(flags)
+        self.setMinimumSize(LARGURA, ALTURA)
+        self.setGeometry(100, 100, LARGURA, ALTURA)
 
         icon_path = Paths.resource("logo/icon.ico")
         if icon_path.exists():

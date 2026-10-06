@@ -19,6 +19,7 @@ from PyQt6.QtGui import QPixmap
 from utils.settings import get_settings
 from utils.helpers import get_base_path, create_checkbox_setting
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
 
@@ -303,9 +304,7 @@ class CustomGifsDialog(QDialog):
         super().__init__(parent)
         self.settings = get_settings()
         self.setWindowTitle("GIFs personalizados")
-        self.setMinimumWidth(600)
-        self.setMinimumHeight(400)
-        self.resize(700, 500)
+        aplicar(self, parent)
 
         self.main_window = parent
         self.gif_items = []

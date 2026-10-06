@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
 )
 
 from components.custom_widgets import ScaledFontLabel, ScaledLabel
+from ui.window_defaults import aplicar
 from utils.settings import get_settings
 
 logger = logging.getLogger(__name__)
@@ -29,8 +30,7 @@ class SteamlessResumeDialog(QDialog):
     ):
         super().__init__(parent)
         self.setWindowTitle("Steamless concluído")
-        self.setMinimumWidth(400)
-        self.setMinimumHeight(300)
+        aplicar(self, parent)
         self.setModal(True)
 
         # Main layout container

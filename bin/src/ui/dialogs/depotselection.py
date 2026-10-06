@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
 
 from utils.image_fetcher import ImageFetcher
 from ui.dialogs.dialog_helpers import create_standard_buttons
+from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class DepotSelectionDialog(QDialog):
         self.setWindowTitle("Selecionar depots para baixar")
         self.depots = depots
         self.game_name = game_name
-        self.resize(485, 520)
+        aplicar(self, parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 10)
         layout.setSpacing(10)
