@@ -55,7 +55,6 @@ def aplicar_barra_titulo(dialogo: QDialog) -> None:
     barra = BottomTitleBar(
         dialogo,
         com_acoes=False,
-        com_versao=False,
         com_minimizar=False,
         com_maximizar=False,
     )

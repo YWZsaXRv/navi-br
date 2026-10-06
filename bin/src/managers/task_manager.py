@@ -122,7 +122,7 @@ class TaskManager(QObject):
         if self.main_window:
             self.main_window.progress_bar.setVisible(True)
             self.main_window.progress_bar.setRange(0, 0)
-            self.main_window.drop_text_label.setText(
+            self.main_window._mostra_estado(
                 f"Processando: {os.path.basename(zip_path)}"
             )
 
@@ -281,7 +281,7 @@ class TaskManager(QObject):
         self._last_steamless_status_text = "N/A"
 
         self._update_status_button_color()
-        self.main_window.drop_text_label.setText(
+        self.main_window._mostra_estado(
             f"Baixando: {self.game_data.get('game_name', '')}"
         )
 
@@ -375,7 +375,7 @@ class TaskManager(QObject):
                 self.job_finished()
             return
 
-        self.main_window.drop_text_label.setText("Finalizando instalação...")
+        self.main_window._mostra_estado("Finalizando instalação...")
         logger.info("Starting post-download I/O processing in background thread...")
 
         size_on_disk = 0
@@ -493,7 +493,7 @@ class TaskManager(QObject):
         if steamless_enabled and not self.is_cancelling:
             if "steamless" not in self._job_steps_completed:
                 self._job_steps_completed.add("steamless")
-                self.main_window.drop_text_label.setText(
+                self.main_window._mostra_estado(
                     f"Executando Steamless: {self.game_data.get('game_name', '')}"
                 )
                 self._start_steamless_processing()
@@ -505,7 +505,7 @@ class TaskManager(QObject):
         if achievements_enabled and not self.is_cancelling:
             if "achievements" not in self._job_steps_completed:
                 self._job_steps_completed.add("achievements")
-                self.main_window.drop_text_label.setText(
+                self.main_window._mostra_estado(
                     f"Gerando conquistas: {self.game_data.get('game_name', '')}"
                 )
                 self._start_achievement_generation()
@@ -1073,20 +1073,22 @@ class TaskManager(QObject):
             return
 
         self.is_download_paused = not self.is_download_paused
+        # a barra fala do jogo como no começo do download
+        nome = (
+            self.game_data.get("game_name", "")
+            if self.game_data
+            else os.path.basename(self.current_job)
+        )
 
         try:
             self.download_task.toggle_pause(self.is_download_paused)
             if self.is_download_paused:
                 self.main_window.ui_state.pause_button.setText("Retomar")
-                self.main_window.drop_text_label.setText(
-                    f"Pausado: {os.path.basename(self.current_job)}"
-                )
+                self.main_window._mostra_estado(f"Pausado: {nome}")
                 self._stop_speed_monitor()
             else:
                 self.main_window.ui_state.pause_button.setText("Pausar")
-                self.main_window.drop_text_label.setText(
-                    f"Baixando: {os.path.basename(self.current_job)}"
-                )
+                self.main_window._mostra_estado(f"Baixando: {nome}")
                 self._start_speed_monitor()
         except Exception as e:
             logger.error(f"Failed to toggle pause: {e}")

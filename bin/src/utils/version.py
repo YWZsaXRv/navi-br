@@ -22,3 +22,6 @@ def _load_version() -> str:
 
 
 app_version = _load_version()
+
+# página de release no GitHub: muda aqui quando sair a primeira
+release_url = "https://github.com/YWZsaXRv/ACCELA_FIX/releases"

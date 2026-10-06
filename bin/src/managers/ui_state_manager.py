@@ -215,12 +215,17 @@ class UIStateManager:
         if hasattr(self.main_window, "bottom_titlebar"):
             self.main_window.bottom_titlebar.update_style()
 
+        # barra de status
+        if getattr(self.main_window, "status_widget", None):
+            self.main_window.update_barra_status_style()
+
     def update_queue_visibility(self, is_processing, has_jobs):
         """Update queue visibility based on current state"""
         if not is_processing and not has_jobs:
             if self.queue_widget:
                 self.queue_widget.setVisible(False)
             self.main_window.drop_text_label.setText("Arraste o ZIP aqui")
+            self.main_window.limpa_estado()
         else:
             if self.queue_widget:
                 self.queue_widget.setVisible(True)
@@ -228,6 +233,7 @@ class UIStateManager:
                 self.main_window.drop_text_label.setText(
                     "Fila ociosa. Pronto para o próximo."
                 )
+                self.main_window.limpa_estado()
         # a fila muda a reserva de espaço, o log se reencaixa
         if hasattr(self.main_window, "_agenda_ajuste_log"):
             self.main_window._agenda_ajuste_log()

@@ -1,6 +1,7 @@
 import atexit
 import logging
 import sys
+import webbrowser
 from collections import deque
 from typing import Optional
 
@@ -25,6 +26,7 @@ from PyQt6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
+    QHBoxLayout,
 )
 
 from components.custom_widgets import ScaledFontLabel
@@ -33,7 +35,7 @@ from managers.job_queue_manager import JobQueueManager
 from managers.task_manager import TaskManager
 from managers.ui_state_manager import UIStateManager
 from ui.assets import DROP_SVG, DROP_SVG_HOVER, svg_para_pixmap
-from ui.bottom_titlebar import BottomTitleBar
+from ui.bottom_titlebar import BottomTitleBar, ClickableLabel
 from ui.dialogs.credits import CreditsDialog
 from ui.dialogs.dialog_helpers import tira_icones_padrao
 from ui.dialogs.fetchmanifest import FetchManifestDialog
@@ -48,6 +50,7 @@ from utils.brand import DISPLAY_NAME
 from utils.logger import qt_log_handler
 from utils.paths import Paths
 from utils.settings import get_settings
+from utils.version import app_version, release_url
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +93,9 @@ class MainWindow(QMainWindow):
         self.bottom_widget = None
         self.bottom_layout = None
         self.log_output = None
+        self.status_widget = None
+        self.status_texto = None
+        self.status_versao = None
 
         self._setup_window_properties()
         self._initialize_managers()
@@ -219,6 +225,8 @@ class MainWindow(QMainWindow):
             self.bottom_titlebar = BottomTitleBar(self, marca_central=True)
             self.layout.addWidget(self.bottom_titlebar)
 
+        # sempre a última: a versão fica colada no chão da janela
+        self._cria_barra_status()
         self.setAcceptDrops(True)
 
     def resizeEvent(self, event) -> None:
@@ -506,6 +514,52 @@ class MainWindow(QMainWindow):
         if barra.maximum() - barra.value() < 4:
             barra.setValue(barra.maximum())
 
+    def _cria_barra_status(self) -> None:
+        """painel rebaixado no chão da janela: estado à esquerda, versão à direita."""
+        self.status_widget = QWidget()
+        self.status_widget.setObjectName("barra_status")
+        barra = QHBoxLayout(self.status_widget)
+        barra.setContentsMargins(6, 2, 6, 2)
+        barra.setSpacing(8)
+
+        # sem texto: só ação entra aqui (o campo dá a instrução de repouso)
+        self.status_texto = QLabel("")
+        barra.addWidget(self.status_texto)
+        barra.addStretch(1)
+
+        self.status_versao = ClickableLabel(app_version, self, self._abre_release)
+        self.status_versao.setToolTip("Ver release no GitHub")
+        barra.addWidget(self.status_versao)
+
+        self.status_widget.setFixedHeight(20)
+        self.layout.addWidget(self.status_widget)
+        self.update_barra_status_style()
+
+    def update_barra_status_style(self) -> None:
+        fundo = QColor(self.background_color or "#c0c0c0")
+        self.status_widget.setStyleSheet(
+            f"QWidget#barra_status {{"
+            f" background-color: {fundo.name()};"
+            f" border-top: 1px solid {sulco(fundo)};"
+            f"}}"
+            f"QWidget#barra_status QLabel {{"
+            f" color: {cor_secundaria(fundo)};"
+            f" background: transparent;"
+            f" font-size: 11px;"
+            f"}}"
+        )
+
+    def _mostra_estado(self, texto: str) -> None:
+        """ação em andamento: mesma frase no campo e na barra de status."""
+        self.drop_text_label.setText(texto)
+        if self.status_texto is not None:
+            self.status_texto.setText(texto)
+
+    def limpa_estado(self) -> None:
+        """repouso: o campo instrui e a barra de status fica quieta."""
+        if self.status_texto is not None:
+            self.status_texto.setText("")
+
     def update_progress_bar_style(self) -> None:
         self._update_progress_bar_style()
 
@@ -548,6 +602,9 @@ class MainWindow(QMainWindow):
     def open_credits_dialog(self) -> None:
         dialog = CreditsDialog(self)
         dialog.exec()
+
+    def _abre_release(self) -> None:
+        webbrowser.open(release_url)
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         if not event.mimeData().hasUrls():

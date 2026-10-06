@@ -27,7 +27,6 @@ from ui.theme import claro, gradiente_titulo, sulco, texto_sobre
 from utils.brand import DISPLAY_NAME
 from utils.paths import Paths
 from utils.settings import get_settings
-from utils.version import app_version
 from .assets import (
     BOOK_SVG,
     GEAR_SVG,
@@ -39,6 +38,8 @@ logger = logging.getLogger(__name__)
 
 # 16px de botão + folga; a linha de 1px do topo entra na conta
 ALTURA_BARRA = 24
+# janela principal: marca empilhada pede mais um degrau de altura
+ALTURA_BARRA_MARCA = 32
 TAMANHO_BOTAO = 16
 GLIFO = 9
 
@@ -64,9 +65,17 @@ class ClickableLabel(QLabel):
 class TituloElidido(QLabel):
     """corta o título com reticências quando falta espaço."""
 
-    def __init__(self, text: str, parent: Optional[QWidget] = None):
+    def __init__(
+        self,
+        text: str,
+        parent: Optional[QWidget] = None,
+        callback: Optional[Callable[[], None]] = None,
+    ):
         super().__init__(text, parent)
         self._texto = text
+        self.callback = callback
+        if callback:
+            self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
@@ -76,6 +85,14 @@ class TituloElidido(QLabel):
         if cortado != self.text():
             self.setText(cortado)
 
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        # aceito antes de abrir o modal, senão o clique vaza pro titlebar
+        if self.callback:
+            event.accept()
+            self.callback()
+            return
+        super().mousePressEvent(event)
+
 class BottomTitleBar(QFrame):
     """barra de título win95/98, no topo ou na base conforme a config."""
 
@@ -83,7 +100,6 @@ class BottomTitleBar(QFrame):
         self,
         parent: QWidget,
         com_acoes: bool = True,
-        com_versao: bool = True,
         com_minimizar: bool = True,
         com_maximizar: bool = True,
         marca_central: bool = False,
@@ -91,12 +107,11 @@ class BottomTitleBar(QFrame):
         super().__init__(parent)
         self.parent_window = parent
         self.setObjectName("barra_titulo")
-        self.setFixedHeight(ALTURA_BARRA)
+        self.setFixedHeight(ALTURA_BARRA_MARCA if marca_central else ALTURA_BARRA)
         self.no_previous_state = True
 
         # diálogo leva só o que fecha: sem as ações da janela principal
         self._com_acoes = com_acoes
-        self._com_versao = com_versao
         self._com_minimizar = com_minimizar
         self._com_maximizar = com_maximizar
         # só a janela principal centraliza a marca entre as duas pontas
@@ -108,7 +123,6 @@ class BottomTitleBar(QFrame):
 
         self.icone_label: Optional[QLabel] = None
         self.title_label: Optional[TituloElidido] = None
-        self.version_label: Optional[ClickableLabel] = None
 
         self.status_button: Optional[QPushButton] = None
         self.search_button: Optional[QPushButton] = None
@@ -145,7 +159,7 @@ class BottomTitleBar(QFrame):
 
         if self._marca_central:
             # janela principal: ações coladas na esquerda, marca no meio,
-            # versão e controles da janela na direita
+            # controles da janela na direita; a versão mora na barra de status
             self._grupo_esq = QWidget()
             esq = QHBoxLayout(self._grupo_esq)
             esq.setContentsMargins(0, 0, 0, 0)
@@ -158,6 +172,8 @@ class BottomTitleBar(QFrame):
             self._esp_centro_esq = QSpacerItem(0, 0)
             layout.addItem(self._esp_centro_esq)
 
+            # sobra mais um pixel por ponta pra marca empilhar sem cortar
+            layout.setContentsMargins(3, 1, 3, 1)
             self._cria_marca(layout)
 
             self._esp_centro_dir = QSpacerItem(0, 0)
@@ -168,18 +184,10 @@ class BottomTitleBar(QFrame):
             dirita = QHBoxLayout(self._grupo_dir)
             dirita.setContentsMargins(0, 0, 0, 0)
             dirita.setSpacing(2)
-            if self._com_versao:
-                dirita.addSpacing(4)
-                self._cria_versao(dirita)
-                dirita.addSpacing(4)
             self._cria_controles(dirita)
             layout.addWidget(self._grupo_dir)
         else:
             self._cria_marca(layout)
-
-            if self._com_versao:
-                layout.addSpacing(4)
-                self._cria_versao(layout)
 
             layout.addSpacing(4)
 
@@ -196,29 +204,38 @@ class BottomTitleBar(QFrame):
         self._ajusta_compensacao()
 
     def _cria_marca(self, layout: QHBoxLayout) -> None:
+        # na janela principal a marca abre os créditos
+        credito = (
+            getattr(self.parent_window, "open_credits_dialog", None)
+            if self._marca_central
+            else None
+        )
+
+        self.title_label = TituloElidido(
+            self.parent_window.windowTitle() or DISPLAY_NAME,
+            callback=credito,
+        )
+        self.title_label.setObjectName("titulo")
+
+        if self._marca_central:
+            # só o nome na barra: sem ícone o texto pode crescer
+            self.title_label.setToolTip("Ver créditos")
+            self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            pilha = QVBoxLayout()
+            pilha.setContentsMargins(0, 0, 0, 0)
+            pilha.setSpacing(0)
+            pilha.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            pilha.addWidget(self.title_label)
+            layout.addLayout(pilha)
+            return
+
         self.icone_label = QLabel()
         self.icone_label.setFixedSize(TAMANHO_BOTAO, TAMANHO_BOTAO)
         self.icone_label.setObjectName("icone")
         self._carrega_icone()
         layout.addWidget(self.icone_label)
-
         layout.addSpacing(3)
-
-        self.title_label = TituloElidido(
-            self.parent_window.windowTitle() or DISPLAY_NAME
-        )
-        self.title_label.setObjectName("titulo")
         layout.addWidget(self.title_label)
-
-    def _cria_versao(self, layout: QHBoxLayout) -> None:
-        self.version_label = ClickableLabel(
-            app_version,
-            self.parent_window,
-            getattr(self.parent_window, "open_credits_dialog", None),
-        )
-        self.version_label.setObjectName("versao")
-        self.version_label.setToolTip("Ver créditos")
-        layout.addWidget(self.version_label)
 
     def _cria_controles(self, layout: QHBoxLayout) -> None:
         if self._com_minimizar:
@@ -296,10 +313,12 @@ class BottomTitleBar(QFrame):
         if pixmap.isNull():
             return
 
+        # na placa levantada sobra 1px de borda de cada lado
+        lado = TAMANHO_BOTAO - 2 if self._marca_central else TAMANHO_BOTAO
         self.icone_label.setPixmap(
             pixmap.scaled(
-                TAMANHO_BOTAO,
-                TAMANHO_BOTAO,
+                lado,
+                lado,
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
@@ -340,19 +359,25 @@ class BottomTitleBar(QFrame):
             self.top_line.setStyleSheet(f"background-color: {sulco(bg_color)};")
 
         if self.title_label:
+            # 16px na marca central: sem ícone sobra altura pra ela respirar
+            corpo = 16 if self._marca_central else 12
             self.title_label.setStyleSheet(
-                f"color: {self._cor_texto}; font-size: 12px; font-weight: bold;"
+                f"color: {self._cor_texto}; font-size: {corpo}px; font-weight: bold;"
                 " background: transparent;"
             )
 
-        if self.version_label:
-            self.version_label.setCursor(Qt.CursorShape.PointingHandCursor)
-            self.version_label.setStyleSheet(
-                f"color: {self._cor_texto}; font-size: 11px; background: transparent;"
-            )
-
         if self.icone_label:
-            self.icone_label.setStyleSheet("background: transparent;")
+            if self._marca_central:
+                # placa levantada win95: sem ela o ícone some no azul do gradiente
+                self.icone_label.setStyleSheet(
+                    f"background-color: {bg_color.name()};"
+                    f" border-top: 1px solid {realce.name()};"
+                    f" border-left: 1px solid {realce.name()};"
+                    f" border-bottom: 1px solid {sombra.name()};"
+                    f" border-right: 1px solid {sombra.name()};"
+                )
+            else:
+                self.icone_label.setStyleSheet("background: transparent;")
 
         estilo_acao = f"""
             QPushButton {{
@@ -414,9 +439,10 @@ class BottomTitleBar(QFrame):
                 self._update_svg_button_color(button, svg_data, self._cor_icone)
 
         if self.no_previous_state and self.status_button:
+            # ocioso na cor do fundo: no acento a bola some no gradiente
             self._update_colored_circle_button(
                 self.status_button,
-                get_settings().value("accent_color", "#C06C84"),
+                get_settings().value("background_color", "#000000"),
             )
 
     def _update_colored_circle_button(self, button: QPushButton, color: str) -> None:
