@@ -641,12 +641,12 @@ def create_font_setting(
     if parent_widget and hasattr(parent_widget, "settings"):
         # Load current font settings
         current_font = QFont()
-        current_font.setFamily(parent_widget.settings.value("font", "Noto Sans"))
+        current_font.setFamily(parent_widget.settings.value("font", "W95FA"))
         current_font.setPointSize(
             parent_widget.settings.value("font-size", 10, type=int)
         )
 
-        font_style = parent_widget.settings.value("font-style", "Bold")
+        font_style = parent_widget.settings.value("font-style", "Normal")
         if font_style == "Italic":
             current_font.setItalic(True)
         elif font_style == "Bold":
@@ -686,9 +686,9 @@ def create_font_setting(
 
 def create_font_from_settings(settings) -> QFont:
     """Create a QFont object from application settings."""
-    font_family = settings.value("font", "Noto Sans")
+    font_family = settings.value("font", "W95FA")
     font_size = settings.value("font-size", 10, type=int)
-    font_style = settings.value("font-style", "Bold")
+    font_style = settings.value("font-style", "Normal")
 
     font = QFont(font_family)
     font.setPointSize(font_size)

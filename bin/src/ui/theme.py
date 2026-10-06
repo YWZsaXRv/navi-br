@@ -369,9 +369,10 @@ def apply_font(
 
     If font_file is provided, loads that font file and applies it.
     If font is provided (with a family name), checks if it's a system font.
-    Otherwise, falls back to the default Noto Sans font.
+    Otherwise, falls back to a font bundled in res/.
     """
-    default_font_file = "NotoSans-Bold.ttf"
+    default_font_file = "W95F.otf"
+    embutidas = {"Noto Sans": "NotoSans-Bold.ttf", "W95FA": "W95F.otf"}
 
     # Case 1: Specific font file provided
     if font_file:
@@ -388,6 +389,11 @@ def apply_font(
 
         # System font not found, log and fall through to default
         logger.debug(f"Font family '{font_family}' not found in system, using default")
+
+    # Case 3: família pedida que só existe no res/, carrega ela
+    if font and font.family() in embutidas:
+        path = _resolve_font_path(embutidas[font.family()])
+        return _load_and_set_font(app, path, font)
 
     # Case 3: Fallback to default font
     path = _resolve_font_path(default_font_file)

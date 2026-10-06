@@ -33,8 +33,9 @@ class ScaledLabel(QLabel):
 
 
 class ScaledFontLabel(QLabel):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, escala_por="altura", **kwargs):
         super().__init__(*args, **kwargs)
+        self.escala_por = escala_por
         self.setMinimumSize(1, 1)
         self.setWordWrap(True)  # Enable word wrap
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center text
@@ -46,8 +47,12 @@ class ScaledFontLabel(QLabel):
         text = self.text()
 
         if text:
-            # Start with height-based size
-            new_size = max(8, min(72, int(self.height() * 0.4)))
+            # largura: título de destaque; altura: rótulo comum
+            if self.escala_por == "largura":
+                base, fator = self.width(), 0.07
+            else:
+                base, fator = self.height(), 0.4
+            new_size = max(8, min(72, int(base * fator)))
             font.setPointSize(new_size)
 
             # Check if text fits width-wise

@@ -334,7 +334,7 @@ class UIStateManager:
         self.main_window.accent_color = self.settings.value("accent_color", "#C06C84")
 
         # Load font family
-        font_family = self.settings.value("font", "Noto Sans")
+        font_family = self.settings.value("font", "W95FA")
 
         font_size = self.settings.value("font-size", 10, type=int)
 
