@@ -1,6 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QFontMetrics
-from PyQt6.QtWidgets import QLabel, QPushButton
+from PyQt6.QtWidgets import QLabel
 
 
 class ScaledLabel(QLabel):
@@ -71,38 +71,3 @@ class ScaledFontLabel(QLabel):
             font.setPointSize(new_size)
 
         self.setFont(font)
-
-
-class ScaledButton(QPushButton):
-    """QPushButton that automatically scales its font to fit the button size"""
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setMinimumSize(1, 1)
-        self.max_font_size = 14
-
-    def set_max_font_size(self, size):
-        """Set maximum font size for scaling"""
-        self.max_font_size = max(8, size)
-        self._scale_font()
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._scale_font()
-
-    def setText(self, text):
-        """Override setText to trigger font scaling immediately"""
-        super().setText(text)
-        self._scale_font()
-
-    def _scale_font(self):
-        """Calculate and set appropriate font size for current text and button size"""
-        text = self.text()
-        button_width = self.width()
-        button_height = self.height()
-
-        if text and button_width > 0 and button_height > 0:
-            font = self.font()
-            new_size = max(8, min(self.max_font_size, int(button_height * 0.4)))
-            font.setPointSize(new_size)
-            self.setFont(font)
