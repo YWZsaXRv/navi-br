@@ -1306,3 +1306,47 @@ class GameLibraryDialog(QDialog):
             self.executor = None
         super().closeEvent(event)
         self._closing = False
+
+    def keyPressEvent(self, event):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QListWidget
+
+        foco = self.focusWidget()
+        if foco and isinstance(foco, (QLineEdit, QTextEdit)):
+            super().keyPressEvent(event)
+            return
+        if isinstance(foco, QComboBox) and foco.isEditable():
+            super().keyPressEvent(event)
+            return
+
+        k = event.key()
+        if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
+            lst = getattr(self, 'games_list', None)
+            if isinstance(lst, QListWidget):
+                cnt = lst.count()
+                if cnt:
+                    lst.setCurrentRow(min(cnt-1, lst.currentRow()+1))
+                    lst.setFocus()
+                return
+        if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
+            lst = getattr(self, 'games_list', None)
+            if isinstance(lst, QListWidget):
+                cnt = lst.count()
+                if cnt:
+                    lst.setCurrentRow(max(0, lst.currentRow()-1))
+                    lst.setFocus()
+                return
+        if k == Qt.Key.Key_Slash:
+            if hasattr(self, 'search_edit'):
+                self.search_edit.setFocus(); self.search_edit.selectAll()
+                return
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            lst = getattr(self, 'games_list', None)
+            if isinstance(lst, QListWidget):
+                item = lst.currentItem()
+                if item:
+                    lst.itemClicked.emit(item)
+                    return
+        if k == Qt.Key.Key_Escape:
+            self.reject(); return
+        super().keyPressEvent(event)

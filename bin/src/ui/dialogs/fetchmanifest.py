@@ -623,10 +623,13 @@ class FetchManifestDialog(QDialog):
                     return
                 cur = lst.currentRow()
                 if cur < 0 or cur >= cnt-1:
-                    lst.setCurrentRow(min(cnt-1, cur+1))
-                else:
-                    lst.setCurrentRow(cur+1)
-                lst.setFocus()
+                    nr = min(cnt-1, cur+1)
+                    lst.setCurrentRow(nr)
+                    lst.setFocus()
+                    item = lst.item(nr) if nr >= 0 else None
+                    if item:
+                        lst.scrollToItem(item)
+                        lst.setCurrentItem(item)
                 return
         if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
             if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):
@@ -636,10 +639,13 @@ class FetchManifestDialog(QDialog):
                     return
                 cur = lst.currentRow()
                 if cur <= 0:
-                    lst.setCurrentRow(0)
-                else:
-                    lst.setCurrentRow(cur-1)
-                lst.setFocus()
+                    nr = max(0, cur-1)
+                    lst.setCurrentRow(nr)
+                    lst.setFocus()
+                    item = lst.item(nr)
+                    if item:
+                        lst.scrollToItem(item)
+                        lst.setCurrentItem(item)
                 return
         if k == Qt.Key.Key_Return or k == Qt.Key.Key_Enter:
             if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):

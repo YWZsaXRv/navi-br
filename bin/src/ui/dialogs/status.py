@@ -173,3 +173,15 @@ class StatusDialog(QDialog):
         row_layout.addWidget(status_label, alignment=Qt.AlignmentFlag.AlignRight)
 
         return row_layout
+
+    def keyPressEvent(self, event):
+        from PyQt6.QtCore import Qt
+        k = event.key()
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if hasattr(self, 'logs_button'):
+                self.logs_button.click()
+            return
+        if k in (Qt.Key.Key_Escape, Qt.Key.Key_Q):
+            self.reject()
+            return
+        super().keyPressEvent(event)
