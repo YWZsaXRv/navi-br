@@ -1,16 +1,37 @@
 from PyQt6.QtCore import QEvent, QItemSelectionModel, QObject, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
+    QAbstractButton,
     QAbstractItemView,
     QDialog,
     QDialogButtonBox,
     QGridLayout,
+    QGroupBox,
+    QLabel,
     QLayout,
     QMessageBox,
 )
 
 from ui.bottom_titlebar import ALTURA_BARRA, BottomTitleBar
 from ui.frameless import Alcas
+
+
+def traduz_rotulos(dialogo, mapa, titulo=None):
+    """renomeia título, rótulos, grupos e botões do diálogo nativo do qt (pt-br)."""
+    if titulo is not None:
+        dialogo.setWindowTitle(titulo)
+    for rotulo in dialogo.findChildren(QLabel):
+        novo = mapa.get(rotulo.text())
+        if novo is not None:
+            rotulo.setText(novo)
+    for grupo in dialogo.findChildren(QGroupBox):
+        novo = mapa.get(grupo.title())
+        if novo is not None:
+            grupo.setTitle(novo)
+    for botao in dialogo.findChildren(QAbstractButton):
+        novo = mapa.get(botao.text())
+        if novo is not None:
+            botao.setText(novo)
 
 
 class FiltroVimListas(QObject):

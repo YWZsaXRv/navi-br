@@ -38,6 +38,7 @@ from ui.dialogs.dialog_helpers import (
     aplicar_barra_titulo,
     create_accept_button,
     tira_icones_padrao,
+    traduz_rotulos,
 )
 from ui.theme import cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
@@ -54,6 +55,30 @@ from utils.paths import Paths
 from utils.settings import get_settings
 
 logger = logging.getLogger(__name__)
+
+# o qt entrega o seletor de cor e o de fonte em inglês: aqui vira pt-br
+_ROTULOS_COR = {
+    "&Basic colors": "Cores &básicas",
+    "&Custom colors": "Cores &personalizadas",
+    "Hu&e:": "&Matiz:",
+    "&Sat:": "S&aturação:",
+    "&Val:": "Valo&r:",
+    "&Red:": "&Vermelho:",
+    "&Green:": "Ver&de:",
+    "Bl&ue:": "Azu&l:",
+    "A&lpha channel:": "Canal alfa:",
+    "&HTML:": "&HTML:",
+    "&Pick Screen Color": "&Selecionar cor da tela",
+    "&Add to Custom Colors": "Adicionar às co&res personalizadas",
+}
+
+_ROTULOS_FONTE = {
+    "&Font": "&Fonte",
+    "Font st&yle": "Estil&o",
+    "&Size": "&Tamanho",
+    "Effects": "Efeitos",
+    "Sample": "Amostra",
+}
 
 
 class MorrenusStatsWidget(QWidget):
@@ -736,6 +761,7 @@ class SettingsDialog(QDialog):
     def _abre_seletor_cor(self):
         """seletor de cor com barra win95, sem cancelar e sem ícone no ok."""
         caixa = QColorDialog(self)
+        traduz_rotulos(caixa, _ROTULOS_COR, "Selecionar cor")
         tira_icones_padrao(caixa)
         box = caixa.findChild(QDialogButtonBox)
         if box is not None:
@@ -814,6 +840,7 @@ class SettingsDialog(QDialog):
             for rotulo in dialogo.findChildren(QLabel):
                 if rotulo.buddy() is sistema:
                     rotulo.hide()
+        traduz_rotulos(dialogo, _ROTULOS_FONTE, "Selecionar fonte")
         tira_icones_padrao(dialogo)
         box = dialogo.findChild(QDialogButtonBox)
         if box is not None:
