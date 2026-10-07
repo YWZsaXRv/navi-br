@@ -97,7 +97,7 @@ except ImportError:
         return False
 
 
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo
+from ui.dialogs.dialog_helpers import aplicar_barra_titulo, pergunta_sim_nao
 from ui.theme import claro, cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
@@ -1215,13 +1215,7 @@ class GameLibraryDialog(QDialog):
             pass
 
     def _confirm_action(self, title: str, message: str) -> bool:
-        reply = QMessageBox.question(
-            self,
-            title,
-            message,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-        )
-        return reply == QMessageBox.StandardButton.Yes
+        return pergunta_sim_nao(self, title, message)
 
     def _uninstall_game(self, game_data: dict, dialog: QDialog, opts: dict) -> None:
         if not self.game_manager:

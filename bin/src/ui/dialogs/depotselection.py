@@ -163,13 +163,13 @@ class DepotSelectionDialog(QDialog):
         self.list_widget.itemClicked.connect(self.on_depot_item_clicked)
 
         button_layout = QHBoxLayout()
-        select_all_button = QPushButton("Selecionar Todos")
+        select_all_button = QPushButton("Selecionar todos")
         select_all_button.clicked.connect(
             lambda: self._toggle_all_checkboxes(check=True)
         )
         button_layout.addWidget(select_all_button)
 
-        deselect_all_button = QPushButton("Desselecionar Todos")
+        deselect_all_button = QPushButton("Desselecionar todos")
         deselect_all_button.clicked.connect(
             lambda: self._toggle_all_checkboxes(check=False)
         )

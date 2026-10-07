@@ -25,6 +25,7 @@ from core.tasks.monitor_speed_task import SpeedMonitorTask
 from core.tasks.process_zip_task import ProcessZipTask
 from core.tasks.steamless_task import SteamlessTask
 
+from ui.dialogs.dialog_helpers import pergunta_sim_nao
 from ui.theme import cores_status
 from utils.helpers import get_base_path
 from utils.steam_manifest import get_game_directory, write_acf_file
@@ -1097,17 +1098,14 @@ class TaskManager(QObject):
         if not self.download_task or not self.current_job:
             return
 
-        reply = QMessageBox.question(
+        if not pergunta_sim_nao(
             self.main_window,
             "Cancelar tarefa",
             f"Tem certeza que deseja cancelar o download de '{
                 os.path.basename(self.current_job)
             }'?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        )
-
-        if reply == QMessageBox.StandardButton.No:
+            sim_por_padrao=False,
+        ):
             return
 
         logger.info(f"--- Cancelling job: {os.path.basename(self.current_job)} ---")
@@ -1161,19 +1159,15 @@ class TaskManager(QObject):
             message = (
                 "Instalação existente detectada. Excluir os arquivos desta tarefa cancelada?"
             )
-            default_button = QMessageBox.StandardButton.No
         else:
             message = "Excluir os arquivos parcialmente baixados desta tarefa?"
-            default_button = QMessageBox.StandardButton.Yes
 
-        reply = QMessageBox.question(
+        return pergunta_sim_nao(
             self.main_window,
             "Cancelar download",
             message,
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            default_button,
+            sim_por_padrao=not existing_install,
         )
-        return reply == QMessageBox.StandardButton.Yes
 
     def _kill_download_process(self):
         if self.download_task and self.download_task.process:

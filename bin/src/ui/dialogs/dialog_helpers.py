@@ -3,6 +3,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
+    QGridLayout,
     QLayout,
     QMessageBox,
     QVBoxLayout,
@@ -31,6 +32,35 @@ def create_accept_button(on_accept):
     tira_icones_padrao(buttons)
     buttons.accepted.connect(on_accept)
     return buttons
+
+
+def pergunta_sim_nao(parent, titulo, texto, sim_por_padrao=True) -> bool:
+    """pergunta sim/não em pt-br, sem o ícone que desloca o texto."""
+    caixa = QMessageBox(parent)
+    caixa.setWindowTitle(titulo)
+    caixa.setText(texto)
+    caixa.setStandardButtons(
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+    )
+    caixa.button(QMessageBox.StandardButton.Yes).setText("Sim")
+    caixa.button(QMessageBox.StandardButton.No).setText("Não")
+    padrao = (
+        QMessageBox.StandardButton.Yes
+        if sim_por_padrao
+        else QMessageBox.StandardButton.No
+    )
+    caixa.setDefaultButton(padrao)
+    leiaute = caixa.layout()
+    if isinstance(leiaute, QGridLayout):
+        # sem ícone o qt deixa um vão na coluna 0 que empurra o texto
+        espacador = leiaute.itemAtPosition(0, 0)
+        if espacador is not None:
+            leiaute.removeItem(espacador)
+        leiaute.setHorizontalSpacing(0)
+        leiaute.setColumnStretch(0, 0)
+        leiaute.setColumnStretch(1, 1)
+    tira_icones_padrao(caixa)
+    return caixa.exec() == QMessageBox.StandardButton.Yes
 
 
 def aplicar_barra_titulo(dialogo: QDialog) -> None:

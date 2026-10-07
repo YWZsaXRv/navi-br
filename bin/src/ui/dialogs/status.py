@@ -148,7 +148,7 @@ class StatusDialog(QDialog):
         """só os logs: fechar é o x da barra."""
         button_layout = QHBoxLayout()
 
-        logs_button = QPushButton("Abrir Logs")
+        logs_button = QPushButton("Abrir logs")
         logs_button.clicked.connect(open_log_directory)
         button_layout.addWidget(logs_button)
 

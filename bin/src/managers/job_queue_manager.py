@@ -8,6 +8,8 @@ from PyQt6.QtCore import Qt, QMetaObject, Q_ARG, QTimer, QObject
 
 from core import steam_helpers
 
+from ui.dialogs.dialog_helpers import pergunta_sim_nao
+
 logger = logging.getLogger(__name__)
 
 
@@ -191,15 +193,12 @@ class JobQueueManager(QObject):
 
     def _prompt_for_steam_restart(self):
         """Prompt user to restart Steam (Run via QTimer on Main Thread)"""
-        reply = QMessageBox.question(
+        if pergunta_sim_nao(
             self.main_window,
             "Reiniciar o Steam",
             "Alterações integradas ao Steam foram criadas. Deseja reiniciar o Steam agora para aplicá-las?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-            QMessageBox.StandardButton.No,
-        )
-
-        if reply == QMessageBox.StandardButton.Yes:
+            sim_por_padrao=False,
+        ):
             logger.info("User agreed to restart Steam.")
             # Run heavy lifting in background
             threading.Thread(target=self._perform_steam_restart, daemon=True).start()
