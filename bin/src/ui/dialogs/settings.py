@@ -21,6 +21,7 @@ from PyQt6.QtWidgets import (
     QFontDialog,
     QGroupBox,
     QHBoxLayout,
+    QLayout,
     QLabel,
     QLineEdit,
     QMessageBox,
@@ -41,7 +42,7 @@ from ui.dialogs.dialog_helpers import (
     traduz_rotulos,
 )
 from ui.theme import cor_secundaria, cores_status, sulco
-from ui.window_defaults import aplicar
+from ui.window_defaults import LARGURA, aplicar
 from utils.brand import DISPLAY_NAME
 from utils.helpers import (
     create_checkbox_setting,
@@ -69,7 +70,7 @@ _ROTULOS_COR = {
     "A&lpha channel:": "Canal alfa:",
     "&HTML:": "&HTML:",
     "&Pick Screen Color": "&Selecionar cor da tela",
-    "&Add to Custom Colors": "Adicionar às co&res personalizadas",
+    "&Add to Custom Colors": "Adicionar &cor personalizada",
 }
 
 _ROTULOS_FONTE = {
@@ -770,6 +771,15 @@ class SettingsDialog(QDialog):
                 box.removeButton(cancelar)
                 cancelar.deleteLater()
         aplicar_barra_titulo(caixa)
+        # o grid do qt tem mínimo de 579 de largura; libera o trava-geometria
+        # p/ caber na largura padrão (altura fica a natural: o 660 do padrão
+        # abre um vão feio no meio do seletor)
+        if caixa.layout() is not None:
+            caixa.layout().setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        caixa.setFixedSize(LARGURA, caixa.sizeHint().height())
+        quadro = caixa.frameGeometry()
+        quadro.moveCenter(self.frameGeometry().center())
+        caixa.move(quadro.topLeft())
         if caixa.exec():
             return caixa.currentColor()
         return QColor()
@@ -853,6 +863,7 @@ class SettingsDialog(QDialog):
                 box.removeButton(cancelar)
                 cancelar.deleteLater()
         aplicar_barra_titulo(dialogo)
+        aplicar(dialogo, self)
         if dialogo.exec():
             self.current_font = dialogo.currentFont()
             self.update_font_button_text()
