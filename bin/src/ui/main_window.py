@@ -43,7 +43,7 @@ from ui.frameless import Alcas
 from ui.theme import cabecalho_secao, cor_secundaria, sulco, texto_sobre
 from ui.window_defaults import ALTURA, GAP, LARGURA, RECUO_LATERAL
 from utils.brand import DISPLAY_NAME
-from utils.logger import qt_log_handler
+from utils.logger import open_log_directory, qt_log_handler
 from utils.paths import Paths
 from utils.settings import get_settings
 from utils.version import app_version, release_url
@@ -361,6 +361,10 @@ class MainWindow(QMainWindow):
             if event.button() == Qt.MouseButton.LeftButton:
                 self._escolhe_zips()
                 return True
+        if obj is getattr(self, "_logs_header", None) and event.type() == QEvent.Type.MouseButtonRelease:
+            if event.button() == Qt.MouseButton.LeftButton:
+                open_log_directory()
+                return True
         return super().eventFilter(obj, event)
 
     def _escolhe_zips(self) -> None:
@@ -406,6 +410,10 @@ class MainWindow(QMainWindow):
         # cabeçalho do log: título e linha, o texto começa com respiro embaixo
         logs_header = QLabel("Logs")
         logs_header.setStyleSheet(cabecalho_secao(self.accent_color))
+        logs_header.setToolTip("Ver logs")
+        logs_header.setCursor(Qt.CursorShape.PointingHandCursor)
+        self._logs_header = logs_header
+        logs_header.installEventFilter(self)
         self.bottom_layout.addWidget(logs_header)
 
         logs_line = QFrame()
@@ -427,6 +435,11 @@ class MainWindow(QMainWindow):
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
         )
         self.log_output.textChanged.connect(self._ajusta_altura_log)
+        # o leitor saindo do fim desliga o acompanhamento automático
+        self._log_seguindo = False
+        self.log_output.verticalScrollBar().valueChanged.connect(
+            self._log_leitor_saiu_do_fim
+        )
         qt_log_handler.new_record.connect(self.log_output.append)
         self.bottom_layout.addWidget(self.log_output)
 
@@ -459,10 +472,21 @@ class MainWindow(QMainWindow):
         if self.log_output.height() != altura:
             self.log_output.setFixedHeight(altura)
 
-        # só acompanha o fim se quem lê já estava no fim
+        # acompanha o fim: durante um job é sempre, senão segue quem já seguia
         barra = self.log_output.verticalScrollBar()
-        if barra.maximum() - barra.value() < 4:
+        processando = getattr(self.task_manager, "is_processing", False)
+        no_fim = barra.maximum() - barra.value() < 6
+        if processando or self._log_seguindo or no_fim:
+            self._log_seguindo = True
             barra.setValue(barra.maximum())
+        else:
+            self._log_seguindo = False
+
+    def _log_leitor_saiu_do_fim(self, valor: int) -> None:
+        """rolar para longe do fim desliga o acompanhamento automático."""
+        barra = self.log_output.verticalScrollBar()
+        if self._log_seguindo and barra.maximum() - valor >= 6:
+            self._log_seguindo = False
 
     def _cria_barra_status(self) -> None:
         """painel rebaixado no chão da janela: estado à esquerda, versão à direita."""
