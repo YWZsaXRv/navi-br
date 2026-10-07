@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
+from ui.dialogs.dialog_helpers import FiltroVimListas, aplicar_barra_titulo, create_accept_button
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ class DlcSelectionDialog(QDialog):
 
         self.list_widget = QListWidget()
         self.list_widget.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        self.list_widget.installEventFilter(FiltroVimListas(self.list_widget))
 
         # Fix for overlapping items on Windows
         self.list_widget.setUniformItemSizes(True)

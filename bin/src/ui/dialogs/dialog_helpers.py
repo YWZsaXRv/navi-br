@@ -1,6 +1,7 @@
-from PyQt6.QtCore import QEvent, QObject, Qt
+from PyQt6.QtCore import QEvent, QItemSelectionModel, QObject, Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
+    QAbstractItemView,
     QDialog,
     QDialogButtonBox,
     QGridLayout,
@@ -11,6 +12,78 @@ from PyQt6.QtWidgets import (
 
 from ui.bottom_titlebar import ALTURA_BARRA, BottomTitleBar
 from ui.frameless import Alcas
+
+
+class FiltroVimListas(QObject):
+    """j/k linha a linha em listas: o Qt usa j/k como busca incremental
+    e engole a tecla antes do diálogo ver. secoes=True: h/l e setas
+    esquerda/direita trocam de lista (seção) dentro do mesmo diálogo."""
+
+    def __init__(self, parent=None, secoes=False, ao_topo=None):
+        super().__init__(parent)
+        self.secoes = secoes
+        self.ao_topo = ao_topo
+
+    def eventFilter(self, obj, event):
+        if event.type() != QEvent.Type.KeyPress:
+            return False
+        if not isinstance(obj, QAbstractItemView):
+            return False
+
+        k = event.key()
+
+        if k in (Qt.Key.Key_J, Qt.Key.Key_K):
+            modelo = obj.model()
+            cnt = modelo.rowCount() if modelo is not None else 0
+            cur = obj.currentIndex().row() if obj.currentIndex().isValid() else -1
+            if k == Qt.Key.Key_J:
+                if cnt:
+                    self._vai_para(obj, modelo, min(cnt - 1, cur + 1))
+            else:
+                if cur <= 0 and self.ao_topo is not None:
+                    self.ao_topo()
+                elif cnt:
+                    self._vai_para(obj, modelo, max(0, cur - 1))
+            return True
+
+        if self.secoes and k in (
+            Qt.Key.Key_H,
+            Qt.Key.Key_L,
+            Qt.Key.Key_Left,
+            Qt.Key.Key_Right,
+        ):
+            vistas = [
+                v
+                for v in obj.window().findChildren(QAbstractItemView)
+                if v.isVisibleTo(obj.window())
+            ]
+            vistas.sort(key=lambda v: (v.mapTo(obj.window(), v.rect().topLeft()).y(),
+                                       v.mapTo(obj.window(), v.rect().topLeft()).x()))
+            if vistas:
+                alvo = None
+                for i, v in enumerate(vistas):
+                    if v is obj:
+                        if k in (Qt.Key.Key_L, Qt.Key.Key_Right):
+                            alvo = vistas[(i + 1) % len(vistas)]
+                        else:
+                            alvo = vistas[(i - 1) % len(vistas)]
+                        break
+                if alvo is not None:
+                    alvo.setFocus()
+                    return True
+            return False
+
+        return False
+
+    @staticmethod
+    def _vai_para(view, modelo, nr):
+        idx = modelo.index(nr, 0)
+        view.setCurrentIndex(idx)
+        sel = view.selectionModel()
+        if sel is not None:
+            sel.setCurrentIndex(
+                idx, QItemSelectionModel.SelectionFlag.ClearAndSelect
+            )
 
 
 def tira_icones_padrao(widgeto) -> None:

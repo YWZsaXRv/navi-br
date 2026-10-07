@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
     QProgressDialog,
     QPushButton,
     QTabWidget,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -97,7 +98,7 @@ except ImportError:
         return False
 
 
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, pergunta_sim_nao
+from ui.dialogs.dialog_helpers import FiltroVimListas, aplicar_barra_titulo, pergunta_sim_nao
 from ui.theme import claro, cor_secundaria, cores_status, sulco
 from ui.window_defaults import aplicar
 from utils.brand import DISPLAY_NAME
@@ -209,6 +210,71 @@ class GameItemWidget(QWidget):
     def sizeHint(self) -> QSize:
         """Return size hint that matches the desired row height."""
         return QSize(400, 118)
+
+
+class _DetalhesDialog(QDialog):
+    """detalhes do jogo com navegação vim-like (j/k, h/l nas abas)."""
+
+    def keyPressEvent(self, event):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import (
+            QCheckBox,
+            QLineEdit,
+            QRadioButton,
+            QPushButton,
+            QTabWidget,
+            QTextEdit,
+        )
+
+        k = event.key()
+        foco = self.focusWidget()
+
+        if k == Qt.Key.Key_Escape and isinstance(foco, (QLineEdit, QTextEdit)):
+            # dentro do input esc solta o foco em vez de fechar o diálogo
+            self._sai_do_input(foco)
+            return
+
+        if k in (Qt.Key.Key_H, Qt.Key.Key_Left, Qt.Key.Key_L, Qt.Key.Key_Right):
+            tabs = getattr(self, 'tabs', None)
+            if isinstance(tabs, QTabWidget):
+                idx = tabs.currentIndex()
+                if k in (Qt.Key.Key_H, Qt.Key.Key_Left):
+                    tabs.setCurrentIndex(max(0, idx - 1))
+                else:
+                    tabs.setCurrentIndex(min(tabs.count() - 1, idx + 1))
+                return
+
+        if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
+            self.focusNextChild()
+            return
+        if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
+            self.focusPreviousChild()
+            return
+
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if isinstance(foco, (QCheckBox, QRadioButton)):
+                foco.setChecked(not foco.isChecked())
+                return
+            if isinstance(foco, QPushButton):
+                foco.click()
+                return
+            # foco comum (aba, label): enter não faz nada
+            return
+        super().keyPressEvent(event)
+
+    def _sai_do_input(self, input_focado):
+        """foca o próximo widget utilizável fora do campo de texto."""
+        w = input_focado.nextInFocusChain()
+        while w is not input_focado:
+            if (
+                w.isVisible()
+                and w.isEnabled()
+                and not isinstance(w, (QLineEdit, QTextEdit))
+                and w is not self
+            ):
+                w.setFocus()
+                return
+            w = w.nextInFocusChain()
 
 
 class GameLibraryDialog(QDialog):
@@ -325,6 +391,10 @@ class GameLibraryDialog(QDialog):
                 background-color: {self.accent_color};
                 border-radius: 3px;
             }}
+            QCheckBox:focus, QRadioButton:focus, QPushButton:focus {{
+                outline: 2px solid {self.accent_color};
+                outline-offset: 1px;
+            }}
         """
         )
 
@@ -397,6 +467,9 @@ class GameLibraryDialog(QDialog):
         self.games_list = QListWidget()
         self.games_list.setSpacing(2)
         self.games_list.setVerticalScrollMode(QListWidget.ScrollMode.ScrollPerPixel)
+        self.games_list.installEventFilter(
+            FiltroVimListas(self.games_list, ao_topo=self._volta_busca)
+        )
         layout.addWidget(self.games_list)
 
         # --- Footer ---
@@ -894,7 +967,7 @@ class GameLibraryDialog(QDialog):
 
     def _show_game_details_dialog(self, game_data: dict) -> None:
         """Show detailed game info in a tabbed dialog."""
-        self._details_dialog = QDialog(self)
+        self._details_dialog = _DetalhesDialog(self)
         self._details_dialog.setWindowTitle("Detalhes do jogo")
         self._details_dialog.setMinimumWidth(500)
         self._details_dialog.setModal(True)
@@ -913,12 +986,17 @@ class GameLibraryDialog(QDialog):
                 color: {self.accent_color}; 
                 border-bottom: 2px solid {self.accent_color}; 
             }}
+            QCheckBox:focus, QRadioButton:focus, QPushButton:focus, QTabBar::tab:focus {{
+                outline: 2px solid {self.accent_color};
+                outline-offset: 1px;
+            }}
             QWidget {{ background-color: {self.background_color}; }}
         """
         )
 
         main_layout = QVBoxLayout(self._details_dialog)
         tab_widget = QTabWidget()
+        self._details_dialog.tabs = tab_widget
 
         self._create_overview_tab(tab_widget, game_data, self._details_dialog)
         self._create_uninstall_tab(tab_widget, game_data, self._details_dialog)
@@ -1307,11 +1385,37 @@ class GameLibraryDialog(QDialog):
         super().closeEvent(event)
         self._closing = False
 
+    def _volta_busca(self):
+        """k no topo da lista volta pro campo de busca."""
+        self.search_edit.setFocus()
+        self.search_edit.selectAll()
+
     def keyPressEvent(self, event):
         from PyQt6.QtCore import Qt
-        from PyQt6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QListWidget
+        from PyQt6.QtWidgets import (
+            QCheckBox,
+            QComboBox,
+            QLineEdit,
+            QPushButton,
+            QRadioButton,
+            QTextEdit,
+        )
 
+        k = event.key()
         foco = self.focusWidget()
+
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if isinstance(foco, (QCheckBox, QRadioButton)):
+                foco.setChecked(not foco.isChecked())
+                return
+            if isinstance(foco, QPushButton):
+                foco.click()
+                return
+            lst = getattr(self, 'games_list', None)
+            if lst is not None and lst.currentItem() is not None:
+                lst.itemClicked.emit(lst.currentItem())
+                return
+
         if foco and isinstance(foco, (QLineEdit, QTextEdit)):
             super().keyPressEvent(event)
             return
@@ -1319,34 +1423,33 @@ class GameLibraryDialog(QDialog):
             super().keyPressEvent(event)
             return
 
-        k = event.key()
         if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
             lst = getattr(self, 'games_list', None)
-            if isinstance(lst, QListWidget):
+            if lst is not None:
                 cnt = lst.count()
                 if cnt:
-                    lst.setCurrentRow(min(cnt-1, lst.currentRow()+1))
+                    lst.setCurrentRow(min(cnt - 1, max(-1, lst.currentRow()) + 1))
                     lst.setFocus()
                 return
         if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
             lst = getattr(self, 'games_list', None)
-            if isinstance(lst, QListWidget):
+            if lst is not None:
                 cnt = lst.count()
                 if cnt:
-                    lst.setCurrentRow(max(0, lst.currentRow()-1))
+                    if lst.currentRow() <= 0:
+                        if hasattr(self, 'search_edit'):
+                            self.search_edit.setFocus()
+                            self.search_edit.selectAll()
+                        return
+                    lst.setCurrentRow(lst.currentRow() - 1)
                     lst.setFocus()
                 return
         if k == Qt.Key.Key_Slash:
             if hasattr(self, 'search_edit'):
-                self.search_edit.setFocus(); self.search_edit.selectAll()
+                self.search_edit.setFocus()
+                self.search_edit.selectAll()
                 return
-        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            lst = getattr(self, 'games_list', None)
-            if isinstance(lst, QListWidget):
-                item = lst.currentItem()
-                if item:
-                    lst.itemClicked.emit(item)
-                    return
         if k == Qt.Key.Key_Escape:
-            self.reject(); return
+            self.reject()
+            return
         super().keyPressEvent(event)

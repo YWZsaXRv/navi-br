@@ -19,7 +19,7 @@ from PyQt6.QtWidgets import (
 )
 
 from core import morrenus_api
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo
+from ui.dialogs.dialog_helpers import FiltroVimListas, aplicar_barra_titulo
 from ui.theme import cor_secundaria, cores_status
 from ui.window_defaults import aplicar
 from utils.image_fetcher import ImageFetcher
@@ -163,6 +163,9 @@ class FetchManifestDialog(QDialog):
         self.results_list.setIconSize(QSize(230, 108))
         self.results_list.setSpacing(5)
         self.results_list.itemDoubleClicked.connect(self.on_item_double_clicked)
+        self.results_list.installEventFilter(
+            FiltroVimListas(self.results_list, ao_topo=self._volta_busca)
+        )
         layout.addWidget(self.results_list)
 
         # 4. Status Label
@@ -429,6 +432,11 @@ class FetchManifestDialog(QDialog):
             status_msg += f" ({hidden_count} ocultos)"
         self.status_label.setText(status_msg + ". Clique duas vezes para baixar")
 
+        primeiro = self.results_list.item(0)
+        if primeiro is not None:
+            self.results_list.setCurrentItem(primeiro)
+            self.results_list.setFocus()
+
     @staticmethod
     def _is_blacklisted(game_name: str) -> bool:
         """Checks if a game name contains blacklisted keywords."""
@@ -600,52 +608,69 @@ class FetchManifestDialog(QDialog):
 
         super().closeEvent(event)
 
+    def _volta_busca(self):
+        """k no topo da lista volta pro campo de busca."""
+        self.search_input.setFocus()
+        self.search_input.selectAll()
+
     def keyPressEvent(self, event):
         from PyQt6.QtCore import Qt
         from PyQt6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QListWidget
 
+        k = event.key()
+
         foco = self.focusWidget()
         if foco and isinstance(foco, (QLineEdit, QTextEdit)):
+            # setas da busca entram/saem da lista, letras continuam digitando
+            if k in (Qt.Key.Key_Down, Qt.Key.Key_Up) and self.results_list.count():
+                lst = self.results_list
+                if k == Qt.Key.Key_Down:
+                    nr = max(0, lst.currentRow())
+                else:
+                    nr = lst.count() - 1
+                lst.setCurrentRow(nr)
+                lst.setFocus()
+                item = lst.item(nr)
+                if item:
+                    lst.scrollToItem(item)
+                return
             super().keyPressEvent(event)
             return
         if isinstance(foco, QComboBox) and foco.isEditable():
             super().keyPressEvent(event)
             return
 
-        k = event.key()
-        mod = event.modifiers()
-
         if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
-            if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):
+            if isinstance(getattr(self, 'results_list', None), QListWidget):
                 lst = self.results_list
                 cnt = lst.count()
                 if cnt == 0:
                     return
-                cur = lst.currentRow()
-                if cur < 0 or cur >= cnt-1:
-                    nr = min(cnt-1, cur+1)
-                    lst.setCurrentRow(nr)
-                    lst.setFocus()
-                    item = lst.item(nr) if nr >= 0 else None
-                    if item:
-                        lst.scrollToItem(item)
-                        lst.setCurrentItem(item)
+                nr = min(cnt - 1, lst.currentRow() + 1)
+                lst.setCurrentRow(nr)
+                lst.setFocus()
+                item = lst.item(nr)
+                if item:
+                    lst.scrollToItem(item)
                 return
         if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
-            if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):
+            if isinstance(getattr(self, 'results_list', None), QListWidget):
                 lst = self.results_list
                 cnt = lst.count()
                 if cnt == 0:
                     return
-                cur = lst.currentRow()
-                if cur <= 0:
-                    nr = max(0, cur-1)
-                    lst.setCurrentRow(nr)
-                    lst.setFocus()
-                    item = lst.item(nr)
-                    if item:
-                        lst.scrollToItem(item)
-                        lst.setCurrentItem(item)
+                if lst.currentRow() <= 0:
+                    # no topo volta pra busca
+                    if hasattr(self, 'search_input'):
+                        self.search_input.setFocus()
+                        self.search_input.selectAll()
+                    return
+                nr = lst.currentRow() - 1
+                lst.setCurrentRow(nr)
+                lst.setFocus()
+                item = lst.item(nr)
+                if item:
+                    lst.scrollToItem(item)
                 return
         if k == Qt.Key.Key_Return or k == Qt.Key.Key_Enter:
             if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):

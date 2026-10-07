@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
+from ui.dialogs.dialog_helpers import FiltroVimListas, aplicar_barra_titulo, create_accept_button
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -37,6 +37,7 @@ class SteamLibraryDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.list_widget = QListWidget()
+        self.list_widget.installEventFilter(FiltroVimListas(self.list_widget))
 
         # Fix for overlapping items
         self.list_widget.setUniformItemSizes(True)

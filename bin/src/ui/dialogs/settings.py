@@ -11,6 +11,7 @@ from typing import Any, Optional, Tuple
 from PyQt6.QtCore import Qt, QTimer, QUrl
 from PyQt6.QtGui import QColor, QFont, QDesktopServices
 from PyQt6.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QColorDialog,
     QComboBox,
@@ -32,6 +33,7 @@ from PyQt6.QtWidgets import (
 
 from core import morrenus_api
 from ui.dialogs.dialog_helpers import (
+    FiltroVimListas,
     aplicar_barra_titulo,
     create_accept_button,
     tira_icones_padrao,
@@ -304,6 +306,7 @@ class SettingsDialog(QDialog):
         buttons = create_accept_button(self.accept)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
+        self.button_box = buttons
         self.main_layout.addWidget(buttons)
 
     def _create_api_key_setting(
@@ -782,6 +785,10 @@ class SettingsDialog(QDialog):
     # Font Handlers
     def choose_font(self) -> None:
         dialogo = QFontDialog(self.current_font, self)
+        # j/k linha a linha; h/l e setas entre as seções (font/style/size)
+        filtro_fonte = FiltroVimListas(dialogo, secoes=True)
+        for vista in dialogo.findChildren(QAbstractItemView):
+            vista.installEventFilter(filtro_fonte)
         # suporte é só pt-br: sem efeitos e sem escolha de writing system
         for grupo in dialogo.findChildren(QGroupBox):
             if grupo.findChildren(QCheckBox):
@@ -1156,7 +1163,26 @@ class SettingsDialog(QDialog):
 
     def keyPressEvent(self, event):
         from PyQt6.QtCore import Qt
-        from PyQt6.QtWidgets import QLineEdit, QTextEdit, QComboBox
+        from PyQt6.QtWidgets import (
+            QCheckBox,
+            QComboBox,
+            QLineEdit,
+            QPushButton,
+            QRadioButton,
+            QTextEdit,
+        )
+
+        k = event.key()
+        mod = event.modifiers()
+
+        if (mod & Qt.KeyboardModifier.ShiftModifier) and k in (
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Enter,
+        ):
+            ok = self._botao_ok()
+            if ok:
+                ok.click()
+            return
 
         foco = self.focusWidget()
         if foco and isinstance(foco, (QLineEdit, QTextEdit)):
@@ -1166,41 +1192,80 @@ class SettingsDialog(QDialog):
             super().keyPressEvent(event)
             return
 
-        k = event.key()
-        mod = event.modifiers()
-
-        if (mod & Qt.KeyboardModifier.ShiftModifier) and k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            if hasattr(self, 'button_box') and self.button_box:
-                if self.button_box.button(self.button_box.StandardButton.Ok):
-                    self.button_box.button(self.button_box.StandardButton.Ok).click()
-                elif self.button_box.button(self.button_box.StandardButton.Save):
-                    self.button_box.button(self.button_box.StandardButton.Save).click()
-            return
-
         if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
-            self.focusNextChild()
+            self._navega_lista(1)
             return
         if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
-            self.focusPreviousChild()
+            self._navega_lista(-1)
             return
         if k in (Qt.Key.Key_H, Qt.Key.Key_Left):
-            if hasattr(self, 'tab_widget'):
+            if hasattr(self, "tab_widget"):
                 idx = self.tab_widget.currentIndex()
-                self.tab_widget.setCurrentIndex(max(0, idx-1))
+                self.tab_widget.setCurrentIndex(max(0, idx - 1))
             return
         if k in (Qt.Key.Key_L, Qt.Key.Key_Right):
-            if hasattr(self, 'tab_widget'):
+            if hasattr(self, "tab_widget"):
                 idx = self.tab_widget.currentIndex()
                 cnt = self.tab_widget.count()
-                self.tab_widget.setCurrentIndex(min(cnt-1, idx+1))
+                self.tab_widget.setCurrentIndex(min(cnt - 1, idx + 1))
             return
-        if k == Qt.Key.Key_Return or k == Qt.Key.Key_Enter:
-            foco = self.focusWidget()
-            from PyQt6.QtWidgets import QCheckBox, QRadioButton, QPushButton
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             if isinstance(foco, (QCheckBox, QRadioButton)):
                 foco.setChecked(not foco.isChecked())
                 return
             if isinstance(foco, QPushButton):
                 foco.click()
                 return
+            # foco na aba ou widget comum: enter não faz nada (não aperta o OK)
+            return
         super().keyPressEvent(event)
+
+    def _botao_ok(self):
+        box = getattr(self, "button_box", None)
+        if box is None:
+            return None
+        return box.button(box.StandardButton.Ok)
+
+    def _nav_widgets(self):
+        """widgets focáveis (checkbox/radio/botão) da aba atual, em ordem."""
+        from PyQt6.QtWidgets import QCheckBox, QPushButton, QRadioButton
+
+        tab = self.tab_widget.currentWidget() if hasattr(self, "tab_widget") else self
+        widgets = []
+        node = tab.nextInFocusChain()
+        guard = 0
+        while node is not tab and guard < 4000:
+            guard += 1
+            if (
+                isinstance(node, (QCheckBox, QRadioButton, QPushButton))
+                and node.isVisible()
+                and node.isEnabled()
+                and self._e_desc(node, tab)
+            ):
+                widgets.append(node)
+            node = node.nextInFocusChain()
+        return widgets
+
+    @staticmethod
+    def _e_desc(widget, raiz):
+        pai = widget.parentWidget()
+        while pai is not None:
+            if pai is raiz:
+                return True
+            pai = pai.parentWidget()
+        return False
+
+    def _navega_lista(self, passo):
+        """j/k: anda um por um; para no fim e no início (sem pular pro OK)."""
+        nav = self._nav_widgets()
+        if not nav:
+            return
+        foco = self.focusWidget()
+        if any(foco is w for w in nav):
+            idx = next(i for i, w in enumerate(nav) if w is foco) + passo
+            if idx >= len(nav) or idx < 0:
+                return
+            alvo = nav[idx]
+        else:
+            alvo = nav[0] if passo > 0 else nav[-1]
+        alvo.setFocus()

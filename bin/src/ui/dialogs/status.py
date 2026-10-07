@@ -150,6 +150,7 @@ class StatusDialog(QDialog):
 
         logs_button = QPushButton("Abrir logs")
         logs_button.clicked.connect(open_log_directory)
+        self.logs_button = logs_button
         button_layout.addWidget(logs_button)
 
         self.layout.addLayout(button_layout)

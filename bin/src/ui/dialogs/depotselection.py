@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
 )
 
 from utils.image_fetcher import ImageFetcher
-from ui.dialogs.dialog_helpers import aplicar_barra_titulo, create_accept_button
+from ui.dialogs.dialog_helpers import FiltroVimListas, aplicar_barra_titulo, create_accept_button
 from ui.window_defaults import aplicar
 
 logger = logging.getLogger(__name__)
@@ -45,6 +45,7 @@ class DepotSelectionDialog(QDialog):
 
         self.list_widget = QListWidget()
         self.list_widget.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        self.list_widget.installEventFilter(FiltroVimListas(self.list_widget))
 
         def get_sort_key(depot_item):
             _depot_id, data = depot_item
