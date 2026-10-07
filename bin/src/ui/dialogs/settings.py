@@ -284,6 +284,10 @@ class SettingsDialog(QDialog):
             QTabBar::tab:!selected {{
                 color: {cor_secundaria(bg_color)};
             }}
+            QCheckBox:focus, QRadioButton:focus, QPushButton:focus, QTabBar::tab:focus {{
+                outline: 2px solid {self.accent_color};
+                outline-offset: 1px;
+            }}
         """
         )
 
@@ -1149,3 +1153,54 @@ class SettingsDialog(QDialog):
             self.main_window.task_manager.run_steamless_manually(path)
 
 
+
+    def keyPressEvent(self, event):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import QLineEdit, QTextEdit, QComboBox
+
+        foco = self.focusWidget()
+        if foco and isinstance(foco, (QLineEdit, QTextEdit)):
+            super().keyPressEvent(event)
+            return
+        if isinstance(foco, QComboBox) and foco.isEditable():
+            super().keyPressEvent(event)
+            return
+
+        k = event.key()
+        mod = event.modifiers()
+
+        if (mod & Qt.KeyboardModifier.ShiftModifier) and k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if hasattr(self, 'button_box') and self.button_box:
+                if self.button_box.button(self.button_box.StandardButton.Ok):
+                    self.button_box.button(self.button_box.StandardButton.Ok).click()
+                elif self.button_box.button(self.button_box.StandardButton.Save):
+                    self.button_box.button(self.button_box.StandardButton.Save).click()
+            return
+
+        if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
+            self.focusNextChild()
+            return
+        if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
+            self.focusPreviousChild()
+            return
+        if k in (Qt.Key.Key_H, Qt.Key.Key_Left):
+            if hasattr(self, 'tab_widget'):
+                idx = self.tab_widget.currentIndex()
+                self.tab_widget.setCurrentIndex(max(0, idx-1))
+            return
+        if k in (Qt.Key.Key_L, Qt.Key.Key_Right):
+            if hasattr(self, 'tab_widget'):
+                idx = self.tab_widget.currentIndex()
+                cnt = self.tab_widget.count()
+                self.tab_widget.setCurrentIndex(min(cnt-1, idx+1))
+            return
+        if k == Qt.Key.Key_Return or k == Qt.Key.Key_Enter:
+            foco = self.focusWidget()
+            from PyQt6.QtWidgets import QCheckBox, QRadioButton, QPushButton
+            if isinstance(foco, (QCheckBox, QRadioButton)):
+                foco.setChecked(not foco.isChecked())
+                return
+            if isinstance(foco, QPushButton):
+                foco.click()
+                return
+        super().keyPressEvent(event)

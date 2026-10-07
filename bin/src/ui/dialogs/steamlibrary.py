@@ -77,3 +77,34 @@ class SteamLibraryDialog(QDialog):
     def get_selected_path(self) -> Optional[str]:
         """Return the selected library path."""
         return self.selected_path
+
+    def keyPressEvent(self, event):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import QListWidget
+
+        k = event.key()
+        if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
+            if hasattr(self, 'list_widget') and isinstance(self.list_widget, QListWidget):
+                lst = self.list_widget
+                cnt = lst.count()
+                if cnt:
+                    cur = lst.currentRow()
+                    lst.setCurrentRow(min(cnt-1, cur+1))
+                    lst.setFocus()
+                return
+        if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
+            if hasattr(self, 'list_widget') and isinstance(self.list_widget, QListWidget):
+                lst = self.list_widget
+                cnt = lst.count()
+                if cnt:
+                    cur = lst.currentRow()
+                    lst.setCurrentRow(max(0, cur-1))
+                    lst.setFocus()
+                return
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.accept()
+            return
+        if k == Qt.Key.Key_Escape:
+            self.reject()
+            return
+        super().keyPressEvent(event)

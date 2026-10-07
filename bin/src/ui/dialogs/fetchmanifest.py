@@ -599,3 +599,63 @@ class FetchManifestDialog(QDialog):
                 logger.debug(f"Error stopping task runner: {e}")
 
         super().closeEvent(event)
+
+    def keyPressEvent(self, event):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import QLineEdit, QTextEdit, QComboBox, QListWidget
+
+        foco = self.focusWidget()
+        if foco and isinstance(foco, (QLineEdit, QTextEdit)):
+            super().keyPressEvent(event)
+            return
+        if isinstance(foco, QComboBox) and foco.isEditable():
+            super().keyPressEvent(event)
+            return
+
+        k = event.key()
+        mod = event.modifiers()
+
+        if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
+            if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):
+                lst = self.results_list
+                cnt = lst.count()
+                if cnt == 0:
+                    return
+                cur = lst.currentRow()
+                if cur < 0 or cur >= cnt-1:
+                    lst.setCurrentRow(min(cnt-1, cur+1))
+                else:
+                    lst.setCurrentRow(cur+1)
+                lst.setFocus()
+                return
+        if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
+            if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):
+                lst = self.results_list
+                cnt = lst.count()
+                if cnt == 0:
+                    return
+                cur = lst.currentRow()
+                if cur <= 0:
+                    lst.setCurrentRow(0)
+                else:
+                    lst.setCurrentRow(cur-1)
+                lst.setFocus()
+                return
+        if k == Qt.Key.Key_Return or k == Qt.Key.Key_Enter:
+            if hasattr(self, 'results_list') and isinstance(self.results_list, QListWidget):
+                item = self.results_list.currentItem()
+                if item:
+                    self.results_list.itemDoubleClicked.emit(item)
+                    return
+            if hasattr(self, 'search_input'):
+                self.search_input.setFocus()
+                return
+        if k == Qt.Key.Key_Escape:
+            self.reject()
+            return
+        if k in (Qt.Key.Key_Slash,):
+            if hasattr(self, 'search_input'):
+                self.search_input.setFocus()
+                self.search_input.selectAll()
+                return
+        super().keyPressEvent(event)

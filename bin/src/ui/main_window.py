@@ -123,7 +123,18 @@ class MainWindow(QMainWindow):
         """Setup Ctrl+Q shortcut to exit the application."""
         self.exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
         self.exit_shortcut.activated.connect(self.close)
-        logger.info("Ctrl+Q exit shortcut registered")
+        # atalhos internos
+        self.sc_lupa = QShortcut(QKeySequence("/"), self)
+        self.sc_lupa.activated.connect(self.open_fetch_dialog)
+        self.sc_biblioteca = QShortcut(QKeySequence("b"), self)
+        self.sc_biblioteca.activated.connect(self.open_game_library)
+        self.sc_config = QShortcut(QKeySequence("c"), self)
+        self.sc_config.activated.connect(self.open_settings)
+        self.sc_status = QShortcut(QKeySequence("s"), self)
+        self.sc_status.activated.connect(self.open_status_dialog)
+        self.sc_drop_z = QShortcut(QKeySequence("z"), self)
+        self.sc_drop_z.activated.connect(self._duplo_clique_drop)
+        logger.info("Atalhos registrados")
 
     @staticmethod
     def _setup_windows_taskbar() -> None:
@@ -653,3 +664,7 @@ class MainWindow(QMainWindow):
             logging.shutdown()
         except Exception as e:
             print(f"Error during custom logger shutdown: {e}")
+
+    def _duplo_clique_drop(self) -> None:
+        """Simula duplo clique na zona de drop para abrir seleção de zips."""
+        self._escolhe_zips()

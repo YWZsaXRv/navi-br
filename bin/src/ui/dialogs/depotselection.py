@@ -346,3 +346,34 @@ class DepotSelectionDialog(QDialog):
             except RuntimeError:
                 pass
         super().closeEvent(a0)
+
+    def keyPressEvent(self, event):
+        from PyQt6.QtCore import Qt
+        from PyQt6.QtWidgets import QListWidget
+
+        k = event.key()
+        lst = self.list_widget if hasattr(self, 'list_widget') else None
+        if k in (Qt.Key.Key_J, Qt.Key.Key_Down):
+            if isinstance(lst, QListWidget):
+                cnt = lst.count()
+                if cnt:
+                    lst.setCurrentRow(min(cnt-1, lst.currentRow()+1))
+                    lst.setFocus()
+                return
+        if k in (Qt.Key.Key_K, Qt.Key.Key_Up):
+            if isinstance(lst, QListWidget):
+                cnt = lst.count()
+                if cnt:
+                    lst.setCurrentRow(max(0, lst.currentRow()-1))
+                    lst.setFocus()
+                return
+        if k in (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Space):
+            if isinstance(lst, QListWidget) and lst.count():
+                item = lst.currentItem()
+                if item:
+                    item.setCheckState(Qt.CheckState.Checked if item.checkState() != Qt.CheckState.Checked else Qt.CheckState.Unchecked)
+                return
+        if k == Qt.Key.Key_Escape:
+            self.reject()
+            return
+        super().keyPressEvent(event)
