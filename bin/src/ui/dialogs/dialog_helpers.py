@@ -7,7 +7,6 @@ from PyQt6.QtWidgets import (
     QGridLayout,
     QLayout,
     QMessageBox,
-    QVBoxLayout,
 )
 
 from ui.bottom_titlebar import ALTURA_BARRA, BottomTitleBar
@@ -133,6 +132,7 @@ def pergunta_sim_nao(parent, titulo, texto, sim_por_padrao=True) -> bool:
         leiaute.setColumnStretch(0, 0)
         leiaute.setColumnStretch(1, 1)
     tira_icones_padrao(caixa)
+    aplicar_barra_titulo(caixa)
     return caixa.exec() == QMessageBox.StandardButton.Yes
 
 
@@ -145,8 +145,9 @@ def aplicar_barra_titulo(dialogo: QDialog) -> None:
     if not isinstance(layout, QLayout):
         layout = dialogo.layout()
 
-    if isinstance(layout, QVBoxLayout):
+    if isinstance(layout, QLayout):
         # a barra fica fora do layout, de ponta a ponta; o conteúdo só desce
+        # (qbox, grid...: o messagebox dos sim/não é grid)
         margens = layout.contentsMargins()
         layout.setContentsMargins(
             margens.left(),

@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
     QColorDialog,
     QComboBox,
     QDialog,
+    QDialogButtonBox,
     QFileDialog,
     QFontDialog,
     QGroupBox,
@@ -732,8 +733,23 @@ class SettingsDialog(QDialog):
         layout.addLayout(h_layout)
 
     # Color Handlers
+    def _abre_seletor_cor(self):
+        """seletor de cor com barra win95, sem cancelar e sem ícone no ok."""
+        caixa = QColorDialog(self)
+        tira_icones_padrao(caixa)
+        box = caixa.findChild(QDialogButtonBox)
+        if box is not None:
+            cancelar = box.button(QDialogButtonBox.StandardButton.Cancel)
+            if cancelar is not None:
+                box.removeButton(cancelar)
+                cancelar.deleteLater()
+        aplicar_barra_titulo(caixa)
+        if caixa.exec():
+            return caixa.currentColor()
+        return QColor()
+
     def choose_accent_color(self) -> None:
-        color = QColorDialog.getColor()
+        color = self._abre_seletor_cor()
         if not color.isValid():
             return
         if (
@@ -751,7 +767,7 @@ class SettingsDialog(QDialog):
         self.accent_color_button.setStyleSheet(f"background-color: {default};")
 
     def choose_bg_color(self) -> None:
-        color = QColorDialog.getColor()
+        color = self._abre_seletor_cor()
         if not color.isValid():
             return
         hex_c = color.name()
@@ -799,6 +815,13 @@ class SettingsDialog(QDialog):
                 if rotulo.buddy() is sistema:
                     rotulo.hide()
         tira_icones_padrao(dialogo)
+        box = dialogo.findChild(QDialogButtonBox)
+        if box is not None:
+            cancelar = box.button(QDialogButtonBox.StandardButton.Cancel)
+            if cancelar is not None:
+                box.removeButton(cancelar)
+                cancelar.deleteLater()
+        aplicar_barra_titulo(dialogo)
         if dialogo.exec():
             self.current_font = dialogo.currentFont()
             self.update_font_button_text()
