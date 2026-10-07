@@ -2,7 +2,6 @@ import atexit
 import logging
 import sys
 import webbrowser
-from collections import deque
 from typing import Optional
 
 from PyQt6.QtCore import QEvent, Qt, QTimer
@@ -20,7 +19,6 @@ from PyQt6.QtWidgets import (
     QFrame,
     QLabel,
     QMainWindow,
-    QMessageBox,
     QProgressBar,
     QSizePolicy,
     QTextEdit,
@@ -37,10 +35,8 @@ from managers.ui_state_manager import UIStateManager
 from ui.assets import DROP_SVG, DROP_SVG_HOVER, svg_para_pixmap
 from ui.bottom_titlebar import BottomTitleBar, ClickableLabel
 from ui.dialogs.credits import CreditsDialog
-from ui.dialogs.dialog_helpers import tira_icones_padrao
 from ui.dialogs.fetchmanifest import FetchManifestDialog
 from ui.dialogs.gamelibrary import GameLibraryDialog
-from ui.dialogs.lain import LainMinigameDialog
 from ui.dialogs.settings import SettingsDialog
 from ui.dialogs.status import StatusDialog
 from ui.frameless import Alcas
@@ -61,8 +57,6 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.alcas: Optional[Alcas] = None
-        self.key_sequence = deque(maxlen=4)
-        self.target_sequence = ["l", "a", "i", "n"]
         self.settings = None
         self.accent_color = None
         self.background_color = None
@@ -71,7 +65,6 @@ class MainWindow(QMainWindow):
         self.job_queue = None
         self.game_manager = None
         self.exit_shortcut = None
-        self.sequence_timeout = None
         self.central_widget = None
         self.layout = None
         self.titlebar_position = None
@@ -103,7 +96,6 @@ class MainWindow(QMainWindow):
         self.alcas = Alcas(self)
         if self.ui_state:
             self.ui_state.apply_style_settings()
-        self._setup_key_sequence_detector()
         self._setup_exit_shortcut()
 
     def _setup_window_properties(self) -> None:
@@ -132,48 +124,6 @@ class MainWindow(QMainWindow):
         self.exit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
         self.exit_shortcut.activated.connect(self.close)
         logger.info("Ctrl+Q exit shortcut registered")
-
-    def _setup_key_sequence_detector(self) -> None:
-        """Setup key sequence detection for Easter egg."""
-        self.sequence_timeout = QTimer(self)
-        self.sequence_timeout.setSingleShot(True)
-        self.sequence_timeout.timeout.connect(self.key_sequence.clear)
-
-    def keyPressEvent(self, event) -> None:
-        """Override keyPressEvent to detect key sequences."""
-        key_text = event.text().lower()
-
-        if key_text:
-            self.key_sequence.append(key_text)
-            # Reset sequence after 3 seconds of inactivity
-            self.sequence_timeout.start(3000)
-
-            if list(self.key_sequence) == self.target_sequence:
-                self._on_lain_sequence_activated()
-                self.key_sequence.clear()
-
-        super().keyPressEvent(event)
-
-    def _on_lain_sequence_activated(self) -> None:
-        """Handle L->A->I->N sequence activation."""
-        logger.info("LAIN sequence detected!")
-        self.open_lain_minigame()
-
-    def open_lain_minigame(self) -> None:
-        """Open the Serial Experiments Lain minigame."""
-        dialog = LainMinigameDialog(self)
-        dialog.game_completed.connect(self.on_minigame_completed)
-        dialog.exec()
-
-    def on_minigame_completed(self, score: int) -> None:
-        """Handle minigame completion."""
-        logger.info(f"Lain minigame completed with score: {score}")
-        msg_box = QMessageBox(self)
-        msg_box.setWindowTitle("The Wired")
-        msg_box.setText(f"Conexão Encerrada\n\nPontuação Final: {score}")
-        msg_box.setStandardButtons(QMessageBox.StandardButton.Ok)
-        tira_icones_padrao(msg_box)
-        msg_box.exec()
 
     @staticmethod
     def _setup_windows_taskbar() -> None:
