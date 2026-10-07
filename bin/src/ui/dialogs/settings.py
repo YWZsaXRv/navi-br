@@ -835,6 +835,10 @@ class SettingsDialog(QDialog):
         for grupo in dialogo.findChildren(QGroupBox):
             if grupo.findChildren(QCheckBox):
                 grupo.hide()
+            elif grupo.findChild(QLineEdit) is not None:
+                # sem os efeitos o sample despenca no grid e perde toda a
+                # altura (fica 42px e o padding do qss mata o texto)
+                grupo.setMinimumHeight(150)
         for sistema in dialogo.findChildren(QComboBox):
             sistema.hide()
             for rotulo in dialogo.findChildren(QLabel):
