@@ -696,7 +696,7 @@ class SettingsDialog(QDialog):
         self.ignore_color_warnings_checkbox = create_checkbox_setting(
             "Ignorar avisos de cor",
             "ignore_color_warnings",
-            False,
+            True,
             self,
             "Permitir qualquer combinação de cores.",
         )
