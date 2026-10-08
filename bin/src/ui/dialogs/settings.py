@@ -290,7 +290,7 @@ class SettingsDialog(QDialog):
     def _create_tab_widget(self) -> None:
         """Create and style the tab widget."""
         self.tab_widget = QTabWidget()
-        bg_color = self.settings.value("background_color", "#1E1E1E")
+        bg_color = self.settings.value("background_color", "#c0c0c0")
         self.tab_widget.setStyleSheet(
             f"""
             QTabWidget::pane {{
