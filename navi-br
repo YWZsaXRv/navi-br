@@ -3,6 +3,9 @@
 #
 set -u
 
+# com curl | bash o stdin é o próprio script, não o teclado: as respostas vão pro terminal
+if (: </dev/tty) 2>/dev/null; then TECLADO="/dev/tty"; else TECLADO="0"; fi
+
 case "${LC_ALL:-${LANG:-}}" in
     *.[Uu][Tt][Ff]-8*|*[Uu][Tt][Ff]8*) ;;
     *) export LC_ALL=C.UTF-8 ;;
@@ -169,7 +172,7 @@ caixa_linha() {
 
 confirmar() { 
     printf '%s  %s [s/N] %s' "$AMARELO" "$1" "$SEM_COR"
-    local r; read -r r || return 1
+    local r; read -r r < "$TECLADO" || return 1
     case "$r" in s|S|sim|Sim|SIM) return 0 ;; *) return 1 ;; esac
 }
 
@@ -562,7 +565,7 @@ menu() {
         printf '%s  3%s   %-22s%s%s%s\n' "$INDENT" "$SEM_COR" "desinstalar tudo" "$CINZA" "navi-br, SLSsteam, h3adcr-b, cloudredirect" "$SEM_COR"
         printf '%s  4%s   sair\n\n' "$INDENT" "$SEM_COR"
         printf '%s  escolha ▸ %s' "$INDENT" "$ROSA"
-        local op; read -r op || return 0
+        local op; read -r op < "$TECLADO" || return 0
         printf '\n'
         case "$op" in
             1) fluxo_instalar ;;
@@ -572,7 +575,7 @@ menu() {
             *) printf '%s  opção inválida.%s\n\n' "$AMARELO" "$SEM_COR" ;;
         esac
         printf '%s  enter p/ voltar ao menu%s' "$CINZA" "$SEM_COR"
-        read -r _ || return 0
+        read -r _ < "$TECLADO" || return 0
     done
 }
 
@@ -581,6 +584,6 @@ case "${1:-}" in
     -uninstall)     fluxo_desinstalar ;;
     -uninstall-all) fluxo_desinstalar_tudo ;;
     -h|--help)      ajuda ;;
-    "")             menu ;;
+    "")             if [ "$TECLADO" = "/dev/tty" ]; then menu; else ajuda; exit 1; fi ;;
     *)              ajuda; exit 1 ;;
 esac
