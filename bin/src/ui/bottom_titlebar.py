@@ -326,8 +326,8 @@ class BottomTitleBar(QFrame):
 
     def _apply_style(self) -> None:
         settings = get_settings()
-        bg_color = QColor(settings.value("background_color", "#000000"))
-        accent_color = QColor(settings.value("accent_color", "#C06C84"))
+        bg_color = QColor(settings.value("background_color", "#c0c0c0"))
+        accent_color = QColor(settings.value("accent_color", "#000080"))
 
         # sem estado inativo: sem foco (e no meio do arraste) some o azul
         self._inicio, self._fim = gradiente_titulo(accent_color)
@@ -442,7 +442,7 @@ class BottomTitleBar(QFrame):
             # ocioso na cor do fundo: no acento a bola some no gradiente
             self._update_colored_circle_button(
                 self.status_button,
-                get_settings().value("background_color", "#000000"),
+                get_settings().value("background_color", "#c0c0c0"),
             )
 
     def _update_colored_circle_button(self, button: QPushButton, color: str) -> None:

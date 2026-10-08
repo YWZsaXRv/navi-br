@@ -68,7 +68,7 @@ class UIStateManager:
 
         self.fila_vazia_label = QLabel("Nenhum download na fila")
         self.fila_vazia_label.setStyleSheet(
-            f"color: {cor_secundaria(self.settings.value('background_color', '#000000'))};"
+            f"color: {cor_secundaria(self.settings.value('background_color', '#c0c0c0'))};"
         )
         conteudo_layout.addWidget(self.fila_vazia_label)
 
@@ -142,9 +142,9 @@ class UIStateManager:
     def apply_style_settings(self):
         """Apply current style settings to UI"""
         self.main_window.background_color = self.settings.value(
-            "background_color", "#000000"
+            "background_color", "#c0c0c0"
         )
-        self.main_window.accent_color = self.settings.value("accent_color", "#C06C84")
+        self.main_window.accent_color = self.settings.value("accent_color", "#000080")
 
         # Load font family
         font_family = self.settings.value("font", "W95FA")

@@ -132,7 +132,7 @@ class FetchManifestDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent_window = parent
-        self.background_color = get_settings().value("background_color", "#000000")
+        self.background_color = get_settings().value("background_color", "#c0c0c0")
         self.setWindowTitle("Baixar manifest da API Morrenus")
         aplicar(self, parent)
 

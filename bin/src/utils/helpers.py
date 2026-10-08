@@ -582,7 +582,7 @@ class CheckboxSetting(QWidget):
         if tooltip:
             # Use tooltip both as hover tooltip and as visible explanatory label
             self.checkbox.setToolTip(tooltip)
-            fundo = get_settings().value("background_color", "#000000")
+            fundo = get_settings().value("background_color", "#c0c0c0")
             self.explanation_label = QLabel(tooltip)
             self.explanation_label.setStyleSheet(
                 f"color: {cor_secundaria(fundo)}; font-size: 11px;"

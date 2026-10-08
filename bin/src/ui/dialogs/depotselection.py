@@ -150,7 +150,7 @@ class DepotSelectionDialog(QDialog):
 
             item = QListWidgetItem(item_text)
             item.setData(Qt.ItemDataRole.UserRole, depot_id)
-            item.setCheckState(Qt.CheckState.Unchecked)
+            item.setCheckState(Qt.CheckState.Checked)
 
             # Removes ItemIsUserCheckable flag to disable internal checkbox handling, handled manually in self.on_depot_item_clicked
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)

@@ -292,12 +292,12 @@ class GameLibraryDialog(QDialog):
         self.executor = ThreadPoolExecutor(max_workers=4)
 
         # Load theme colors
-        self.accent_color = "#C06C84"
-        self.background_color = "#000000"
+        self.accent_color = "#000080"
+        self.background_color = "#c0c0c0"
 
         if self.settings:
-            self.accent_color = self.settings.value("accent_color", "#C06C84")
-            self.background_color = self.settings.value("background_color", "#000000")
+            self.accent_color = self.settings.value("accent_color", "#000080")
+            self.background_color = self.settings.value("background_color", "#c0c0c0")
 
         # State tracking
         self._active_fetchers = {}

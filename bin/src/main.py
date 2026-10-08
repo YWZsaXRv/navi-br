@@ -178,8 +178,8 @@ def main():
 
     # 2. Settings & Theme
     settings = get_settings()
-    accent_color = settings.value("accent_color", "#C06C84")
-    bg_color = settings.value("background_color", "#000000")
+    accent_color = settings.value("accent_color", "#000080")
+    bg_color = settings.value("background_color", "#c0c0c0")
 
     font_to_use = create_font_from_settings(settings)
 

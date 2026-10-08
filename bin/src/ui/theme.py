@@ -402,8 +402,8 @@ def apply_font(
 
 def update_appearance(
     app: QApplication,
-    accent: str = "#C06C84",
-    background: str = "#000000",
+    accent: str = "#000080",
+    background: str = "#c0c0c0",
     font: Optional[QFont] = None,
     font_file: Optional[Union[str, Path]] = None,
 ) -> Tuple[bool, Union[str, Path]]:

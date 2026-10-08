@@ -105,7 +105,7 @@ class TaskManager(QObject):
 
         # Status colors (deriva do fundo: verde/laranja/vermelho puros somem
         # sobre o prata)
-        cores = cores_status(self.settings.value("background_color", "#000000"))
+        cores = cores_status(self.settings.value("background_color", "#c0c0c0"))
         self.STATUS_OK = cores["ok"]
         self.STATUS_IN_PROGRESS = cores["andamento"]
         self.STATUS_ERROR = cores["erro"]
@@ -1041,7 +1041,7 @@ class TaskManager(QObject):
     def _update_status_button_color(self):
         status = self.get_component_status()
         settings = self.main_window.settings
-        accent_color = settings.value("accent_color", "#C06C84")
+        accent_color = settings.value("accent_color", "#000080")
 
         ddm_status = status["ddm_status"]
         slscheevo_status = status["slscheevo_status"]

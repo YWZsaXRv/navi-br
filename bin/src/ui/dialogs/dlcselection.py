@@ -45,7 +45,7 @@ class DlcSelectionDialog(QDialog):
             item_text = f"{dlc_id} - {dlc_desc}"
             item = QListWidgetItem(item_text)
             item.setData(Qt.ItemDataRole.UserRole, dlc_id)
-            item.setCheckState(Qt.CheckState.Unchecked)
+            item.setCheckState(Qt.CheckState.Checked)
             # Explicitly set size hint to prevent overlap
             item.setSizeHint(QSize(0, 24))
             self.list_widget.addItem(item)

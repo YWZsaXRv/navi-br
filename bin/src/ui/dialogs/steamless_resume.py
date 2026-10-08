@@ -63,7 +63,7 @@ class SteamlessResumeDialog(QDialog):
     def _create_header(self, game_name: str) -> None:
         """Create the title and game name labels."""
         settings = get_settings()
-        accent_color = settings.value("accent_color", "#C06C84")
+        accent_color = settings.value("accent_color", "#000080")
 
         title = ScaledFontLabel("Processamento do Steamless concluído")
         title.setStyleSheet(f"font-size: 16pt; color: {accent_color};")
@@ -77,7 +77,7 @@ class SteamlessResumeDialog(QDialog):
     def _create_separator(self) -> None:
         """Create a visual separator line."""
         settings = get_settings()
-        accent_color = settings.value("accent_color", "#C06C84")
+        accent_color = settings.value("accent_color", "#000080")
 
         separator = QLabel()
         separator.setFixedHeight(1)
@@ -103,7 +103,7 @@ class SteamlessResumeDialog(QDialog):
         self, exe_count: int, processed_count: int, success: bool
     ) -> Tuple[str, str]:
         """Determine status text and color based on results."""
-        fundo = get_settings().value("background_color", "#000000")
+        fundo = get_settings().value("background_color", "#c0c0c0")
         cores = cores_status(fundo)
 
         if success and processed_count > 0:

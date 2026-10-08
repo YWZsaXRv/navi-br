@@ -152,8 +152,8 @@ class MainWindow(QMainWindow):
         """Initialize all manager classes."""
         self.settings = get_settings()
 
-        self.accent_color = self.settings.value("accent_color", "#C06C84")
-        self.background_color = self.settings.value("background_color", "#000000")
+        self.accent_color = self.settings.value("accent_color", "#000080")
+        self.background_color = self.settings.value("background_color", "#c0c0c0")
 
         self.task_manager = TaskManager(self)
         self.ui_state = UIStateManager(self)
@@ -558,7 +558,7 @@ class MainWindow(QMainWindow):
                 border-radius: 5px;
                 text-align: center;
                 color: #FFFFFF;
-                background-color: {sulco(self.background_color or "#000000")};
+                background-color: {sulco(self.background_color or "#c0c0c0")};
             }}
             QProgressBar::chunk {{
                 background-color: {self.accent_color};

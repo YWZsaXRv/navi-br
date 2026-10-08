@@ -116,8 +116,8 @@ class MorrenusStatsWidget(QWidget):
         self.daily_usage_bar.setFormat("Diário: --")
         self.daily_usage_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        accent_color = self.settings.value("accent_color", "#C06C84")
-        fundo = self.settings.value("background_color", "#000000")
+        accent_color = self.settings.value("accent_color", "#000080")
+        fundo = self.settings.value("background_color", "#c0c0c0")
         self.daily_usage_bar.setStyleSheet(
             f"""
             QProgressBar {{
@@ -234,7 +234,7 @@ class SettingsDialog(QDialog):
         aplicar(self, parent)
         self.settings = get_settings()
         self.main_window = parent
-        self.accent_color = self.settings.value("accent_color", "#C06C84")
+        self.accent_color = self.settings.value("accent_color", "#000080")
         self.main_layout = None
         self.tab_widget = None
         self.library_mode_checkbox = None
@@ -265,12 +265,12 @@ class SettingsDialog(QDialog):
 
         self._user_accent_color = self.settings.value(
             "user_accent_color",
-            self.settings.value("accent_color", "#C06C84"),
+            self.settings.value("accent_color", "#000080"),
             type=str,
         )
         self._user_background_color = self.settings.value(
             "user_background_color",
-            self.settings.value("background_color", "#000000"),
+            self.settings.value("background_color", "#c0c0c0"),
             type=str,
         )
         self._original_titlebar_position = self.settings.value(
@@ -368,7 +368,7 @@ class SettingsDialog(QDialog):
         input_layout.addWidget(toggle_btn)
         layout.addLayout(input_layout)
 
-        accent_color = self.settings.value("accent_color", "#C06C84")
+        accent_color = self.settings.value("accent_color", "#000080")
         if help_url:
             help_label = QLabel(
                 f'<a href="{help_url}" style="color: {accent_color};">Obter chave API</a>'
@@ -378,7 +378,7 @@ class SettingsDialog(QDialog):
         elif help_text:
             help_label = QLabel(help_text)
             help_label.setStyleSheet(
-                f"color: {cor_secundaria(self.settings.value('background_color', '#000000'))};"
+                f"color: {cor_secundaria(self.settings.value('background_color', '#c0c0c0'))};"
                 " font-size: 11px;"
             )
             layout.addWidget(help_label)
@@ -412,7 +412,7 @@ class SettingsDialog(QDialog):
         self.library_mode_checkbox = create_checkbox_setting(
             "Limitar downloads às bibliotecas Steam",
             "library_mode",
-            False,
+            True,
             self,
             library_tooltip,
         )
@@ -421,7 +421,7 @@ class SettingsDialog(QDialog):
         self.auto_skip_single_choice_checkbox = create_checkbox_setting(
             "Pular seleção única",
             "auto_skip_single_choice",
-            False,
+            True,
             self,
             "Pular automaticamente quando só existe uma opção.",
         )
@@ -437,7 +437,7 @@ class SettingsDialog(QDialog):
         self.achievements_checkbox = create_checkbox_setting(
             "Gerar conquistas Steam",
             "generate_achievements",
-            False,
+            True,
             self,
             "Gerar arquivos de conquista para seus jogos após os downloads.",
         )
@@ -446,7 +446,7 @@ class SettingsDialog(QDialog):
         self.steamless_checkbox = create_checkbox_setting(
             "Remover DRM Steam com Steamless",
             "use_steamless",
-            False,
+            True,
             self,
             "Remover DRM dos executáveis dos jogos após baixar.",
         )
@@ -473,7 +473,7 @@ class SettingsDialog(QDialog):
             "Chave API Morrenus:",
             "Cole sua chave API Morrenus",
             "morrenus_api_key",
-            help_url="https://hubcapmanifest.com",
+            help_url="https://discord.com/invite/hubcapsmanifest",
         )
         key_layout.addLayout(morrenus_layout)
 
@@ -621,7 +621,7 @@ class SettingsDialog(QDialog):
 
             self.slssteam_hash_warning_label = QLabel()
             self.slssteam_hash_warning_label.setStyleSheet(
-                f"color: {cores_status(self.settings.value('background_color', '#000000'))['erro']};"
+                f"color: {cores_status(self.settings.value('background_color', '#c0c0c0'))['erro']};"
                 " font-size: 11px;"
             )
             self.slssteam_hash_warning_label.setWordWrap(True)
@@ -651,7 +651,7 @@ class SettingsDialog(QDialog):
         """Helper to add explanation label."""
         lbl = QLabel(text)
         lbl.setStyleSheet(
-            f"color: {cor_secundaria(get_settings().value('background_color', '#000000'))};"
+            f"color: {cor_secundaria(get_settings().value('background_color', '#c0c0c0'))};"
             " font-size: 11px;"
         )
         lbl.setWordWrap(True)
@@ -748,7 +748,7 @@ class SettingsDialog(QDialog):
         """Add indented explanation text for checkboxes."""
         lbl = QLabel(text)
         lbl.setStyleSheet(
-            f"color: {cor_secundaria(get_settings().value('background_color', '#000000'))};"
+            f"color: {cor_secundaria(get_settings().value('background_color', '#c0c0c0'))};"
             " font-size: 11px;"
         )
         lbl.setWordWrap(True)
@@ -798,7 +798,7 @@ class SettingsDialog(QDialog):
         self.accent_color_button.setStyleSheet(f"background-color: {hex_c};")
 
     def reset_accent_color(self) -> None:
-        default = "#C06C84"
+        default = "#000080"
         self.settings.setValue("accent_color", default)
         self.accent_color_button.setStyleSheet(f"background-color: {default};")
 
@@ -810,7 +810,7 @@ class SettingsDialog(QDialog):
         self.bg_color_button.setStyleSheet(f"background-color: {hex_c};")
 
     def reset_bg_color(self) -> None:
-        default = "#000000"
+        default = "#c0c0c0"
         self.settings.setValue("background_color", default)
         self.bg_color_button.setStyleSheet(f"background-color: {default};")
 
@@ -1070,7 +1070,7 @@ class SettingsDialog(QDialog):
         mis = status.get("steamclient_mismatch")
         fnd = status.get("steamclient_found")
         err = status.get("steamclient_error")
-        cores = cores_status(self.settings.value("background_color", "#000000"))
+        cores = cores_status(self.settings.value("background_color", "#c0c0c0"))
         pink = f"color: {cores['erro']}; font-size: 11px;"
         green = f"color: {cores['ok']}; font-size: 11px;"
 

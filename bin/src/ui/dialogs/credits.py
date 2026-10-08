@@ -26,8 +26,8 @@ class CreditsDialog(QDialog):
         self.main_layout = QVBoxLayout(self)
         self.main_layout.setContentsMargins(24, 24, 24, 24)
         self.main_layout.setSpacing(16)
-        self.accent_color = self.settings.value("accent_color", "#C06C84")
-        self.background_color = self.settings.value("background_color", "#000000")
+        self.accent_color = self.settings.value("accent_color", "#000080")
+        self.background_color = self.settings.value("background_color", "#c0c0c0")
 
         logger.debug("Opening CreditsDialog.")
 
