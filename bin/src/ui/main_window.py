@@ -67,7 +67,6 @@ class MainWindow(QMainWindow):
         self.exit_shortcut = None
         self.central_widget = None
         self.layout = None
-        self.titlebar_position = None
         self.bottom_titlebar = None
         self.main_container = None
         self.main_layout = None
@@ -171,20 +170,12 @@ class MainWindow(QMainWindow):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
-        self.titlebar_position = self.settings.value(
-            "titlebar_position", "bottom", type=str
-        )
-
-        if self.titlebar_position == "top":
-            self.bottom_titlebar = BottomTitleBar(self, marca_central=True)
-            self.layout.addWidget(self.bottom_titlebar)
+        # barra de título fixa no topo
+        self.bottom_titlebar = BottomTitleBar(self, marca_central=True)
+        self.layout.addWidget(self.bottom_titlebar)
 
         self._create_main_content()
         self._create_bottom_section()
-
-        if self.titlebar_position != "top":
-            self.bottom_titlebar = BottomTitleBar(self, marca_central=True)
-            self.layout.addWidget(self.bottom_titlebar)
 
         # sempre a última: a versão fica colada no chão da janela
         self._cria_barra_status()
@@ -636,22 +627,6 @@ class MainWindow(QMainWindow):
             logger.error(f"Error during shutdown: {e}")
 
         super().closeEvent(event)
-
-    def reposition_titlebar(self, position: str) -> None:
-        """Dynamically reposition the titlebar without restart."""
-        if not hasattr(self, "bottom_titlebar") or not self.bottom_titlebar:
-            return
-
-        self.layout.removeWidget(self.bottom_titlebar)
-        self.bottom_titlebar.setParent(None)
-
-        if position == "top":
-            self.layout.insertWidget(0, self.bottom_titlebar)
-        else:
-            self.layout.addWidget(self.bottom_titlebar)
-
-        self.titlebar_position = position
-        logger.info(f"Titlebar repositioned to: {position}")
 
     @staticmethod
     def _cleanup_logging() -> None:

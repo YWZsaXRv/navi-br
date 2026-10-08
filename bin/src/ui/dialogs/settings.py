@@ -252,7 +252,6 @@ class SettingsDialog(QDialog):
         self.accent_reset_button = None
         self.bg_color_button = None
         self.bg_reset_button = None
-        self.titlebar_position_checkbox = None
         self.ignore_color_warnings_checkbox = None
         self.current_font = QFont()
         self.morrenus_stats_widget = None
@@ -272,9 +271,6 @@ class SettingsDialog(QDialog):
             "user_background_color",
             self.settings.value("background_color", "#c0c0c0"),
             type=str,
-        )
-        self._original_titlebar_position = self.settings.value(
-            "titlebar_position", "bottom", type=str
         )
 
         logger.debug("Opening SettingsDialog.")
@@ -721,42 +717,8 @@ class SettingsDialog(QDialog):
         font_group.setLayout(font_layout)
         layout.addWidget(font_group)
 
-        # Display Group
-        disp_group = QGroupBox("Configurações de exibição")
-        disp_layout = QVBoxLayout()
-
-        self.titlebar_position_checkbox = QCheckBox("Mover barra de título para o topo")
-        is_top = self.settings.value("titlebar_position", "bottom", type=str) == "top"
-        self.titlebar_position_checkbox.setChecked(is_top)
-        self.titlebar_position_checkbox.setToolTip("Mover a barra de título para o topo.")
-        self.titlebar_position_checkbox.stateChanged.connect(
-            self.on_titlebar_position_changed
-        )
-        disp_layout.addWidget(self.titlebar_position_checkbox)
-        SettingsDialog._add_checkbox_explanation(
-            disp_layout, "Mover a barra de título para o topo da janela."
-        )
-
-        disp_group.setLayout(disp_layout)
-        layout.addWidget(disp_group)
-
         layout.addStretch()
         self.tab_widget.addTab(tab, "Estilo")
-
-    @staticmethod
-    def _add_checkbox_explanation(layout: QVBoxLayout, text: str) -> None:
-        """Add indented explanation text for checkboxes."""
-        lbl = QLabel(text)
-        lbl.setStyleSheet(
-            f"color: {cor_secundaria(get_settings().value('background_color', '#c0c0c0'))};"
-            " font-size: 11px;"
-        )
-        lbl.setWordWrap(True)
-        h_layout = QHBoxLayout()
-        h_layout.setContentsMargins(0, 0, 0, 0)
-        h_layout.addSpacing(14)
-        h_layout.addWidget(lbl)
-        layout.addLayout(h_layout)
 
     # Color Handlers
     def _abre_seletor_cor(self):
@@ -887,14 +849,6 @@ class SettingsDialog(QDialog):
             self.font_button.setText(text)
             self.font_button.setFont(self.current_font)
 
-    # Display Handlers
-    def on_titlebar_position_changed(self, state: int) -> None:
-        pos = "top" if state == 2 else "bottom"
-        self.settings.setValue("titlebar_position", pos)
-        if self.main_window and hasattr(self.main_window, "reposition_titlebar"):
-            # noinspection PyUnresolvedReferences
-            self.main_window.reposition_titlebar(pos)
-
     def accept(self) -> None:
         """Save all settings and close."""
         self._save_general_settings()
@@ -982,12 +936,6 @@ class SettingsDialog(QDialog):
     def reject(self) -> None:
         """Revert settings on cancel."""
         self.settings.setValue("morrenus_api_key", self._original_morrenus_key)
-
-        # Revert live-previewed settings that were saved immediately
-        self.settings.setValue("titlebar_position", self._original_titlebar_position)
-        if self.main_window and hasattr(self.main_window, "reposition_titlebar"):
-            # noinspection PyUnresolvedReferences
-            self.main_window.reposition_titlebar(self._original_titlebar_position)
 
         super().reject()
 
