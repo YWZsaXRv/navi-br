@@ -1,5 +1,3 @@
-Modificação da aplicação Accela, a partir da versão `20260425230142`.
-
 ## Demo
 
 <img width="1022" height="816" alt="demo-1" src="https://github.com/user-attachments/assets/97ce6a3e-5b11-4923-8092-3a54ffce7410" />
@@ -30,16 +28,16 @@ bash navi-br -uninstall-all
 | `c` | configurações |
 | `s` | status das ferramentas |
 | `z` | zona de drop, o mesmo que o duplo clique |
-| `Ctrl+Q` | fecha |
+| `Esc` | fecha janela |
+| `Ctrl+Q` | fecha navi-br |
 | `j` `k` ou `↑` `↓` | navegam |
 | `h` `l` ou `←` `→` | trocam de seção |
-| `Shift+Enter` | salva as configurações |
 | `Enter` | confirma |
-| `Esc` | fecha |
+| `Shift+Enter` | salva as configurações |
 
 ## Créditos
 
-- [![Accela](https://img.shields.io/badge/Accela-181717?style=for-the-badge&logo=github&logoColor=000080&labelColor=808080&color=c0c0c0)](https://media1.tenor.com/m/1eZJF7qDOIQAAAAd/beatboxing-cat-cat.gif)
+- [![Accela-v20260425230142](https://img.shields.io/badge/Accela--v20260425230142-181717?style=for-the-badge&logo=github&logoColor=000080&labelColor=808080&color=c0c0c0)](https://media1.tenor.com/m/1eZJF7qDOIQAAAAd/beatboxing-cat-cat.gif)
 - [![SLSsteam](https://img.shields.io/badge/SLSsteam-181717?style=for-the-badge&logo=github&logoColor=000080&labelColor=808080&color=c0c0c0)](https://github.com/AceSLS/SLSsteam)
 - [![h3adcr-b](https://img.shields.io/badge/h3adcr--b-181717?style=for-the-badge&logo=github&logoColor=000080&labelColor=808080&color=c0c0c0)](https://github.com/Deadboy666/h3adcr-b)
 - [![Steamless](https://img.shields.io/badge/Steamless-181717?style=for-the-badge&logo=github&logoColor=000080&labelColor=808080&color=c0c0c0)](https://github.com/atom0s/Steamless)
