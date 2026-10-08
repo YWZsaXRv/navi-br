@@ -1,0 +1,586 @@
+#!/usr/bin/env bash
+# feito por YWZsaXRv
+#
+set -u
+
+case "${LC_ALL:-${LANG:-}}" in
+    *.[Uu][Tt][Ff]-8*|*[Uu][Tt][Ff]8*) ;;
+    *) export LC_ALL=C.UTF-8 ;;
+esac
+
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+    VERDE=$'\033[32m'; AMARELO=$'\033[33m'; CINZA=$'\033[2m'
+    NEGRITO=$'\033[1m'; SEM_COR=$'\033[0m'
+    VERMELHO=$'\033[31m'; ROSA=$'\033[35m'
+    case "${COLORTERM:-}" in
+        *truecolor*|*24bit*)
+            ROSA=$'\033[38;2;192;108;132m'
+            VERMELHO=$'\033[38;2;204;92;92m' ;;
+        *)
+            if [ "$(tput colors 2>/dev/null || echo 8)" -ge 256 ] 2>/dev/null; then
+                ROSA=$'\033[38;5;168m'
+                VERMELHO=$'\033[38;5;167m'
+            fi ;;
+    esac
+else
+    VERDE=""; AMARELO=""; CINZA=""; NEGRITO=""; SEM_COR=""; VERMELHO=""; ROSA=""
+fi
+
+URL_REPO="https://github.com/YWZsaXRv/navi-br"
+URL_ARCHIVE="$URL_REPO/archive/refs/heads/main.tar.gz"
+URL_HEADCRAB="https://headcrab.pages.dev"
+URL_INSTALLADOR=""
+
+# caminhos que o instalador conhece
+PASTA_BASE="~/.local/share/navi-br"
+PASTA_CONFIG="~/.config/SLSsteam"
+PASTA_CONFIG_NAVE="~/.config/Tachibana Labs"
+ATALHO_APP="applications/navi-br.desktop"
+ATALHO_JOGOS="applications/navi-br-<id>.desktop"
+LOG_INSTALADOR="$PASTA_BASE/logs/instalador.log"
+
+# exclusões 
+ITENS_NAVI_BR=(
+    "$PASTA_BASE|app, logs, banco e SLScheevo|arquivos"
+    "$PASTA_CONFIG_NAVE/navi-br.conf|configurações|arquivos"
+    "$ATALHO_APP|atalho do app|atalho"
+    "$ATALHO_JOGOS|atalhos de jogos|atalho"
+    "~/.local/bin/navi-br|lançador|atalho"
+    "~/.local/share/icons/hicolor/*/apps/navi-br.png|ícone|atalho"
+)
+#  só aparece o que existir no sistema
+ITENS_TUDO=(
+    "$PASTA_BASE|app, logs, banco e SLScheevo|base"
+    "$PASTA_CONFIG_NAVE|configurações|base"
+    "~/.local/share/SLSsteam|SLSsteam|slss"
+    "$PASTA_CONFIG|config do SLSsteam|slss"
+    "~/.var/app/com.valvesoftware.Steam/.local/share/SLSsteam|SLSsteam (flatpak)|slss"
+    "~/.local/share/applications/headcrab.desktop|atalho do headcrab|externos"
+    "~/.local/share/icons/hicolor/*/apps/headcrab.png|ícone do headcrab|externos"
+    "~/.SLSsteam.log|log do SLSsteam|externos"
+    "~/.local/bin/accela|lançador do accela|externos"
+    "~/.local/share/ACCELA|ACCELA|externos"
+    "~/.local/share/CloudRedirect|CloudRedirect|externos"
+    "$ATALHO_JOGOS|atalhos de jogos|atalho"
+    "$ATALHO_APP|atalho do app|atalho"
+    "~/.local/bin/navi-br|lançador|atalho"
+    "~/.local/share/icons/hicolor/*/apps/navi-br.png|ícone|atalho"
+)
+# stem: nativa, flatpak e snap
+STEAM_RAIZES=(
+    "~/.local/share/Steam"
+    "~/.var/app/com.valvesoftware.Steam/.steam/steam"
+    "~/.var/app/com.valvesoftware.Steam/data/Steam"
+    "~/snap/steam/common/.local/share/Steam"
+)
+
+INDENT="  "
+LARGURA_CAIXA=50
+LARG_LISTA=20
+BARRAS="────────────────────────────────────────────────────────────"
+QUADROS=(⠋ ⠙ ⠹ ⠸ ⠼ ⠴ ⠦ ⠧ ⠇ ⠏)
+TRABALHO=""
+SAIDA=""
+
+limpar() {
+    [ -n "$TRABALHO" ] && rm -rf "$TRABALHO"
+    [ -n "$SAIDA" ] && rm -f "$SAIDA"
+}
+trap limpar EXIT
+
+pula() { printf '\n'; }
+
+resolver() { 
+    case "$1" in
+        "~"*) printf '%s' "${1/#\~/$HOME}" ;;
+        *)    printf '%s' "$HOME/.local/share/${1//<id>/*}" ;;
+    esac
+}
+
+apagar() {
+    case "$1" in
+        *[\*\?]*) local a; for a in $1; do [ -e "$a" ] && rm -rf -- "$a"; done ;;
+        *)        rm -rf -- "$1" ;;
+    esac
+}
+
+falha() { 
+    mkdir -p "$HOME/.local/share/navi-br/logs"
+    {
+        printf '[%s] %s\n' "$(date +%d/%m/%Y)" "$(date +%H:%M)"
+        printf 'etapa: %s\nmotivo: %s\ncodigo: %s\nsaida: %s\n\n' "$1" "$2" "$3" "$4"
+    } >> "$HOME/.local/share/navi-br/logs/instalador.log"
+    printf '%s  erro: %s%s\n' "$VERMELHO" "$2" "$SEM_COR" >&2
+    exit 1
+}
+
+cabecalho() { 
+    [ -t 1 ] && printf '\033[2J\033[H'
+    printf '%s%snavi-br %s▸ %s%s\n\n' "$INDENT" "$NEGRITO" "$ROSA" "${1:-instalador}" "$SEM_COR"
+}
+
+trabalhando() { 
+    local msg="$1" i=0 pid rc
+    shift
+    "$@" >"$SAIDA" 2>&1 &
+    pid=$!
+    while kill -0 "$pid" 2>/dev/null; do
+        printf '\r%s%s%s  %s\033[K' "$INDENT" "$ROSA" "${QUADROS[$((i % 10))]}" "$msg"
+        sleep 0.09
+        i=$((i + 1))
+    done
+    wait "$pid"; rc=$?
+    if [ "$rc" -eq 0 ]; then
+        printf '\r%s%s✓%s  %s\033[K\n' "$INDENT" "$VERDE" "$SEM_COR" "$msg"
+    else
+        printf '\r\033[K'
+    fi
+    return "$rc"
+}
+
+_passo() { 
+    local p=$((30 - ${#3}))
+    [ "$p" -lt 1 ] && p=1
+    printf '%s%s%s%s  %s%*s%s%s\n' "$INDENT" "$1" "$2" "$SEM_COR" "$3" "$p" "" "$CINZA" "$4$SEM_COR"
+}
+passo_ok()     { _passo "$VERDE" "✓" "$1" "$2"; }
+passo_pulado() { _passo "$CINZA" "✗" "$1" "$2"; }
+
+qtde() { 
+    [ "$1" -eq 1 ] && printf '1 item' || printf '%d itens' "$1"
+}
+
+caixa_abre() { 
+    local p=$((LARGURA_CAIXA - 3 - ${#2}))
+    [ "$p" -lt 1 ] && p=1
+    printf '%s┌─ %s%s%s' "$INDENT" "$1" "$2" "$SEM_COR"
+    printf ' %s┐%s\n' "${BARRAS:0:$p}" "$SEM_COR"
+}
+caixa_fecha() {
+    printf '%s└%s┘%s\n' "$INDENT" "${BARRAS:0:$LARGURA_CAIXA}" "$SEM_COR"
+}
+caixa_linha() { 
+    local linha p
+    printf -v linha '%-11s %s' "$1" "$2"
+    p=$((LARGURA_CAIXA - 2 - ${#linha}))
+    [ "$p" -lt 0 ] && p=0
+    printf '%s│  %s%*s│%s\n' "$INDENT" "$linha" "$p" "" "$SEM_COR"
+}
+
+confirmar() { 
+    printf '%s  %s [s/N] %s' "$AMARELO" "$1" "$SEM_COR"
+    local r; read -r r || return 1
+    case "$r" in s|S|sim|Sim|SIM) return 0 ;; *) return 1 ;; esac
+}
+
+preparar() {
+    TRABALHO=$(mktemp -d)
+    SAIDA=$(mktemp)
+}
+
+baixar() {
+    curl -fL "$URL_ARCHIVE" -o "$TRABALHO/navi-br.tar.gz" &&
+        tar -xzf "$TRABALHO/navi-br.tar.gz" -C "$TRABALHO"
+}
+
+criar_venv() {
+    mkdir -p "$(resolver "$PASTA_BASE")" &&
+        python3 -m venv "$(resolver "$PASTA_BASE")/.venv"
+}
+
+instalar_deps() {
+    "$(resolver "$PASTA_BASE")/.venv/bin/pip" install --quiet -r "$TRABALHO/navi-br-main/bin/requirements.txt"
+}
+
+instalar_h3adcr() {
+    curl -fsSL "$URL_HEADCRAB" -o "$TRABALHO/h3adcr.sh" && bash "$TRABALHO/h3adcr.sh"
+}
+
+copiar_app() {
+    cp -a "$TRABALHO/navi-br-main/bin/." "$(resolver "$PASTA_BASE")/"
+}
+
+criar_atalho() {
+    local base destino
+    base="$(resolver "$PASTA_BASE")"
+    destino="$HOME/.local/share/applications"
+    mkdir -p "$HOME/.local/bin" "$destino"
+    printf '%s\n' '#!/bin/sh' 'exec "$HOME/.local/share/navi-br/run.sh" "$@"' > "$HOME/.local/bin/navi-br"
+    chmod +x "$HOME/.local/bin/navi-br"
+    printf '%s\n' \
+        "[Desktop Entry]" \
+        "Name=navi-br" \
+        "Comment=Os meios de compilação pertencem ao proletariado." \
+        "Exec=$HOME/.local/bin/navi-br %u" \
+        "Icon=$base/src/res/logo/icon.ico" \
+        "Terminal=false" \
+        "Type=Application" \
+        "Categories=Utility;" \
+        "MimeType=x-scheme-handler/navi-br;x-scheme-handler/accela;" \
+        > "$destino/navi-br.desktop"
+    command -v update-desktop-database >/dev/null 2>&1 &&
+        update-desktop-database "$destino" >/dev/null 2>&1 || true
+    command -v xdg-mime >/dev/null 2>&1 && {
+        xdg-mime default navi-br.desktop x-scheme-handler/navi-br >/dev/null 2>&1 || true
+        xdg-mime default navi-br.desktop x-scheme-handler/accela >/dev/null 2>&1 || true
+    }
+    return 0
+}
+
+existe() { 
+    case "$1" in
+        *[\*\?]*) compgen -G "$1" >/dev/null ;;
+        *) [ -e "$1" ] ;;
+    esac
+}
+
+achados() { 
+    local -n _achados="$1"
+    local grupo="$2" item caminho
+    for item in "${_achados[@]}"; do
+        [ "${item##*|}" = "$grupo" ] || continue
+        caminho="$(resolver "${item%%|*}")"
+        existe "$caminho" && printf '%s\n' "$caminho"
+    done
+    return 0
+}
+
+mostrar_itens() { 
+    local -n _mostrar="$1"
+    local item caminho detalhe larg=0
+    local -a linhas=()
+    for item in "${_mostrar[@]}"; do
+        caminho="$(resolver "${item%%|*}")"
+        existe "$caminho" || continue
+        detalhe="${item#*|}"
+        caminho="${caminho/#$HOME/\~}"
+        [ "${#caminho}" -gt "$larg" ] && larg=${#caminho}
+        linhas+=("$caminho|${detalhe%%|*}")
+    done
+    [ "$larg" -lt 20 ] && larg=20
+    [ "$larg" -gt 56 ] && larg=56
+    LARG_LISTA=$larg
+    for item in "${linhas[@]}"; do
+        printf '%s  ▸  %s%-*s%s %s\n' "$INDENT" "$VERMELHO" "$larg" \
+            "${item%%|*}" "$SEM_COR" "${item#*|}"
+    done
+    return 0
+}
+
+apagar_todos() { 
+    local p
+    for p in "$@"; do apagar "$p"; done
+}
+
+limpar_mime() {
+    local f="$HOME/.config/mimeapps.list"
+    [ -f "$f" ] || return 0
+    sed -i '/^x-scheme-handler\/navi-br=/d; /^x-scheme-handler\/accela=/d' "$f"
+    return 0
+}
+
+remover_atalhos() { 
+    apagar_todos "$@"
+    limpar_mime
+    command -v update-desktop-database >/dev/null 2>&1 &&
+        update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1
+    return 0
+}
+
+steam_raizes() { 
+    local r real ja=""
+    for r in "${STEAM_RAIZES[@]}"; do
+        r="$(resolver "$r")"
+        [ -e "$r/steam.sh" ] || [ -e "$r/steam.cfg" ] || continue
+        real="$(readlink -f "$r" 2>/dev/null)" || real="$r"
+        [ -n "$real" ] || real="$r"
+        case " $ja " in *" $real "*) continue ;; esac
+        ja="$ja $real"
+        printf '%s\n' "$real"
+    done
+    return 0
+}
+
+restaurar_steam() { 
+    local raiz="$1" tmp
+    if [ -e "$raiz/steam.sh" ]; then
+        if [ -e "$raiz/bootstrap.tar.xz" ]; then
+            tmp="$(mktemp -d)" || return 1
+            if tar -xJf "$raiz/bootstrap.tar.xz" -C "$tmp" steam.sh; then
+                rm -f "$raiz/steam.sh"
+                mv "$tmp/steam.sh" "$raiz/steam.sh" && chmod +x "$raiz/steam.sh"
+            else
+                rm -rf "$tmp"; return 1
+            fi
+            rm -rf "$tmp"
+        else
+            if grep -q 'INJECT_SLS\|HeadcrabClientVersion' "$raiz/steam.sh"; then
+                return 1
+            fi
+            grep -v 'export LD_AUDIT=' "$raiz/steam.sh" > "$raiz/steam.sh.novo" || return 1
+            cat "$raiz/steam.sh.novo" > "$raiz/steam.sh" && rm -f "$raiz/steam.sh.novo"
+        fi
+    fi
+    if [ -f "$raiz/steam.cfg" ] && grep -q 'BootStrapper' "$raiz/steam.cfg"; then
+        rm -f "$raiz/steam.cfg"
+    fi
+    return 0
+}
+
+sudo_pendente() { 
+    local l
+    for l in /usr/lib32/libSLSsteam.so /usr/lib32/libSLS-library-inject.so; do
+        [ -e "$l" ] && printf '%s, ' "$l"
+    done
+    return 0
+}
+
+dotnet_do_navi() { # ~/.dotnet só se for o runtime que o navi-br instalou
+    local r="$HOME/.dotnet" canal f
+    [ -d "$r" ] || return 1
+    [ -d "$r/sdk" ] && return 1
+    [ -d "$r/tools" ] && return 1
+    [ -d "$HOME/.nuget" ] && return 1
+    [ -d "$HOME/.templateengine" ] && return 1
+    command -v dotnet >/dev/null 2>&1 && return 1
+    for f in "$HOME/.bashrc" "$HOME/.profile" "$HOME/.bash_profile" "$HOME/.zshrc"; do
+        [ -f "$f" ] && grep -q 'dotnet\|DOTNET' "$f" && return 1
+    done
+    for canal in "$r"/shared/*; do
+        [ -d "$canal" ] || return 1
+        case "${canal##*/}" in
+            Microsoft.NETCore.App) ;;
+            *) return 1 ;;
+        esac
+    done
+    for canal in "$r"/shared/Microsoft.NETCore.App/*; do
+        [ -d "$canal" ] || return 1
+        case "${canal##*/}" in
+            9.*) ;;
+            *) return 1 ;;
+        esac
+    done
+    return 0
+}
+
+fluxo_instalar() {
+    preparar
+    cabecalho
+    printf '%s  verificação do sistema%s\n\n' "$NEGRITO" "$SEM_COR"
+    trabalhando "checando python (≥ 3.10)" python3 -c \
+        'import sys; raise SystemExit(0 if sys.version_info[:2] >= (3, 10) else 1)' ||
+        falha "verificação do sistema" "falta python3 >= 3.10" "$?" "$(cat "$SAIDA")"
+    passo_ok "python" "$(python3 -c 'import sys; print("%d.%d.%d" % sys.version_info[:3])')"
+    trabalhando "checando venv" python3 -c 'import venv, ensurepip' ||
+        falha "verificação do sistema" "venv do python indisponível" "$?" "$(cat "$SAIDA")"
+    passo_ok "venv + pip" "disponível"
+    trabalhando "checando git" git --version ||
+        falha "verificação do sistema" "falta git" "$?" "$(cat "$SAIDA")"
+    passo_ok "git" "$(git --version | awk '{print $3}')"
+    trabalhando "checando libs do qt6" bash -c '
+        for l in libGL.so.1 libxkbcommon.so.0 libEGL.so.1 libfontconfig.so.1 libdbus-1.so.3; do
+            ldconfig -p 2>/dev/null | grep -q "$l" || { echo "falta: $l"; exit 1; }
+        done' || falha "verificação do sistema" "libs do qt6 faltando" "$?" "$(cat "$SAIDA")"
+    passo_ok "libs do qt6" "libgl1, libxkbcommon0…"
+    if command -v xdg-open >/dev/null 2>&1; then
+        passo_ok "xdg-utils" "xdg-open"
+    else
+        passo_pulado "xdg-utils" "ausente"
+    fi
+    pula
+    trabalhando "baixando navi-br (YWZsaXRv/navi-br)" baixar ||
+        falha "baixando navi-br" "repo inacessível (rede, dns ou 404)" "$?" "$(cat "$SAIDA")"
+    trabalhando "criando ambiente virtual" criar_venv ||
+        falha "criando ambiente virtual" "não deu pra criar o venv" "$?" "$(cat "$SAIDA")"
+    trabalhando "instalando dependências (pip)" instalar_deps ||
+        falha "instalando dependências" "pip falhou (rede ou compilação)" "$?" "$(cat "$SAIDA")"
+    passo_ok "pyqt6, psutil, vdf..." "$(grep -cvE '^[[:space:]]*$' "$TRABALHO/navi-br-main/bin/requirements.txt") pacotes"
+    pula
+    if confirmar "instalar o SLSsteam (através do h3adcr-b)?"; then
+        trabalhando "instalando SLSsteam via h3adcr-b" instalar_h3adcr ||
+            falha "instalando SLSsteam" "headcrab.pages.dev fora do ar" "$?" "$(cat "$SAIDA")"
+        SLSS=1
+        passo_ok "SLSsteam" "h3adcr-b instalado"
+    else
+        passo_pulado "SLSsteam" "pulado"
+    fi
+    pula
+    trabalhando "copiando para $PASTA_BASE" copiar_app ||
+        falha "copiando arquivos" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+    trabalhando "criando atalho do menu" criar_atalho ||
+        falha "criando atalho" "não deu pra escrever o .desktop" "$?" "$(cat "$SAIDA")"
+    passo_ok "navi-br.desktop" "$ATALHO_APP"
+    pula
+    caixa_abre "$VERDE" "instalação concluída"
+    caixa_linha "navi-br:" "$PASTA_BASE"
+    [ -n "${SLSS:-}" ] && caixa_linha "SLSsteam:" "$PASTA_CONFIG"
+    caixa_fecha
+    pula
+}
+
+fluxo_desinstalar() {
+    preparar
+    cabecalho "desinstalador"
+    local ach_arq ach_ato
+    mapfile -t ach_arq < <(achados ITENS_NAVI_BR arquivos)
+    mapfile -t ach_ato < <(achados ITENS_NAVI_BR atalho)
+    printf '%s  será removido:%s\n\n' "$NEGRITO" "$SEM_COR"
+    mostrar_itens ITENS_NAVI_BR
+    pula
+    confirmar "remover o navi-br? (jogos e Steam ficam intactos)" || {
+        printf '\n%s  cancelado: nada foi alterado.%s\n\n' "$AMARELO" "$SEM_COR"; return; }
+    pula
+    if [ "${#ach_arq[@]}" -gt 0 ]; then
+        trabalhando "removendo arquivos e dados" apagar_todos "${ach_arq[@]}" ||
+            falha "removendo arquivos" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+        passo_ok "arquivos e dados" "$(qtde "${#ach_arq[@]}")"
+    else
+        passo_pulado "arquivos e dados" "nada encontrado"
+    fi
+    if [ "${#ach_ato[@]}" -gt 0 ]; then
+        trabalhando "removendo atalhos e ícone" remover_atalhos "${ach_ato[@]}" ||
+            falha "removendo atalhos" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+        passo_ok "atalhos, ícone e mime" "$(qtde "${#ach_ato[@]}")"
+    else
+        passo_pulado "atalhos, ícone e mime" "nada encontrado"
+    fi
+    pula
+    caixa_abre "$VERDE" "navi-br removido"
+    caixa_linha "removido" "app, config, logs e atalho"
+    caixa_linha "intocado" "jogos, Steam e SLSsteam"
+    caixa_fecha
+    pula
+}
+
+fluxo_desinstalar_tudo() {
+    preparar
+    cabecalho "desinstalador"
+    local ach_base ach_slss ach_ext ach_ato raiz aviso_sudo
+    local -a raizes
+    mapfile -t ach_base < <(achados ITENS_TUDO base)
+    mapfile -t ach_slss < <(achados ITENS_TUDO slss)
+    mapfile -t ach_ext  < <(achados ITENS_TUDO externos)
+    mapfile -t ach_ato  < <(achados ITENS_TUDO atalho)
+    mapfile -t raizes   < <(steam_raizes)
+    printf '%s  varredura: o que será removido:%s\n\n' "$NEGRITO" "$SEM_COR"
+    mostrar_itens ITENS_TUDO
+    if [ -d "$(resolver "~/.dotnet")" ]; then
+        if dotnet_do_navi; then
+            printf '%s  ▸  %s%-*s%s %s\n' "$INDENT" "$VERMELHO" "$LARG_LISTA" \
+                "~/.dotnet" "$SEM_COR" "runtime .NET do DepotDownloader"
+        else
+            printf '%s  ▸  %s%-*s%s %s\n' "$INDENT" "$AMARELO" "$LARG_LISTA" \
+                "~/.dotnet" "$SEM_COR" "runtime .NET seu: não vou mexer"
+        fi
+    fi
+    if [ "${#raizes[@]}" -gt 0 ]; then
+        printf '%s  ▸  %s%-*s%s %s\n' "$INDENT" "$VERMELHO" "$LARG_LISTA" \
+            "steam.sh + steam.cfg" "$SEM_COR" "restaura a Steam original"
+    fi
+    pula
+    printf '%s  ⚠  atenção: remove tudo acima, sem volta%s\n' "$AMARELO" "$SEM_COR"
+    printf '%s  ⚠  jogos baixados continuam na sua biblioteca da Steam%s\n' "$AMARELO" "$SEM_COR"
+    aviso_sudo="$(sudo_pendente)"
+    [ -n "$aviso_sudo" ] &&
+        printf '%s  ⚠  precisa de sudo: %s%s\n' "$AMARELO" "${aviso_sudo%, }" "$SEM_COR"
+    pula
+    confirmar "remover TUDO isso?" || {
+        printf '\n%s  cancelado: nada foi alterado.%s\n\n' "$AMARELO" "$SEM_COR"; return; }
+    pula
+    if [ "${#ach_base[@]}" -gt 0 ]; then
+        trabalhando "removendo app, logs e config" apagar_todos "${ach_base[@]}" ||
+            falha "removendo arquivos" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+        passo_ok "app, logs e config" "$(qtde "${#ach_base[@]}")"
+    else
+        passo_pulado "app, logs e config" "nada encontrado"
+    fi
+    if [ "${#ach_slss[@]}" -gt 0 ]; then
+        trabalhando "removendo SLSsteam" apagar_todos "${ach_slss[@]}" ||
+            falha "removendo SLSsteam" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+        passo_ok "SLSsteam" "$(qtde "${#ach_slss[@]}")"
+    else
+        passo_pulado "SLSsteam" "nada encontrado"
+    fi
+    if [ "${#ach_ext[@]}" -gt 0 ]; then
+        trabalhando "removendo headcrab, accela e cloud" apagar_todos "${ach_ext[@]}" ||
+            falha "removendo ferramentas externas" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+        passo_ok "headcrab, accela, cloud" "$(qtde "${#ach_ext[@]}")"
+    else
+        passo_pulado "headcrab, accela, cloud" "nada encontrado"
+    fi
+    if [ ! -d "$(resolver "~/.dotnet")" ]; then
+        passo_pulado "runtime .NET" "nada encontrado"
+    elif dotnet_do_navi; then
+        trabalhando "removendo runtime .NET" apagar_todos "$(resolver "~/.dotnet")" ||
+            falha "removendo runtime .NET" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+        passo_ok "runtime .NET" "1 item"
+    else
+        passo_pulado "runtime .NET" "não é do navi-br"
+    fi
+    if [ "${#ach_ato[@]}" -gt 0 ]; then
+        trabalhando "removendo atalhos e ícone" remover_atalhos "${ach_ato[@]}" ||
+            falha "removendo atalhos" "sem permissão de escrita" "$?" "$(cat "$SAIDA")"
+        passo_ok "atalhos, ícone e mime" "$(qtde "${#ach_ato[@]}")"
+    else
+        passo_pulado "atalhos, ícone e mime" "nada encontrado"
+    fi
+    if [ "${#raizes[@]}" -eq 0 ]; then
+        passo_pulado "steam" "nenhuma instalação encontrada"
+    else
+        for raiz in "${raizes[@]}"; do
+            if restaurar_steam "$raiz"; then
+                passo_ok "steam" "${raiz/#$HOME/\~}"
+            else
+                passo_pulado "steam" "${raiz/#$HOME/\~} sem bootstrap"
+            fi
+        done
+    fi
+    if pgrep -x steam >/dev/null 2>&1; then
+        pula
+        printf '%s  ⚠  a Steam está aberta: reinicie pra valer%s\n' "$AMARELO" "$SEM_COR"
+    fi
+    pula
+    caixa_abre "$VERDE" "remoção completa concluída"
+    caixa_linha "removido" "navi-br, SLSsteam, headcrab, accela"
+    caixa_linha "intocado" "jogos da sua biblioteca da Steam"
+    caixa_fecha
+    pula
+}
+
+ajuda() {
+    cabecalho
+    printf '%s  uso: navi-br [-install | -uninstall | -uninstall-all]%s\n' "$INDENT" "$SEM_COR"
+    [ -n "$URL_INSTALLADOR" ] && printf '%s  instale: %s%s\n' "$INDENT" "$URL_INSTALLADOR" "$SEM_COR"
+    pula
+}
+
+menu() {
+    while true; do
+        cabecalho
+        printf '%s  1%s   %-22s%s%s%s\n' "$INDENT" "$SEM_COR" "instalar" "$CINZA" "navi-br + dependências" "$SEM_COR"
+        printf '%s  2%s   %-22s%s%s%s\n' "$INDENT" "$SEM_COR" "desinstalar" "$CINZA" "só o navi-br (config, logs, atalho)" "$SEM_COR"
+        printf '%s  3%s   %-22s%s%s%s\n' "$INDENT" "$SEM_COR" "desinstalar tudo" "$CINZA" "navi-br, SLSsteam, h3adcr-b, cloudredirect" "$SEM_COR"
+        printf '%s  4%s   sair\n\n' "$INDENT" "$SEM_COR"
+        printf '%s  escolha ▸ %s' "$INDENT" "$ROSA"
+        local op; read -r op || return 0
+        printf '\n'
+        case "$op" in
+            1) fluxo_instalar ;;
+            2) fluxo_desinstalar ;;
+            3) fluxo_desinstalar_tudo ;;
+            4) return 0 ;;
+            *) printf '%s  opção inválida.%s\n\n' "$AMARELO" "$SEM_COR" ;;
+        esac
+        printf '%s  enter p/ voltar ao menu%s' "$CINZA" "$SEM_COR"
+        read -r _ || return 0
+    done
+}
+
+case "${1:-}" in
+    -install)       fluxo_instalar ;;
+    -uninstall)     fluxo_desinstalar ;;
+    -uninstall-all) fluxo_desinstalar_tudo ;;
+    -h|--help)      ajuda ;;
+    "")             menu ;;
+    *)              ajuda; exit 1 ;;
+esac
