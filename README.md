@@ -1,22 +1,26 @@
+<div align="center">
+
+# Navi-BR
+
+![Vim](https://img.shields.io/badge/vim-019733?logo=vim&logoColor=white&height=24)
+![Python](https://img.shields.io/badge/python-3776AB?logo=python&logoColor=white&height=24)
+![Linux](https://img.shields.io/badge/linux-e95420?logo=linux&logoColor=white&height=24)
+
+ GUI de DepotDownloaderMod em pt-BR. 
+
+</div>
+
 ## Demo
 
 <img width="1022" height="816" alt="demo-1" src="https://github.com/user-attachments/assets/97ce6a3e-5b11-4923-8092-3a54ffce7410" />
 
-
-## Instalação
-
-`python3 >= 3.10`, `git`, `curl` e as libs do Qt6 (`libgl1`, `libxkbcommon0`, `libegl1`, `libfontconfig1`, `libdbus-1-3`); o script não instala pacote de sistema, só avisa o que falta.
+## Instalação Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YWZsaXRv/navi-br/main/navi-br | bash
-```
-
-Baixando o arquivo, o mesmo script aceita as flags:
-
-```bash
-bash navi-br -install
-bash navi-br -uninstall
-bash navi-br -uninstall-all
+./navi-br  #menu
+./navi-br -install  #instala o navi-br
+./navi-br -uninstall  #desinstala o navi-br
+./navi-br -uninstall-all  # desinstala navi-br e dependências
 ```
 
 ## Atalhos
